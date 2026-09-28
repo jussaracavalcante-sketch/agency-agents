@@ -1,0 +1,58 @@
+# Seleção de agentes para a Vanguarda Martech (martech, mídia paga, dados e IA)
+# Uso: ./scripts/install.sh --tool claude-code --agents-file vanguarda/agentes-vanguarda.txt --path .claude/agents
+# Critério: aderência ao mercado brasileiro e ao portfólio da agência.
+# Excluídos: agentes de plataformas chinesas (Baidu, Douyin, WeChat, Weibo etc.).
+
+# --- Marketing ---
+aeo-foundations-architect
+agentic-search-optimizer
+ai-citation-strategist
+app-store-optimizer
+carousel-growth-engine
+content-creator
+cross-border-e-commerce-specialist
+email-marketing-strategist
+growth-hacker
+instagram-curator
+linkedin-content-creator
+multi-platform-publisher
+podcast-strategist
+pr-communications-manager
+seo-specialist
+short-video-editing-coach
+social-media-strategist
+tiktok-strategist
+twitter-engager
+video-optimization-specialist
+x-twitter-intelligence-analyst
+
+# --- Mídia Paga (Google Ads / META Ads) ---
+paid-media-auditor
+ad-creative-strategist
+paid-social-strategist
+ppc-campaign-strategist
+programmatic-display-buyer
+search-query-analyst
+tracking-measurement-specialist
+
+# --- Vendas / Novos negócios ---
+account-strategist
+deal-strategist
+discovery-coach
+offer-lead-gen-strategist
+outbound-strategist
+pipeline-analyst
+proposal-strategist
+
+# --- Design / Marca ---
+brand-guardian
+image-prompt-engineer
+visual-storyteller
+
+# --- Produto, dados e governança ---
+trend-researcher
+feedback-synthesizer
+data-privacy-officer
+automation-governance-architect
+report-distribution-agent
+analytics-reporter
