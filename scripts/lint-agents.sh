@@ -16,24 +16,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Keep in sync with AGENT_DIRS in scripts/convert.sh
 AGENT_DIRS=(
-  academic
-  design
-  engineering
-  finance
-  game-development
-  gis
-  healthcare
+  brand
   marketing
   paid-media
-  product
-  project-management
-  research
   sales
-  security
-  spatial-computing
-  specialized
-  support
-  testing
 )
 
 REQUIRED_FRONTMATTER=("name" "description" "color")

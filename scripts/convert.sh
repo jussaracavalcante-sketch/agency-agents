@@ -72,8 +72,7 @@ TODAY="$(date +%Y-%m-%d)"
 . "$SCRIPT_DIR/lib.sh"
 
 AGENT_DIRS=(
-  academic design engineering finance game-development gis healthcare marketing paid-media product project-management
-  research sales security spatial-computing specialized support testing
+  brand marketing paid-media sales
 )
 
 # --- Usage ---

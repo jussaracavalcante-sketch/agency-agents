@@ -35,7 +35,7 @@ set -e
   exit 1
 }
 
-output="$($INSTALLER --tool claude-code --agent 'Developer Tooling Engineer' --dry-run 2>&1)"
+output="$($INSTALLER --tool claude-code --agent 'PPC Campaign Strategist' --dry-run 2>&1)"
 [[ "$output" == *"Agents:  1"* ]] || {
   printf 'Valid display-name selection did not resolve to one agent:\n%s\n' "$output" >&2
   exit 1

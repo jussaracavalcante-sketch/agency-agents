@@ -3,24 +3,10 @@ name: Lint Agent Files
 on:
   pull_request:
     paths:
-      - "academic/**"
-      - "design/**"
-      - "engineering/**"
-      - "finance/**"
-      - "game-development/**"
-      - "gis/**"
-      - "healthcare/**"
+      - "brand/**"
       - "marketing/**"
       - "paid-media/**"
       - "sales/**"
-      - "security/**"
-      - "product/**"
-      - "project-management/**"
-      - "research/**"
-      - "testing/**"
-      - "support/**"
-      - "spatial-computing/**"
-      - "specialized/**"
       # Changing the linter itself has to run it. Without these the whole-roster
       # job below never fires, and a new rule ships untested: the color check
       # went in this way and nothing in CI had ever looked at a color value.
@@ -41,9 +27,7 @@ jobs:
         id: changed
         run: |
           FILES=$(git diff --name-only --diff-filter=ACMR origin/${{ github.base_ref }}...HEAD -- \
-            'academic/**/*.md' 'design/**/*.md' 'engineering/**/*.md' 'finance/**/*.md' 'game-development/**/*.md' 'gis/**/*.md' 'healthcare/**/*.md' 'marketing/**/*.md' 'paid-media/**/*.md' 'sales/**/*.md' 'security/**/*.md' 'product/**/*.md' \
-            'project-management/**/*.md' 'research/**/*.md' 'testing/**/*.md' 'support/**/*.md' \
-            'spatial-computing/**/*.md' 'specialized/**/*.md')
+            'brand/**/*.md' 'marketing/**/*.md' 'paid-media/**/*.md' 'sales/**/*.md')
           {
             echo "files<<ENDOFLIST"
             echo "$FILES"
