@@ -42,6 +42,14 @@ if ($Selecao) {
 
 New-Item -ItemType Directory -Force -Path $Destino | Out-Null
 
+# remove os agentes Vanguarda de uma instalacao anterior, para o destino espelhar a selecao atual;
+# so apaga arquivos com a marca de contexto, preservando agentes proprios do usuario
+$removidos = 0
+Get-ChildItem -Path $Destino -Filter *.md | Where-Object {
+  Select-String -Path $_.FullName -Pattern '<!-- contexto-vanguarda -->' -SimpleMatch -Quiet
+} | ForEach-Object { Remove-Item $_.FullName; $removidos++ }
+if ($removidos) { Write-Host "     $removidos agentes Vanguarda anteriores removidos de $Destino" }
+
 $n = 0
 foreach ($f in $arquivos) {
   $texto = [System.IO.File]::ReadAllText($f.FullName, $Utf8)
