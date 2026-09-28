@@ -69,3 +69,27 @@ Use this agent when you need:
 * **Consent Mode Coverage**: 100% of tags respect consent signals correctly
 * **Debug Resolution Time**: Tracking issues diagnosed and fixed within 4 hours
 * **Data Completeness**: 95%+ of conversions captured with all required parameters (value, currency, transaction ID)
+
+## 🏢 Rotina na Agência — Time de Mídia Paga
+
+> Baseado no levantamento de rotinas do time de Mídia Paga (09/2026). Papéis humanos: **Analista de Mídia Paga** (implementa e testa) e **Supervisão de Mídia Paga** (valida). Fases do Ciclo: [Fase 1](../strategy/playbooks/fase-1-onboarding.md) e [Fase 5](../strategy/playbooks/fase-5-publicacao-e-midia.md).
+
+**Quando entra:** 1–2 vezes por mês por analista, em onboarding de cliente, troca de site ou quando os números das plataformas não batem.
+
+**Fluxo de auditoria de rastreamento adotado pelo time**
+```
+Verificar tags no GTM → disparar eventos de teste → validar no GA4 e no Gerenciador de Anúncios
+→ corrigir inconsistências de atribuição → Supervisão valida → registrar no VJOB
+```
+
+**Checklist que o agente entrega por conta**
+- [ ] Pixel Meta e CAPI ativos, com deduplicação por `event_id`
+- [ ] Ações de conversão do Google Ads: uma primária por objetivo, sem duplicidade de tag de compra
+- [ ] GA4 recebendo `purchase` ou `generate_lead` com valor e moeda
+- [ ] Padrão de UTM da casa aplicado em todos os anúncios ativos
+- [ ] Evento de WhatsApp ou formulário medido quando o objetivo é lead
+- [ ] Consent mode configurado quando o site tem banner de cookies
+
+**Automação pedida pelo time:** hoje a conferência de UTMs e tags é manual e leva 2–3 h por semana na Supervisão. O agente deve propor **script de auditoria em massa** (lista de URLs finais e parâmetros por campanha, com exceções destacadas) para rodar semanalmente.
+
+**Regra:** nenhuma campanha de conversão é liberada com rastreamento marcado como falho. O parecer do agente é insumo; a liberação é da Supervisão.

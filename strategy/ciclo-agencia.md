@@ -1,7 +1,7 @@
 # 🔄 Ciclo de Operação da Agência
 
 > Documento-mestre de como a agência entrega Social Media, Mídia Paga, Marca e Vendas com apoio dos 38 agentes de IA deste repositório.
-> **Versão** 1.0 · **Data** 28/09/2026 · **Status** rascunho para validação da liderança · **Base** levantamento de rotinas do setor de Social Media (09/2026) + identidade pública da agência
+> **Versão** 1.0 · **Data** 28/09/2026 · **Status** rascunho para validação da liderança · **Base** levantamento de rotinas dos setores de Social Media e Mídia Paga (09/2026) + identidade pública da agência
 
 ---
 
@@ -21,6 +21,10 @@ O levantamento das rotinas do setor de Social Media mostra que o trabalho é bem
 | Publicação e conferência manuais | Média | [Fase 5](playbooks/fase-5-publicacao-e-midia.md): checklist e agendamento |
 | IA usada caso a caso, sem padrão | Média | [Biblioteca de prompts](coordination/agent-activation-prompts.md) |
 | Relatórios montados à mão | Média | [Fase 6](playbooks/fase-6-resultados.md): coleta automática + análise por IA |
+| Mídia: criativo aprovado chega em cima do lançamento | Alta | [Fase 3](playbooks/fase-3-producao.md) + Paid Social Strategist: data-limite de criativo por campanha |
+| Mídia: supervisão absorve execução e perde tempo de estratégia | Alta | Paid Media Auditor na revisão técnica; delegação da execução ao Analista |
+| Mídia: mudança de verba pedida só por WhatsApp | Média | Regra: alteração de verba só vale por e-mail ou chamado no VJOB |
+| Mídia: conferência manual de saldo, UTM e tags | Média | Alertas de saldo a 90% e script de auditoria de UTM/tags (Tracking & Measurement Specialist) |
 
 **Princípio central:** os agentes de IA preparam, sugerem e revisam; **pessoas decidem, aprovam e publicam**. Nenhuma peça vai ao ar sem aprovação escrita do cliente.
 
@@ -87,7 +91,8 @@ Papéis descritos a partir das rotinas levantadas. O documento não identifica p
 | **Criação (D.A. / designers)** | Produz e ajusta peças a partir do briefing | Execução visual dentro do briefing | Desvio de identidade visual |
 | **Head de Criação** | Valida qualidade visual quando acionado | Padrão visual | — |
 | **Redação / Audiovisual** | Texto, roteiro, captação e edição quando não feitos pelo Social | Execução técnica | — |
-| **Tráfego (Mídia Paga)** | Impulsionamento, campanhas, orçamento, rastreamento | Otimizações dentro da verba aprovada | Aumento de verba, nova campanha fora do plano |
+| **Supervisão de Mídia Paga** | Prioriza a fila do time, conduz a daily, revisa tecnicamente toda campanha antes de ativar, audita rastreamento, controla atrasos no VJOB, valida relatórios, gere carteira por complexidade (e-commerce × leads), faz 1:1 e check-in semanais, defende verba com Account e cliente | Otimizações e reestruturações de campanha, redistribuição de contas entre analistas (com justificativa à Diretoria) | Verba fora do contrato, contratação, descontos ou ressarcimentos, mudança estrutural do setor |
+| **Analista de Mídia Paga** | Checa saldo e ritmo de verba, sobe e otimiza campanhas (Meta, Google, TikTok), implementa pixel/CAPI/GTM/GA4, atende dúvidas técnicas do Account, faz o relatório mensal para validação | Pausar peças fracas, redistribuir verba diária dentro do total aprovado, testar públicos e formatos | Mudar a verba total, criar estrutura fora do escopo, enviar relatório ao cliente sem validação |
 | **SAC / Fast Mídia** | Atendimento em redes e demandas rápidas | Respostas padrão | Respostas que envolvam política comercial do cliente |
 | **Diretoria de Operações** | Valida capacidade, realocações, casos graves, relatório de operação | Estrutura da operação | — |
 | **Cliente** | Fornece briefing, ofertas e materiais; **aprova por escrito** | Aprovação final | — |
@@ -136,6 +141,8 @@ Os 38 agentes ativos estão em [`brand/`](../brand/), [`marketing/`](../marketin
 | Daily | Diária | Supervisão | 30–40 min | Status e impedimentos → prioridades e redistribuição | Google Meet |
 | Check de atrasos e pontualidade | Diária | Supervisão / Analista | 15–30 min | VJOB → cobranças e escalonamentos | VJOB |
 | Check de publicação | Diária | Analista | 30 min | Agenda do dia → check no VJOB | VJOB, mLabs, Meta |
+| Checagem de saldo e ritmo de verba | Diária | Analista e Supervisão de Mídia Paga | 45–60 min *(meta: alerta automático a 90% do orçamento)* | Gerenciadores → contas sem risco de pausa ou estouro | Meta Ads, Google Ads, TikTok Ads |
+| Revisão técnica de campanha | A cada subida | Supervisão de Mídia Paga | até 1h30/dia | Setup do analista → liberação ou correção | Gerenciadores, GTM, GA4 |
 | Check-in semanal de resultados | Semanal | Supervisão | 30–60 min | Entregas, indicadores, gargalos → plano de ação | Dash, VJOB |
 | 1:1 com analistas | Semanal | Supervisão | até 1 h cada | Rotina, carga, desenvolvimento → registro | Qulture |
 | Planejamento mensal | Mensal, antes do ciclo | Analista (valida Supervisão/Account/Cliente) | até 1 dia por cliente *(meta: reduzir com IA)* | Estratégia + datas → calendário e pautas | Planilhas, iClips |

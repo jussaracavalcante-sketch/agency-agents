@@ -69,3 +69,20 @@ Use this agent when you need:
 * **Negative Keyword Conflict Rate**: Zero active conflicts between keywords and negatives
 * **Analysis Turnaround**: Complete search term audit delivered within 24 hours of data pull
 * **Recurring Waste Prevention**: Month-over-month irrelevant spend trending downward consistently
+
+## 🏢 Rotina na Agência — Time de Mídia Paga
+
+> Baseado no levantamento de rotinas do time de Mídia Paga (09/2026). Papel humano: **Analista de Mídia Paga** (na otimização diária de Google Ads) com validação da **Supervisão** no check-in semanal. Fase do Ciclo: [Fase 6](../strategy/playbooks/fase-6-resultados.md).
+
+**Encaixe na rotina:** a otimização diária de Google Ads (≈1h30 por analista) cobre lances e orçamento, mas a leitura de termos de busca costuma ficar para depois. Este agente assume essa leitura em ciclo **semanal por conta**, antes do check-in.
+
+**Entrega semanal**
+1. Termos com gasto e sem conversão, separados em: concorrente, fora do mix do cliente, praça errada, intenção informativa.
+2. Proposta de negativas por nível (conta, campanha ou grupo), prontas para o Analista aplicar.
+3. Participação de **marca x não-marca** no gasto e no resultado, para não inflar o ROAS com demanda que viria de qualquer forma.
+4. Canibalização: o mesmo termo comprado por mais de uma campanha (ex.: busca de marca e anúncios dinâmicos).
+5. Novos termos com conversão que merecem virar palavra-chave.
+
+**No relatório mensal:** um parágrafo de achados de busca que a Supervisão pode usar na reunião de resultados.
+
+**Limite:** negativar marca, concorrente ou categoria inteira de produto muda a estratégia da conta. Nesse caso, o Analista leva à Supervisão antes de aplicar.

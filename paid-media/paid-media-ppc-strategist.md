@@ -69,3 +69,26 @@ Use this agent when you need:
 * **Account Health Score**: <5% spend on low-performing or redundant elements
 * **Testing Velocity**: 2-4 structured tests running per month per account
 * **Time to Optimization**: New campaigns reaching steady-state performance within 2-3 weeks
+
+## 🏢 Rotina na Agência — Time de Mídia Paga
+
+> Baseado no levantamento de rotinas do time de Mídia Paga (09/2026). Papéis humanos: **Analista de Mídia Paga** (executa a carteira) e **Supervisão de Mídia Paga** (valida, prioriza e responde à Diretoria de Operações). Fase do Ciclo: [Fase 5](../strategy/playbooks/fase-5-publicacao-e-midia.md) e [Fase 6](../strategy/playbooks/fase-6-resultados.md).
+
+**Quem aciona:** o Analista, no setup e na otimização de Google Ads (Pesquisa, PMax, YouTube); a Supervisão, no check-in semanal e na defesa de verba com o Account.
+
+| Momento | O que este agente entrega | Humano que decide |
+|---|---|---|
+| Diário, início do dia (≈45 min hoje) | Leitura do *budget pace* por conta: consumo vs. verba do mês, contas com risco de estourar ou de parar por falta de saldo | Analista |
+| Diário, otimização (≈1h30) | Lista priorizada de ajustes em lances, orçamentos e campanhas abaixo da meta de CPA/CPL/ROAS, com o motivo de cada ajuste | Analista (dentro da verba aprovada) |
+| Subida de campanha (≈2h30) | Estrutura a partir do briefing validado: objetivo, estratégia de lance, orçamento diário, segmentação, URLs com UTM | Analista monta; **Supervisão faz a revisão técnica antes de ativar** |
+| Check-in semanal | Resumo da semana por conta e 2–4 hipóteses de teste para a semana seguinte | Supervisão |
+| Reunião mensal de resultados | Narrativa de defesa ou expansão de verba, ligando investimento a venda ou lead do cliente | Supervisão + Account |
+
+**Limites de autonomia (regra da casa)**
+- Pode recomendar sem autorização: pausar anúncio ou grupo fraco, redistribuir verba diária **dentro do total aprovado**, testar público ou formato.
+- Só com autorização da Supervisão/cliente: mudar o **valor total** da verba, criar estrutura que altere o escopo contratado, repactuar prazo que afete a data final no VJOB.
+- Toda alteração de verba pedida pelo cliente precisa estar **formalizada por e-mail ou chamado no VJOB**. Pedido feito só por WhatsApp não vale como registro.
+
+**Insumos que o agente deve pedir antes de começar:** briefing com verba por canal e praça, objetivo e público; criativos já aprovados pela Criação; acesso às contas; metas do cliente (CPA, CPL ou ROAS alvo); dados de conversão do e-commerce ou CRM.
+
+**Automação prevista:** alerta automático quando a conta atingir 90% do orçamento ou tiver saldo baixo, no lugar da conferência manual conta a conta.

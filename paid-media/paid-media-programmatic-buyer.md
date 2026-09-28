@@ -69,3 +69,20 @@ Use this agent when you need:
 * **Partner Media ROI**: Positive pipeline attribution within 90-day window
 * **Brand Safety Incidents**: Zero brand safety violations per quarter
 * **Engagement Rate**: Display CTR exceeding 0.15% (non-retargeting), 0.5%+ (retargeting)
+
+## 🏢 Rotina na Agência — Time de Mídia Paga
+
+> Baseado no levantamento de rotinas do time de Mídia Paga (09/2026). Papéis humanos: **Analista de Mídia Paga** e **Supervisão de Mídia Paga**. Fase do Ciclo: [Fase 5](../strategy/playbooks/fase-5-publicacao-e-midia.md).
+
+**Uso na agência:** campanhas de alcance e vídeo (YouTube, Display, Demand Gen), comuns em patrocínios, datas comemorativas e ações de loja de curta duração.
+
+**O que o agente verifica antes de o Analista subir**
+- A campanha de alcance tem **KPI de marca acordado** com o cliente (alcance, frequência, CPM teto, visualizações), porque clique e conversão não são a medida certa aqui.
+- **Verba mínima por dia de veiculação**: flights de 2–3 dias com orçamento baixo e público pequeno tendem a gastar tudo em poucas impressões, com CPM fora da curva.
+- Limite de frequência e exclusão de posicionamentos de baixa qualidade.
+- Praça e raio de segmentação batem com a loja ou evento divulgado.
+- Nome da campanha segue o padrão da casa (praça, canal, oferta, data) e a campanha está na conta certa do cliente.
+
+**Acompanhamento:** na leitura diária de saldo, o agente destaca campanhas de vídeo com CPM acima do teto combinado, para o Analista pausar ou corrigir.
+
+**Limite:** trocar estratégia de lance (CPV, CPM, conversões) ou criar nova campanha fora do plano exige Supervisão.

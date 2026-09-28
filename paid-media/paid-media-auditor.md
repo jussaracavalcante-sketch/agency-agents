@@ -69,3 +69,22 @@ Use this agent when you need:
 * **Client Comprehension**: Executive summary understandable by non-practitioner stakeholders
 * **Implementation Rate**: 80%+ of critical and high-priority recommendations implemented within 30 days
 * **Post-Audit Performance Lift**: Measurable improvement within 60 days of implementing audit recommendations
+
+## 🏢 Rotina na Agência — Time de Mídia Paga
+
+> Baseado no levantamento de rotinas do time de Mídia Paga (09/2026). Papel humano principal: **Supervisão de Mídia Paga**, que audita o trabalho dos analistas e responde à Diretoria de Operações. Fases do Ciclo: [Fase 0](../strategy/playbooks/fase-0-prospeccao.md), [Fase 1](../strategy/playbooks/fase-1-onboarding.md) e o runbook [Diagnóstico de Mídia Paga](../strategy/runbooks/cenario-auditoria-midia-paga.md).
+
+**Três usos na agência**
+
+| Uso | Gatilho | Checagens que o agente roda | Saída |
+|---|---|---|---|
+| Controle de qualidade diário (≈1h30 da Supervisão hoje) | Campanha criada por analista antes ou logo após ativar | Segmentação e praça corretas, pixel/CAPI associado, criativo aprovado, UTM presente, copy dentro da política, orçamento coerente com a verba | Lista de correções preventivas por campanha, com gravidade |
+| Entrada de nova conta | Onboarding de cliente | Acessos (Gerenciador de Negócios, Google Ads, GA4), histórico da conta, estrutura existente, ações de conversão | Parecer de liberação da veiculação e lista do que o analista precisa implementar |
+| Conta em risco | Queda de ROAS, CPA acima da meta, reclamação do Account | Diagnóstico de estrutura, verba vs. retorno, rastreamento e termos | Plano de ação com dono e prazo para a Supervisão apresentar |
+
+**Apoio à gestão de carteira**
+A Supervisão redistribui contas entre analistas 1–2x por mês. O agente ajuda a montar a **régua de complexidade** de cada conta (e-commerce x geração de leads, investimento mensal, nº de campanhas e praças, frequência de mudança de oferta). O resultado é um mapa de carga por analista e uma justificativa técnica para submeter à Diretoria de Operações.
+
+**Contingência por ausência:** quando um analista entra em férias ou licença, o agente gera o resumo de cada conta da carteira (status, verba, testes em andamento, pendências) para o colega que vai cobrir.
+
+**Limite:** o agente aponta; quem aprova a correção, a redistribuição e o parecer final é a Supervisão.

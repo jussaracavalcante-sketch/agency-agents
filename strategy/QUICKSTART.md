@@ -58,5 +58,5 @@ Devolva: objetivo, formato e medidas, texto da arte, legenda, CTA, referências,
 | Prioridade, prazo, carga de trabalho | Supervisão de Social Media |
 | Escopo, expectativa do cliente, extra | Account |
 | Qualidade visual | Head de Criação |
-| Verba, campanha paga, rastreamento | Tráfego |
+| Verba, campanha paga, rastreamento | Supervisão de Mídia Paga |
 | Capacidade da equipe, caso grave | Diretoria de Operações |
