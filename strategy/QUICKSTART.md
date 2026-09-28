@@ -51,11 +51,11 @@ O app lê qualquer clone deste repositório como catálogo. Ele mostra as 4 divi
    ```bash
    git clone https://github.com/jussaracavalcante-sketch/agency-agents.git
    ```
-2. Abra o app → **Configurações → Catálogo** → escolha **clone próprio (user clone)** e aponte para a pasta clonada.
-3. Ative **"gerenciar com permissão"** para o app atualizar o catálogo com `git pull --ff-only` quando houver agentes novos.
+2. Abra o app → **Configurações → Catálogo → Alternar fonte → Use seu próprio clone → Escolha a pasta…** e selecione a pasta clonada.
+3. Marque **"Deixe o aplicativo manter meu clone atualizado"**. A fonte passa a aparecer como **Seu clone (gerenciado)**, e o app atualiza o catálogo com `git pull --ff-only`. Desmarcado, o clone fica somente leitura.
 4. Instale os agentes na ferramenta desejada (Claude Code, Cursor, Codex, Gemini CLI…) pelo próprio app.
 
-> A opção "gerenciado" do app clona o catálogo público original, não o da agência. Use sempre o clone próprio.
+> A opção **Clone gerenciado** do app clona o catálogo público original, não o da agência. Use sempre o clone próprio.
 
 
 
