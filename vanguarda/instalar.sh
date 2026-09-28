@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
-# Instala os agentes selecionados para a Vanguarda Martech em .claude/agents/
+# Instala os agentes da The Agency para a Vanguarda Martech em .claude/agents/
 # e injeta em cada um o bloco de contexto que aponta para a base de conhecimento.
 #
-# Uso:  ./vanguarda/instalar.sh            (projeto: .claude/agents)
-#       ./vanguarda/instalar.sh ~/.claude/agents   (global: todas as sessões da máquina)
+# Uso:  ./vanguarda/instalar.sh                     (todos os agentes, em .claude/agents)
+#       ./vanguarda/instalar.sh --selecao            (só a seleção de agentes-vanguarda.txt)
+#       ./vanguarda/instalar.sh [--selecao] ~/.claude/agents   (global, em uma máquina local)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SELECAO=()
+if [[ "${1:-}" == "--selecao" ]]; then
+  SELECAO=(--agents-file "$ROOT/vanguarda/agentes-vanguarda.txt")
+  shift
+fi
 DEST="${1:-$ROOT/.claude/agents}"
 MARK="<!-- contexto-vanguarda -->"
 
-"$ROOT/scripts/install.sh" --tool claude-code \
-  --agents-file "$ROOT/vanguarda/agentes-vanguarda.txt" \
+"$ROOT/scripts/install.sh" --tool claude-code "${SELECAO[@]}" \
   --path "$DEST" --no-interactive
 
 read -r -d '' BLOCK <<TXT || true

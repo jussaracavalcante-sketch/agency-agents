@@ -39,6 +39,21 @@ sediada em **Manaus/AM (fuso UTC−4, sem horário de verão)**. Integra um ecos
 | Relatórios para clientes e diretoria | `analytics-reporter`, `report-distribution-agent` |
 | LGPD e governança de dados | `data-privacy-officer`, `automation-governance-architect` |
 
+**Demais divisões instaladas** (apoio às frentes internas de IA, dados, PMO e SGQ):
+
+| Frente da Vanguarda | Divisões / agentes úteis |
+|---|---|
+| Projeto VanguardIA e produtos de IA | `engineering` (ex.: `ai-engineer`, `backend-architect`, `frontend-developer`), `product-manager`, `mcp-builder` |
+| Dados (Nekt, dashboards) | `data-engineer`, `data-visualization-engineer`, `data-consolidation-agent` |
+| PMO, VJOB e governança | `project-management` (ex.: `project-shepherd`, `senior-project-manager`), `workflow-architect`, `operations-manager` |
+| SGQ ISO 9001 e POPs | `document-generator`, `workflow-architect`, `testing` |
+| Lei do Bem e editais | `grant-writer`, `finance` |
+| Segurança e LGPD | `security`, `data-privacy-officer`, `legal-document-review` |
+| Treinamento interno | `corporate-training-designer`, `change-management-consultant` |
+
+Agentes voltados a mercados ou setores fora do portfólio (China, games, saúde, GIS etc.) continuam
+instalados, mas só devem ser usados quando houver cliente ou demanda correspondente.
+
 **Orquestração sugerida:** para uma campanha completa, encadeie
 `trend-researcher` → `social-media-strategist` / `ppc-campaign-strategist` → `ad-creative-strategist`
 → `tracking-measurement-specialist` → `analytics-reporter`.
