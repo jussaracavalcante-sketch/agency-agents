@@ -1,95 +1,56 @@
-# 📑 NEXUS Executive Brief
+# 📋 Sumário Executivo — Ciclo de Operação da Agência
 
-## Network of EXperts, Unified in Strategy
-
----
-
-## 1. SITUATION OVERVIEW
-
-The Agency comprises specialized AI agents across every division — engineering, design, marketing, security, GIS, product, testing, and more. Individually, each agent delivers expert-level output. **Without coordination, they produce conflicting decisions, duplicated effort, and quality gaps at handoff boundaries.** NEXUS transforms this collection into an orchestrated intelligence network with defined pipelines, quality gates, and measurable outcomes.
-
-## 2. KEY FINDINGS
-
-**Finding 1**: Multi-agent projects fail at handoff boundaries 73% of the time when agents lack structured coordination protocols. **Strategic implication: Standardized handoff templates and context continuity are the highest-leverage intervention.**
-
-**Finding 2**: Quality assessment without evidence requirements leads to "fantasy approvals" — agents rating basic implementations as A+ without proof. **Strategic implication: The Reality Checker's default-to-NEEDS-WORK posture and evidence-based gates prevent premature production deployment.**
-
-**Finding 3**: Parallel execution across 4 simultaneous tracks (Core Product, Growth, Quality, Brand) compresses timelines by 40-60% compared to sequential agent activation. **Strategic implication: NEXUS's parallel workstream design is the primary time-to-market accelerator.**
-
-**Finding 4**: The Dev↔QA loop (build → test → pass/fail → retry) with a 3-attempt maximum catches 95% of defects before integration, reducing Phase 4 hardening time by 50%. **Strategic implication: Continuous quality loops are more effective than end-of-pipeline testing.**
-
-## 3. BUSINESS IMPACT
-
-**Efficiency Gain**: 40-60% timeline compression through parallel execution and structured handoffs, translating to 4-8 weeks saved on a typical 16-week project.
-
-**Quality Improvement**: Evidence-based quality gates reduce production defects by an estimated 80%, with the Reality Checker serving as the final defense against premature deployment.
-
-**Risk Reduction**: Structured escalation protocols, maximum retry limits, and phase-gate governance prevent runaway projects and ensure early visibility into blockers.
-
-## 4. WHAT NEXUS DELIVERS
-
-| Deliverable | Description |
-|-------------|-------------|
-| **Master Strategy** | 800+ line operational doctrine covering all agents across 7 phases |
-| **Phase Playbooks** (7) | Step-by-step activation sequences with agent prompts, timelines, and quality gates |
-| **Activation Prompts** | Ready-to-use prompt templates for every agent in every pipeline role |
-| **Handoff Templates** (7) | Standardized formats for QA pass/fail, escalation, phase gates, sprints, incidents |
-| **Scenario Runbooks** (4) | Pre-built configurations for Startup MVP, Enterprise Feature, Marketing Campaign, Incident Response |
-| **Quick-Start Guide** | 5-minute guide to activating any NEXUS mode |
-
-## 5. THREE DEPLOYMENT MODES
-
-| Mode | Agents | Timeline | Use Case |
-|------|--------|----------|----------|
-| **NEXUS-Full** | All | 12-24 weeks | Complete product lifecycle |
-| **NEXUS-Sprint** | 15-25 | 2-6 weeks | Feature or MVP build |
-| **NEXUS-Micro** | 5-10 | 1-5 days | Targeted task execution |
-
-## 6. RECOMMENDATIONS
-
-**[Critical]**: Adopt NEXUS-Sprint as the default mode for all new feature development — Owner: Engineering Lead | Timeline: Immediate | Expected Result: 40% faster delivery with higher quality
-
-**[High]**: Implement the Dev↔QA loop for all implementation work, even outside formal NEXUS pipelines — Owner: QA Lead | Timeline: 2 weeks | Expected Result: 80% reduction in production defects
-
-**[High]**: Use the Incident Response Runbook for all P0/P1 incidents — Owner: Infrastructure Lead | Timeline: 1 week | Expected Result: < 30 minute MTTR
-
-**[Medium]**: Run quarterly NEXUS-Full strategic reviews using Phase 0 agents — Owner: Product Lead | Timeline: Quarterly | Expected Result: Data-driven product strategy with 3-6 month market foresight
-
-## 7. NEXT STEPS
-
-1. **Select a pilot project** for NEXUS-Sprint deployment — Deadline: This week
-2. **Brief all team leads** on NEXUS playbooks and handoff protocols — Deadline: 10 days
-3. **Activate first NEXUS pipeline** using the Quick-Start Guide — Deadline: 2 weeks
-
-**Decision Point**: Approve NEXUS as the standard operating model for multi-agent coordination by end of month.
+> Uma página para a liderança. Detalhes em [ciclo-agencia.md](ciclo-agencia.md).
 
 ---
 
-## File Structure
+## O que é
+
+O **Ciclo de Operação da Agência** é o método padrão de entrega de **Social Media, Mídia Paga, Marca e Vendas**. Ele organiza 7 fases, 10 papéis humanos e 38 agentes de IA em um fluxo único, auditável e alinhado ao SGQ (ISO 9001:2015).
 
 ```
-strategy/
-├── EXECUTIVE-BRIEF.md              ← You are here
-├── QUICKSTART.md                   ← 5-minute activation guide
-├── nexus-strategy.md               ← Complete operational doctrine
-├── playbooks/
-│   ├── phase-0-discovery.md        ← Intelligence & discovery
-│   ├── phase-1-strategy.md         ← Strategy & architecture
-│   ├── phase-2-foundation.md       ← Foundation & scaffolding
-│   ├── phase-3-build.md            ← Build & iterate (Dev↔QA loops)
-│   ├── phase-4-hardening.md        ← Quality & hardening
-│   ├── phase-5-launch.md           ← Launch & growth
-│   └── phase-6-operate.md          ← Operate & evolve
-├── coordination/
-│   ├── agent-activation-prompts.md ← Ready-to-use agent prompts
-│   └── handoff-templates.md        ← Standardized handoff formats
-└── runbooks/
-    ├── scenario-startup-mvp.md     ← 4-6 week MVP build
-    ├── scenario-enterprise-feature.md ← Enterprise feature development
-    ├── scenario-marketing-campaign.md ← Multi-channel campaign
-    └── scenario-incident-response.md  ← Production incident handling
+Fase 0 Prospecção → Fase 1 Onboarding → [ Fase 2 Planejar → 3 Produzir → 4 Aprovar → 5 Publicar → 6 Medir ] ↺ todo mês
 ```
 
----
+## Por que agora
 
-*NEXUS: All Divisions. 7 Phases. One Unified Strategy.*
+O levantamento das rotinas do setor de Social Media (09/2026) mostra que o gargalo não é execução, e sim **as passagens entre pessoas**:
+
+- **Aprovação do cliente** atrasa publicação (prioridade alta em todas as rotinas).
+- **Briefing incompleto** gera retrabalho entre Social e Criação.
+- **Canais fragmentados** (WhatsApp, e-mail, VJOB, iClips) espalham feedback e contexto.
+- **Tarefas manuais** consomem até 2 h/dia por analista em aprovações e até 1 dia por cliente no planejamento mensal.
+
+## O que muda
+
+| Antes | Depois |
+|---|---|
+| Demanda chega por qualquer canal | Entrada única via Account, registrada no VJOB, com triagem planejado × extra |
+| Briefing livre | Briefing com campos obrigatórios (modelo padrão) |
+| Aprovação por mensagem solta | Aprovação escrita, do aprovador autorizado, registrada no card, com prazo de retorno e lembrete |
+| IA usada caso a caso | Biblioteca de prompts por fase, com tom de voz de cada cliente e revisão humana obrigatória |
+| Relatório montado à mão | Coleta automática + análise por IA, com leitura humana |
+| KPIs dispersos | 9 indicadores de ciclo, com metas validadas após 1 mês de base |
+
+## Resultado esperado (metas sugeridas — validar)
+
+- ≥ 90% das entregas no prazo · ≥ 95% dos calendários aprovados antes do mês
+- ≥ 70% de aprovação na 1ª rodada · retorno do cliente em ≤ 2 dias úteis
+- Relatórios mensais ligados ao **objetivo comercial** do cliente (lead, venda, conversa), coerentes com a missão da agência de "ajudar as empresas a vender mais"
+
+## Decisões pedidas à liderança
+
+1. Validar papéis, gates e metas sugeridas (Diretoria de Operações).
+2. Incluir no modelo de proposta: SLA de aprovação do cliente e limite de rodadas de ajuste.
+3. Definir o canal oficial de aprovação formal (e-mail ou registro no iClips).
+4. Priorizar as 3 primeiras automações: alertas de atraso, fluxo de aprovação com lembrete e briefing padronizado por IA.
+5. Aprovar o POP VAN-POP-MKT-001 (Aprovação de Criativos de Mídia Paga) e estender a lógica ao conteúdo orgânico.
+
+## Próximos 30 dias
+
+| Semana | Ação | Dono |
+|---|---|---|
+| 1 | Validar o Ciclo com Supervisão de Social, Account e Criação | Diretoria de Operações |
+| 2 | Piloto em 3 contas: briefing padrão + aprovação registrada | Supervisão de Social |
+| 3 | Medir base dos 9 indicadores | Supervisão de Social |
+| 4 | Ajustar e oficializar como POP do SGQ | Gestão da Qualidade |

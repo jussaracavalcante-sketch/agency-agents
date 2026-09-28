@@ -182,84 +182,17 @@ Other divisions (engineering, data, governance, project management, specialized,
 
 ## 🎯 Real-World Use Cases
 
-### Scenario 1: Building a Startup MVP
+The agency operating cycle lives in [`strategy/`](strategy/) (in Portuguese): 7 phases from prospecting to monthly reporting, with the human role that owns each phase and the agents that support it.
 
-**Your Team**:
-1. 🎨 **Frontend Developer** - Build the React app
-2. 🏗️ **Backend Architect** - Design the API and database
-3. 🚀 **Growth Hacker** - Plan user acquisition
-4. ⚡ **Rapid Prototyper** - Fast iteration cycles
-5. 🔍 **Reality Checker** - Ensure quality before launch
+| Scenario | Runbook |
+|---|---|
+| New client onboarding | [cenario-onboarding-cliente.md](strategy/runbooks/cenario-onboarding-cliente.md) |
+| Monthly social media cycle | [cenario-rotina-mensal-social.md](strategy/runbooks/cenario-rotina-mensal-social.md) |
+| Seasonal campaign / in-store activation | [cenario-campanha-sazonal.md](strategy/runbooks/cenario-campanha-sazonal.md) |
+| Paid media diagnosis and takeover | [cenario-auditoria-midia-paga.md](strategy/runbooks/cenario-auditoria-midia-paga.md) |
+| Reputation crisis or critical delay | [cenario-crise-e-atraso.md](strategy/runbooks/cenario-crise-e-atraso.md) |
 
-**Result**: Ship faster with specialized expertise at every stage.
-
----
-
-### Scenario 2: Marketing Campaign Launch
-
-**Your Team**:
-1. 📝 **Content Creator** - Develop campaign content
-2. 🐦 **Twitter Engager** - Twitter strategy and execution
-3. 📸 **Instagram Curator** - Visual content and stories
-4. 🤝 **Reddit Community Builder** - Authentic community engagement
-5. 📊 **Analytics Reporter** - Track and optimize performance
-
-**Result**: Multi-channel coordinated campaign with platform-specific expertise.
-
----
-
-### Scenario 3: Enterprise Feature Development
-
-**Your Team**:
-1. 👔 **Senior Project Manager** - Scope and task planning
-2. 💎 **Senior Developer** - Complex implementation
-3. 🎨 **UI Designer** - Design system and components
-4. 🧪 **Experiment Tracker** - A/B test planning
-5. 📸 **Evidence Collector** - Quality verification
-6. 🔍 **Reality Checker** - Production readiness
-
-**Result**: Enterprise-grade delivery with quality gates and documentation.
-
----
-
-### Scenario 4: Paid Media Account Takeover
-
-**Your Team**:
-
-1. 📋 **Paid Media Auditor** - Comprehensive account assessment
-2. 📡 **Tracking & Measurement Specialist** - Verify conversion tracking accuracy
-3. 💰 **PPC Campaign Strategist** - Redesign account architecture
-4. 🔍 **Search Query Analyst** - Clean up wasted spend from search terms
-5. ✍️ **Ad Creative Strategist** - Refresh all ad copy and extensions
-6. 📊 **Analytics Reporter** (Support Division) - Build reporting dashboards
-
-**Result**: Systematic account takeover with tracking verified, waste eliminated, structure optimized, and creative refreshed — all within the first 30 days.
-
----
-
-### Scenario 5: Full Agency Product Discovery
-
-**Your Team**: All 8 divisions working in parallel on a single mission.
-
-See the **[Nexus Spatial Discovery Exercise](examples/nexus-spatial-discovery.md)** -- a complete example where 8 agents (Product Trend Researcher, Backend Architect, Brand Guardian, Growth Hacker, Support Responder, UX Researcher, Project Shepherd, and XR Interface Architect) were deployed simultaneously to evaluate a software opportunity and produce a unified product plan covering market validation, technical architecture, brand strategy, go-to-market, support systems, UX research, project execution, and spatial UI design.
-
-**Result**: Comprehensive, cross-functional product blueprint produced in a single session. [More examples](examples/).
-
----
-
-### Scenario 6: Smart Campus Digital Twin
-
-**Your Team**:
-
-1. 🧠 **Technical Consultant** - Define the digital twin strategy: BIM for buildings, GIS for campus, IoT for real-time
-2. 🏗️ **BIM/GIS Specialist** - Convert Revit building models to GIS scene layers, design indoor floor plans
-3. 🛸 **Drone/Reality Mapping** - Fly the campus, generate orthomosaic and 3D mesh for context
-4. 🌐 **Web GIS Developer** - Build the campus dashboard with MapLibre, building layer, and room finder
-5. 🏔️ **3D & Scene Developer** - Create immersive 3D scene with terrain, buildings, and flyover tour
-6. 🤖 **GeoAI/ML Engineer** - Extract building footprints and tree canopy from drone imagery
-7. ✅ **GIS QA Engineer** - Validate data accuracy, check topology, verify CRS consistency
-
-**Result**: A campus digital twin that combines BIM detail, drone reality capture, 3D visualization, and web accessibility — delivered by coordinated specialists in a single pipeline.
+Start with [strategy/QUICKSTART.md](strategy/QUICKSTART.md) or the full method in [strategy/ciclo-agencia.md](strategy/ciclo-agencia.md).
 
 ---
 

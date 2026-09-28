@@ -1,172 +1,201 @@
 {
-  "_note": "Machine-readable rosters for the NEXUS scenario runbooks in strategy/runbooks/. Consumed by the Agency Agents app to turn a runbook into a one-click team deploy: it reads the roster, maps each slug to a catalog agent, and installs the set. `agents[]` entries are SLUGS — the agent .md filename stem (the corpus id), e.g. engineering/engineering-frontend-developer.md -> \"engineering-frontend-developer\"; specialized/agents-orchestrator.md -> \"agents-orchestrator\" (note: the stem is NOT always division-prefixed, and display names are prefixed/drift — so rosters reference slugs, which are rename-proof and testable). `mode` is the NEXUS activation mode (Full | Sprint | Micro) that sizes the team; `roster` groups preserve the runbook's phase structure via `activation`. `doc` is the prose runbook the app renders. Keep this in sync with the markdown in strategy/runbooks/; every slug must resolve to a real agent file (scripts/check-runbooks.sh can guard this, mirroring check-divisions.sh). strategy/ holds orchestration doctrine, not installable agents — it is NOT a division (see divisions.json).",
+  "_note": "Machine-readable rosters for the agency operating-cycle scenario runbooks in strategy/runbooks/. Consumed by the Agency Agents app to turn a runbook into a one-click team deploy: it reads the roster, maps each slug to a catalog agent, and installs the set. `agents[]` entries are SLUGS — the agent .md filename stem (the corpus id), e.g. paid-media/paid-media-ppc-strategist.md -> \"paid-media-ppc-strategist\"; brand/design-brand-guardian.md -> \"design-brand-guardian\" (note: the stem is NOT always division-prefixed, and display names are prefixed/drift — so rosters reference slugs, which are rename-proof and testable). `mode` keeps the NEXUS enum for app compatibility: NEXUS-Full = conta completa, NEXUS-Sprint = campanha, NEXUS-Micro = demanda pontual (see strategy/ciclo-agencia.md) that sizes the team; `roster` groups preserve the runbook's phase structure via `activation`. `doc` is the prose runbook the app renders. Keep this in sync with the markdown in strategy/runbooks/; every slug must resolve to an ACTIVE agent file (not _arquivo/) (scripts/check-runbooks.sh can guard this, mirroring check-divisions.sh). strategy/ holds orchestration doctrine, not installable agents — it is NOT a division (see divisions.json).",
   "runbooks": [
     {
-      "slug": "startup-mvp",
-      "title": "Startup MVP Build",
-      "mode": "NEXUS-Sprint",
-      "duration": "4-6 weeks",
-      "summary": "Idea to live product with real users, fast — without skipping QA.",
-      "doc": "strategy/runbooks/scenario-startup-mvp.md",
+      "slug": "onboarding-cliente",
+      "title": "Onboarding de Novo Cliente",
+      "mode": "NEXUS-Full",
+      "duration": "2-3 semanas",
+      "summary": "Do contrato assinado ao primeiro calendário aprovado: acessos, tom de voz, aprovadores, auditoria inicial e SLAs.",
+      "doc": "strategy/runbooks/cenario-onboarding-cliente.md",
       "roster": [
         {
-          "group": "Core Team",
-          "activation": "always",
+          "group": "Núcleo",
+          "activation": "sempre",
           "agents": [
-            "agents-orchestrator",
-            "project-manager-senior",
-            "product-sprint-prioritizer",
-            "design-ux-architect",
-            "engineering-frontend-developer",
-            "engineering-backend-architect",
-            "engineering-devops-automator",
-            "testing-evidence-collector",
-            "testing-reality-checker"
+            "sales-account-strategist",
+            "design-brand-guardian",
+            "marketing-social-media-strategist",
+            "paid-media-auditor",
+            "paid-media-tracking-specialist"
           ]
         },
         {
-          "group": "Growth Team",
-          "activation": "week 3+",
+          "group": "Especialistas",
+          "activation": "semana 1+",
           "agents": [
-            "marketing-growth-hacker",
             "marketing-content-creator",
-            "marketing-social-media-strategist"
+            "marketing-instagram-curator",
+            "marketing-seo-specialist",
+            "marketing-aeo-foundations"
           ]
         },
         {
-          "group": "Support Team",
-          "activation": "as needed",
+          "group": "Apoio",
+          "activation": "sob demanda",
           "agents": [
-            "design-brand-guardian",
-            "support-analytics-reporter",
-            "engineering-rapid-prototyper",
-            "engineering-ai-engineer",
-            "testing-performance-benchmarker",
-            "support-infrastructure-maintainer"
+            "marketing-tiktok-strategist",
+            "marketing-growth-hacker"
           ]
         }
       ]
     },
     {
-      "slug": "enterprise-feature",
-      "title": "Enterprise Feature Development",
-      "mode": "NEXUS-Sprint",
-      "duration": "6-12 weeks",
-      "summary": "Ship a major feature into an existing enterprise product with non-negotiable compliance, security, and quality gates, and multi-stakeholder alignment.",
-      "doc": "strategy/runbooks/scenario-enterprise-feature.md",
+      "slug": "rotina-mensal-social",
+      "title": "Ciclo Mensal de Social Media",
+      "mode": "NEXUS-Full",
+      "duration": "mensal (recorrente)",
+      "summary": "Planejamento, produção, aprovação, publicação diária, relatório e reunião de resultados, com os ritos de Supervisão.",
+      "doc": "strategy/runbooks/cenario-rotina-mensal-social.md",
       "roster": [
         {
-          "group": "Core Team",
-          "activation": "always",
-          "agents": [
-            "agents-orchestrator",
-            "project-management-project-shepherd",
-            "project-manager-senior",
-            "product-sprint-prioritizer",
-            "design-ux-architect",
-            "design-ux-researcher",
-            "design-ui-designer",
-            "engineering-frontend-developer",
-            "engineering-backend-architect",
-            "engineering-senior-developer",
-            "engineering-devops-automator",
-            "testing-evidence-collector",
-            "testing-api-tester",
-            "testing-reality-checker",
-            "testing-performance-benchmarker"
-          ]
-        },
-        {
-          "group": "Compliance & Governance",
-          "activation": "as needed",
-          "agents": [
-            "support-legal-compliance-checker",
-            "design-brand-guardian",
-            "support-finance-tracker",
-            "support-executive-summary-generator"
-          ]
-        },
-        {
-          "group": "Quality Assurance",
-          "activation": "as needed",
-          "agents": [
-            "testing-test-results-analyzer",
-            "testing-workflow-optimizer",
-            "project-management-experiment-tracker"
-          ]
-        }
-      ]
-    },
-    {
-      "slug": "marketing-campaign",
-      "title": "Multi-Channel Marketing Campaign",
-      "mode": "NEXUS-Sprint",
-      "duration": "2-4 weeks",
-      "summary": "Launch a coordinated, brand-consistent campaign across channels that drives measurable acquisition and engagement.",
-      "doc": "strategy/runbooks/scenario-marketing-campaign.md",
-      "roster": [
-        {
-          "group": "Campaign Core",
-          "activation": "always",
+          "group": "Núcleo",
+          "activation": "sempre",
           "agents": [
             "marketing-social-media-strategist",
             "marketing-content-creator",
-            "marketing-growth-hacker",
-            "design-brand-guardian",
-            "support-analytics-reporter"
-          ]
-        },
-        {
-          "group": "Platform Specialists",
-          "activation": "as needed",
-          "agents": [
-            "marketing-twitter-engager",
-            "marketing-tiktok-strategist",
             "marketing-instagram-curator",
-            "marketing-reddit-community-builder",
-            "marketing-app-store-optimizer"
+            "design-brand-guardian"
           ]
         },
         {
-          "group": "Support",
-          "activation": "as needed",
+          "group": "Especialistas",
+          "activation": "semana 1+ (produção)",
           "agents": [
-            "product-trend-researcher",
-            "project-management-experiment-tracker",
-            "support-executive-summary-generator",
-            "support-legal-compliance-checker"
+            "marketing-carousel-growth-engine",
+            "marketing-short-video-editing-coach",
+            "design-visual-storyteller",
+            "design-image-prompt-engineer",
+            "marketing-tiktok-strategist",
+            "marketing-linkedin-content-creator"
+          ]
+        },
+        {
+          "group": "Apoio",
+          "activation": "sob demanda",
+          "agents": [
+            "paid-media-paid-social-strategist",
+            "marketing-twitter-engager",
+            "marketing-growth-hacker",
+            "sales-account-strategist"
           ]
         }
       ]
     },
     {
-      "slug": "incident-response",
-      "title": "Incident Response",
-      "mode": "NEXUS-Micro",
-      "duration": "Minutes to hours",
-      "summary": "Detection through post-mortem for a production incident — fast response without cutting corners.",
-      "doc": "strategy/runbooks/scenario-incident-response.md",
+      "slug": "campanha-sazonal",
+      "title": "Campanha Sazonal / Ação de Loja",
+      "mode": "NEXUS-Sprint",
+      "duration": "2-6 semanas",
+      "summary": "Data comemorativa, ação de loja, lançamento ou influenciadores, com kit de comunicação e mídia paga integrados.",
+      "doc": "strategy/runbooks/cenario-campanha-sazonal.md",
       "roster": [
         {
-          "group": "P0 Critical Response",
-          "activation": "always",
+          "group": "Núcleo",
+          "activation": "sempre",
           "agents": [
-            "support-infrastructure-maintainer",
-            "engineering-devops-automator",
-            "engineering-backend-architect",
-            "engineering-frontend-developer",
-            "support-support-responder",
-            "support-executive-summary-generator"
+            "marketing-social-media-strategist",
+            "marketing-content-creator",
+            "paid-media-creative-strategist",
+            "paid-media-paid-social-strategist",
+            "design-brand-guardian"
           ]
         },
         {
-          "group": "Verification & Post-Mortem",
-          "activation": "post-fix",
+          "group": "Especialistas",
+          "activation": "semana 2+",
           "agents": [
-            "testing-evidence-collector",
-            "testing-api-tester",
-            "testing-workflow-optimizer",
-            "product-sprint-prioritizer"
+            "design-visual-storyteller",
+            "design-image-prompt-engineer",
+            "marketing-carousel-growth-engine",
+            "marketing-short-video-editing-coach",
+            "marketing-instagram-curator",
+            "paid-media-ppc-strategist",
+            "paid-media-tracking-specialist"
+          ]
+        },
+        {
+          "group": "Apoio",
+          "activation": "sob demanda",
+          "agents": [
+            "marketing-tiktok-strategist",
+            "marketing-growth-hacker",
+            "marketing-pr-communications-manager",
+            "sales-offer-lead-gen-strategist"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "crise-e-atraso",
+      "title": "Crise de Reputação ou Atraso Crítico",
+      "mode": "NEXUS-Micro",
+      "duration": "horas a dias",
+      "summary": "Resposta a crise em rede social ou a atraso que ameaça publicação: severidade, escalonamento, comunicação e pós-mortem.",
+      "doc": "strategy/runbooks/cenario-crise-e-atraso.md",
+      "roster": [
+        {
+          "group": "Núcleo",
+          "activation": "sempre",
+          "agents": [
+            "marketing-pr-communications-manager",
+            "marketing-social-media-strategist",
+            "design-brand-guardian"
+          ]
+        },
+        {
+          "group": "Especialistas",
+          "activation": "S1 e S2",
+          "agents": [
+            "marketing-twitter-engager",
+            "marketing-x-twitter-intelligence-analyst",
+            "paid-media-paid-social-strategist",
+            "paid-media-creative-strategist"
+          ]
+        },
+        {
+          "group": "Apoio",
+          "activation": "sob demanda",
+          "agents": [
+            "marketing-content-creator",
+            "sales-account-strategist"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "auditoria-midia-paga",
+      "title": "Diagnóstico e Takeover de Mídia Paga",
+      "mode": "NEXUS-Sprint",
+      "duration": "2-4 semanas",
+      "summary": "Diagnóstico de contas Google/Meta Ads, plano de ação com dono e prazo e teste controlado de escala.",
+      "doc": "strategy/runbooks/cenario-auditoria-midia-paga.md",
+      "roster": [
+        {
+          "group": "Núcleo",
+          "activation": "sempre",
+          "agents": [
+            "paid-media-auditor",
+            "paid-media-tracking-specialist",
+            "paid-media-ppc-strategist",
+            "paid-media-paid-social-strategist"
+          ]
+        },
+        {
+          "group": "Especialistas",
+          "activation": "semana 1+",
+          "agents": [
+            "paid-media-search-query-analyst",
+            "paid-media-creative-strategist",
+            "paid-media-programmatic-buyer"
+          ]
+        },
+        {
+          "group": "Apoio",
+          "activation": "sob demanda",
+          "agents": [
+            "sales-account-strategist",
+            "sales-pipeline-analyst"
           ]
         }
       ]

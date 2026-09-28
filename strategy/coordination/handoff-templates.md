@@ -1,357 +1,350 @@
-# 📋 NEXUS Handoff Templates
+# 📋 Templates de Handoff — Ciclo de Operação da Agência
 
-> Standardized templates for every type of agent-to-agent handoff in the NEXUS pipeline. Consistent handoffs prevent context loss — the #1 cause of multi-agent coordination failure.
+> Modelos padronizados para cada passagem de trabalho entre áreas. Handoff incompleto é a principal causa de retrabalho, atraso e feedback fragmentado.
+>
+> **Como usar**: copie o bloco, preencha todos os campos marcados com `*` (obrigatórios) e registre no card do VJOB/iClips. Handoff sem campo obrigatório **volta ao remetente**.
 
----
+## Regras gerais
 
-## 1. Standard Handoff Template
+- **VJOB é a fonte da verdade** de tarefas e prazos; **iClips** guarda o card da peça e as alterações.
+- Todo handoff fica **registrado por escrito** no card. Conversa de WhatsApp ou áudio não substitui o registro.
+- Datas no formato DD/MM/AAAA; valores em R$.
+- Agentes de IA podem **rascunhar** o handoff. Um humano confere e envia.
+- Nenhum template contém dado pessoal de consumidor. Use apenas o necessário e anonimize prints.
 
-Use for any agent-to-agent work transfer.
+| # | Template | De → Para | Fase |
+|---|---|---|---|
+| 1 | [Entrada de demanda](#account--social) | Account → Social | Transversal / [Fase 2](../playbooks/fase-2-planejamento-mensal.md) |
+| 2 | [Briefing padronizado de peça](#social--da) | Social → D.A. | [Fase 3](../playbooks/fase-3-producao.md) |
+| 3 | [Envio para aprovação](#social--cliente) | Social → Cliente | [Fase 4](../playbooks/fase-4-aprovacao.md) |
+| 4 | [Consolidação de feedback (rodada)](#cliente--social) | Cliente → Social | [Fase 4](../playbooks/fase-4-aprovacao.md) |
+| 5 | [Peça aprovada para mídia](#social--tráfego) | Social → Tráfego | [Fase 5](../playbooks/fase-5-publicacao-e-midia.md) |
+| 6 | [Interações que exigem o Cliente](#social--sac) | Social → SAC / Cliente | [Fase 5](../playbooks/fase-5-publicacao-e-midia.md) |
+| 7 | [Relatório de operação mensal](#supervisão--diretoria-de-operações) | Supervisão → Diretoria de Operações | [Fase 6](../playbooks/fase-6-resultados.md) |
+| 8 | [Escalonamento de atraso/risco](#escalonamento-de-atraso) | Qualquer papel → nível acima | Transversal |
+| 9 | [Fechamento de fase (gate)](#fechamento-de-fase) | Dono da fase → próxima fase | Todas |
+
+## Account → Social
+
+**Entrada de demanda.** Use sempre que uma demanda chegar do Cliente pelo Account. A triagem **planejado × extra** é feita pela Supervisão junto com o Account.
 
 ```markdown
-# NEXUS Handoff Document
+# Entrada de demanda
 
-## Metadata
-| Field | Value |
-|-------|-------|
-| **From** | [Agent Name] ([Division]) |
-| **To** | [Agent Name] ([Division]) |
-| **Phase** | Phase [N] — [Phase Name] |
-| **Task Reference** | [Task ID from Sprint Prioritizer backlog] |
-| **Priority** | [Critical / High / Medium / Low] |
-| **Timestamp** | [YYYY-MM-DDTHH:MM:SSZ] |
+| Campo | Valor |
+|---|---|
+| **Cliente*** | [Segmento / identificação interna da conta] |
+| **Solicitante*** | [Papel: Account] |
+| **Data de entrada*** | [DD/MM/AAAA HH:MM] |
+| **Canal de origem*** | [WhatsApp / e-mail / reunião / VJOB] |
+| **Card VJOB*** | [nº do card] |
 
-## Context
-**Project**: [Project name]
-**Current State**: [What has been completed so far — be specific]
-**Relevant Files**:
-- [file/path/1] — [what it contains]
-- [file/path/2] — [what it contains]
-**Dependencies**: [What this work depends on being complete]
-**Constraints**: [Technical, timeline, or resource constraints]
+**O que o Cliente pediu***: [Descrição objetiva, em uma ou duas frases]
+**Objetivo***: [Vender oferta / divulgar ação de loja / institucional / engajamento / outro]
+**Formato e quantidade***: [Feed / carrossel / Reels / Stories / anúncio — quantidade]
+**Prazo desejado pelo Cliente***: [DD/MM/AAAA]
 
-## Deliverable Request
-**What is needed**: [Specific, measurable deliverable description]
-**Acceptance criteria**:
-- [ ] [Criterion 1 — measurable]
-- [ ] [Criterion 2 — measurable]
-- [ ] [Criterion 3 — measurable]
-**Reference materials**: [Links to specs, designs, previous work]
+## Materiais recebidos
+- [ ] Ofertas (preço, validade, condições)  - [ ] Fotos / vídeos / logos  - [ ] Referências
+- [ ] Nada recebido — pendente: [o quê, até quando]
 
-## Quality Expectations
-**Must pass**: [Specific quality criteria for this deliverable]
-**Evidence required**: [What proof of completion looks like]
-**Handoff to next**: [Who receives the output and what format they need]
+## Triagem (preenche a Supervisão)*
+- [ ] **Planejado** — já consta no calendário do mês
+- [ ] **Extra dentro do escopo** — cabe na capacidade sem impacto
+- [ ] **Extra com impacto no escopo** — exige alinhamento Account + Cliente
+- [ ] **Outra área** — repassar para: [Criação / Tráfego / SAC / Fast Mídia / outra]
+
+**Prioridade***: [Alta / Média / Baixa]
+**Analista responsável***: [Papel / equipe: Sede / House / SAC]
+**Prazo interno acordado***: [DD/MM/AAAA]
+**Observações**: [...]
+```
+
+## Social → D.A.
+
+**Briefing padronizado de peça.** Briefing incompleto gera retrabalho. D.A. pode devolver o card se faltar campo obrigatório.
+
+```markdown
+# Briefing de peça
+
+| Campo | Valor |
+|---|---|
+| **Cliente*** | [Segmento / identificação interna] |
+| **Card iClips / VJOB*** | [nº] |
+| **Analista responsável*** | [Papel] |
+| **Data de entrega da arte*** | [DD/MM/AAAA HH:MM] |
+| **Data de publicação*** | [DD/MM/AAAA HH:MM] |
+
+## Pauta*
+- **Tema**: [...]
+- **Objetivo**: [...]
+- **Etapa do funil**: [Descoberta / Consideração / Conversão / Relacionamento]
+- **Formato e dimensão**: [Feed 1080×1350 / Stories 1080×1920 / Reels / carrossel N telas]
+- **Rede(s)**: [Instagram / Facebook / TikTok / outra]
+
+## Texto na arte (copy)*
+[Título, subtítulo, oferta, preço, validade, observações legais — texto final]
+
+**CTA***: [Ex.: "Peça pelo WhatsApp", "Link na bio", "Visite a loja"]
+
+## Direcionamento de arte*
+[Estilo, elementos obrigatórios, hierarquia visual]
+
+## Referências*
+[Links ou anexos; o que aproveitar de cada uma]
+
+## Materiais anexos
+- [ ] Logo / guia de marca  - [ ] Fotos de produto  - [ ] Fontes / paleta  - [ ] Vídeo bruto
+
+## Restrições
+- [ ] Peça vai para mídia paga (checar política de anúncio e POP VAN-POP-MKT-001)
+- [ ] Contém imagem de pessoas (autorização de uso confirmada)
+- [ ] Contém alegação de saúde, preço ou comparação (checar CONAR)
+
+**Legenda (para contexto, não vai na arte)**: [...]
+```
+
+## Social → Cliente
+
+**Envio para aprovação.** Envie em lote organizado. O prazo de retorno é **explícito** em toda mensagem.
+
+```markdown
+# Envio para aprovação
+
+| Campo | Valor |
+|---|---|
+| **Cliente*** | [Identificação interna] |
+| **Aprovador autorizado*** | [Papel definido no onboarding] |
+| **Data e hora do envio*** | [DD/MM/AAAA HH:MM] |
+| **Prazo de retorno*** | [DD/MM/AAAA HH:MM] (janela: meta sugerida — validar) |
+| **Canal*** | [E-mail / WhatsApp / registro rastreável conforme POP] |
+
+## Peças deste lote*
+| # | Card | Formato | Data de publicação | Rodada |
+|---|---|---|---|---|
+| 1 | [nº] | [Feed] | [DD/MM/AAAA HH:MM] | [1ª] |
+| 2 | [nº] | [Stories] | [DD/MM/AAAA HH:MM] | [1ª] |
+
+## Mensagem ao Cliente (modelo)
+"Olá! Seguem [N] peças para aprovação, com publicação prevista entre [DD/MM] e [DD/MM].
+Por favor, responda **por escrito** até [DD/MM/AAAA HH:MM] com 'Aprovado' ou com os ajustes
+numerados por peça. Sem retorno até o prazo, as peças não serão publicadas e a data será reagendada."
+
+## Lembretes programados*
+- [ ] 1º lembrete: [DD/MM/AAAA HH:MM]
+- [ ] 2º lembrete (vencimento): [DD/MM/AAAA HH:MM]
+- [ ] Sem retorno → escalonar (template 8)
+
+## Mídia paga
+- [ ] Peça segue fluxo do POP VAN-POP-MKT-001 (rascunho, em aprovação)
+```
+
+## Cliente → Social
+
+**Consolidação de feedback (rodada). Um único registro por card/peça.** Tudo que chegar por WhatsApp, áudio, e-mail ou ligação é transcrito aqui pelo Analista.
+
+```markdown
+# Consolidação de feedback
+
+| Campo | Valor |
+|---|---|
+| **Card iClips / VJOB*** | [nº] |
+| **Rodada*** | [1ª / 2ª / 3ª — acima do limite exige Supervisão] |
+| **Quem enviou o feedback*** | [Papel do aprovador autorizado] |
+| **Data e hora*** | [DD/MM/AAAA HH:MM] |
+| **Canais de origem*** | [WhatsApp / áudio / e-mail / ligação] |
+
+## Ajustes solicitados (numerados)*
+| # | Onde (arte / legenda / vídeo) | Ajuste pedido | Responsável | Status |
+|---|---|---|---|---|
+| 1 | [Arte] | [...] | [D.A.] | [Pendente / Feito] |
+| 2 | [Legenda] | [...] | [Analista] | [Pendente / Feito] |
+
+## Classificação*
+- [ ] Ajuste dentro do briefing aprovado
+- [ ] Mudança de briefing → avaliar como extra (Supervisão + Account)
+- [ ] Ajuste conflita com política de anúncio / CONAR / LGPD → explicar ao Cliente
+
+## Confirmação*
+- [ ] Ajustes lidos de volta ao Cliente e confirmados por escrito
+- [ ] Nova data de reenvio: [DD/MM/AAAA HH:MM]
+
+## Aprovação final (quando houver)*
+- [ ] "Aprovado" por escrito anexado (print / e-mail) em [DD/MM/AAAA HH:MM]
+```
+
+## Social → Tráfego
+
+**Peça aprovada para mídia paga**, com UTM e rastreamento. Só entra peça com aprovação registrada.
+
+```markdown
+# Peça aprovada para mídia paga
+
+| Campo | Valor |
+|---|---|
+| **Cliente*** | [Identificação interna] |
+| **Card*** | [nº] |
+| **Aprovação registrada*** | [Link / print — DD/MM/AAAA] |
+| **POP VAN-POP-MKT-001 cumprido*** | [Sim / Não — motivo] |
+
+## Campanha*
+- **Objetivo**: [Alcance / tráfego / mensagens / conversão / vendas]
+- **Plataforma**: [Meta / Google / TikTok]
+- **Tipo**: [Impulsionamento de post / campanha nova / inclusão em campanha ativa]
+- **Verba aprovada**: R$ [valor] — [diária / total]
+- **Período**: [DD/MM/AAAA] a [DD/MM/AAAA]
+- **Público / praça**: [...]
+
+## Destino*
+- **URL / WhatsApp / perfil**: [...]
+- **UTM***: `utm_source=[meta|google]&utm_medium=[cpc|paid_social]&utm_campaign=[cliente_acao_mmaaaa]&utm_content=[peca_nº]`
+
+## Rastreamento*
+- [ ] Pixel / CAPI / GA4 verificados (Tracking & Measurement Specialist pode apoiar)
+- [ ] Evento de conversão definido: [...]
+
+## Arquivos*
+- [ ] Criativo final (dimensões por posicionamento)  - [ ] Texto principal, título e descrição aprovados
+
+**Retorno esperado do Tráfego**: confirmação de ativação e aviso de reprovação ou comentário em anúncio.
+```
+
+## Social → SAC
+
+**Interações que exigem resposta do Cliente** (preço, estoque, reclamação, troca, jurídico). Nada é respondido por suposição.
+
+```markdown
+# Repasse de interações
+
+| Campo | Valor |
+|---|---|
+| **Cliente*** | [Identificação interna] |
+| **Data e hora do repasse*** | [DD/MM/AAAA HH:MM] |
+| **Destinatário*** | [SAC / papel indicado pelo Cliente] |
+| **Prazo para retorno*** | [DD/MM/AAAA HH:MM] (meta sugerida — validar) |
+
+## Interações*
+| # | Rede / local | Tipo | Tema | Resumo (sem dados pessoais) | Urgência |
+|---|---|---|---|---|---|
+| 1 | [Instagram / direct] | [Reclamação] | [Troca] | [...] | [Alta] |
+| 2 | [Facebook / comentário] | [Dúvida] | [Estoque] | [...] | [Média] |
+
+## Classificação*
+- [ ] Preço / estoque / disponibilidade  - [ ] Reclamação / troca / devolução  - [ ] Saúde / produto regulado
+- [ ] Jurídico / imprensa / risco de crise → escalonar (template 8)
+
+## Retorno
+- **Resposta do Cliente**: [...]
+- **Respondido ao público em**: [DD/MM/AAAA HH:MM] por [Analista / SAC]
+- **Status***: [Aberto / Respondido / Encerrado]
+```
+
+## Supervisão → Diretoria de Operações
+
+**Relatório de operação mensal.** Não confundir com o relatório de conta ao Cliente ([Fase 6](../playbooks/fase-6-resultados.md)).
+
+```markdown
+# Relatório de operação — [MÊS/AAAA]
+
+| Campo | Valor |
+|---|---|
+| **Remetente*** | Supervisão de Social Media |
+| **Destinatário*** | Diretoria de Operações |
+| **Data de envio*** | [DD/MM/AAAA] |
+| **Fonte dos dados*** | VJOB / iClips / Dash |
+
+## Prazo*
+- % de tarefas no prazo: [__%] (meta sugerida — validar)
+- Atrasos: [quantidade] — principais causas: [aprovação / briefing / volume / outra]
+
+## Volume*
+| Equipe | Analistas | Tarefas | Peças | Extras |
+|---|---|---|---|---|
+| Sede | [n] | [n] | [n] | [n] |
+| House | [n] | [n] | [n] | [n] |
+| SAC | [n] | [n] | — | [n] |
+
+## Qualidade*
+- Aprovação na 1ª rodada: [__%]
+- Rodadas médias por peça: [__]
+- Ocorrências de publicação: [n] — [resumo]
+
+**Auditoria de redes**: [Achados e correções do período]
+
+## Capacidade e carteira*
+- Analistas acima da capacidade: [n] — [equipe]
+- Riscos: [...]
+
+## Decisões solicitadas à Diretoria*
+1. [...]
+2. [...]
+```
+
+## Escalonamento de atraso
+
+**Escalonamento de atraso ou risco.** Cadeia: **Analista → Supervisão → Account → Diretoria de Operações**. Suba um nível quando o anterior não resolver no prazo.
+
+```markdown
+# Escalonamento
+
+| Campo | Valor |
+|---|---|
+| **Cliente*** | [Identificação interna] |
+| **Card(s)*** | [nº] |
+| **Aberto por*** | [Papel] |
+| **Escalado para*** | [Supervisão / Account / Diretoria de Operações] |
+| **Data e hora*** | [DD/MM/AAAA HH:MM] |
+| **Nível*** | [1 Supervisão / 2 Account / 3 Diretoria] |
+
+## Tipo*
+- [ ] Atraso de aprovação do Cliente  - [ ] Rodadas acima do limite  - [ ] Briefing / material incompleto
+- [ ] Sobrecarga de capacidade  - [ ] Risco de reputação / crise
+- [ ] Problema de mídia paga (reprovação, verba, rastreamento)
+
+**Situação***: [O que aconteceu, desde quando, o que já foi tentado]
+**Impacto***: [Peças / datas afetadas; risco para o Cliente; impacto no escopo]
+**Decisão necessária***: [O que se pede ao nível acima, com prazo: DD/MM/AAAA HH:MM]
+
+## Desfecho
+- **Decisão tomada**: [...] por [Papel] em [DD/MM/AAAA]
+- **Status***: [Aberto / Resolvido]
+```
+
+## Fechamento de fase
+
+**Fechamento de fase (gate).** Preenchido pelo dono humano da fase; a próxima fase só começa com o recebimento registrado.
+
+```markdown
+# Fechamento de fase
+
+| Campo | Valor |
+|---|---|
+| **Cliente / campanha*** | [Identificação interna] |
+| **Modo*** | [Conta completa / Campanha / Demanda pontual] |
+| **Fase*** | [0–6 — nome] |
+| **Gate*** | [G0–G6] |
+| **Dono humano da fase*** | [Papel] |
+| **Data*** | [DD/MM/AAAA] |
+
+## Checklist do gate*
+[Colar o Quality Gate do playbook da fase com cada item marcado]
+
+## Veredito*
+- [ ] **Aprovado** — segue para a Fase [N+1]
+- [ ] **Aprovado com ressalvas** — ressalvas: [...] prazo: [DD/MM/AAAA]
+- [ ] **Não aprovado** — volta para: [etapa]
+
+## Entregáveis repassados*
+- [...] (link no VJOB / iClips)
+
+**Agentes de IA utilizados**: [Agente — para quê — revisado por (Papel)]
+**Pendências e riscos**: [...]
+
+**Recebido por (próxima fase)***: [Papel] em [DD/MM/AAAA]
 ```
 
 ---
 
-## 2. QA Feedback Loop — PASS
+Voltar ao documento-mestre: [Ciclo de Operação da Agência](../ciclo-agencia.md)
 
-Use when Evidence Collector or other QA agent approves a task.
-
-```markdown
-# NEXUS QA Verdict: PASS ✅
-
-## Task
-| Field | Value |
-|-------|-------|
-| **Task ID** | [ID] |
-| **Task Description** | [Description] |
-| **Developer Agent** | [Agent Name] |
-| **QA Agent** | [Agent Name] |
-| **Attempt** | [N] of 3 |
-| **Timestamp** | [YYYY-MM-DDTHH:MM:SSZ] |
-
-## Verdict: PASS
-
-## Evidence
-**Screenshots**:
-- Desktop (1920x1080): [filename/path]
-- Tablet (768x1024): [filename/path]
-- Mobile (375x667): [filename/path]
-
-**Functional Verification**:
-- [x] [Acceptance criterion 1] — verified
-- [x] [Acceptance criterion 2] — verified
-- [x] [Acceptance criterion 3] — verified
-
-**Brand Consistency**: Verified — colors, typography, spacing match design system
-**Accessibility**: Verified — keyboard navigation, contrast ratios, semantic HTML
-**Performance**: [Load time measured] — within acceptable range
-
-## Notes
-[Any observations, minor suggestions for future improvement, or positive callouts]
-
-## Next Action
-→ Agents Orchestrator: Mark task complete, advance to next task in backlog
-```
-
----
-
-## 3. QA Feedback Loop — FAIL
-
-Use when Evidence Collector or other QA agent rejects a task.
-
-```markdown
-# NEXUS QA Verdict: FAIL ❌
-
-## Task
-| Field | Value |
-|-------|-------|
-| **Task ID** | [ID] |
-| **Task Description** | [Description] |
-| **Developer Agent** | [Agent Name] |
-| **QA Agent** | [Agent Name] |
-| **Attempt** | [N] of 3 |
-| **Timestamp** | [YYYY-MM-DDTHH:MM:SSZ] |
-
-## Verdict: FAIL
-
-## Issues Found
-
-### Issue 1: [Category] — [Severity: Critical/High/Medium/Low]
-**Description**: [Exact description of the problem]
-**Expected**: [What should happen according to acceptance criteria]
-**Actual**: [What actually happens]
-**Evidence**: [Screenshot filename or test output]
-**Fix instruction**: [Specific, actionable instruction to resolve]
-**File(s) to modify**: [Exact file paths]
-
-### Issue 2: [Category] — [Severity]
-**Description**: [...]
-**Expected**: [...]
-**Actual**: [...]
-**Evidence**: [...]
-**Fix instruction**: [...]
-**File(s) to modify**: [...]
-
-[Continue for all issues found]
-
-## Acceptance Criteria Status
-- [x] [Criterion 1] — passed
-- [ ] [Criterion 2] — FAILED (see Issue 1)
-- [ ] [Criterion 3] — FAILED (see Issue 2)
-
-## Retry Instructions
-**For Developer Agent**:
-1. Fix ONLY the issues listed above
-2. Do NOT introduce new features or changes
-3. Re-submit for QA when all issues are addressed
-4. This is attempt [N] of 3 maximum
-
-**If attempt 3 fails**: Task will be escalated to Agents Orchestrator
-```
-
----
-
-## 4. Escalation Report
-
-Use when a task exceeds 3 retry attempts.
-
-```markdown
-# NEXUS Escalation Report 🚨
-
-## Task
-| Field | Value |
-|-------|-------|
-| **Task ID** | [ID] |
-| **Task Description** | [Description] |
-| **Developer Agent** | [Agent Name] |
-| **QA Agent** | [Agent Name] |
-| **Attempts Exhausted** | 3/3 |
-| **Escalation To** | [Agents Orchestrator / Studio Producer] |
-| **Timestamp** | [YYYY-MM-DDTHH:MM:SSZ] |
-
-## Failure History
-
-### Attempt 1
-- **Issues found**: [Summary]
-- **Fixes applied**: [What the developer changed]
-- **Result**: FAIL — [Why it still failed]
-
-### Attempt 2
-- **Issues found**: [Summary]
-- **Fixes applied**: [What the developer changed]
-- **Result**: FAIL — [Why it still failed]
-
-### Attempt 3
-- **Issues found**: [Summary]
-- **Fixes applied**: [What the developer changed]
-- **Result**: FAIL — [Why it still failed]
-
-## Root Cause Analysis
-**Why the task keeps failing**: [Analysis of the underlying problem]
-**Systemic issue**: [Is this a one-off or pattern?]
-**Complexity assessment**: [Was the task properly scoped?]
-
-## Recommended Resolution
-- [ ] **Reassign** to different developer agent ([recommended agent])
-- [ ] **Decompose** into smaller sub-tasks ([proposed breakdown])
-- [ ] **Revise approach** — architecture/design change needed
-- [ ] **Accept** current state with documented limitations
-- [ ] **Defer** to future sprint
-
-## Impact Assessment
-**Blocking**: [What other tasks are blocked by this]
-**Timeline Impact**: [How this affects the overall schedule]
-**Quality Impact**: [What quality compromises exist if we accept current state]
-
-## Decision Required
-**Decision maker**: [Agents Orchestrator / Studio Producer]
-**Deadline**: [When decision is needed to avoid further delays]
-```
-
----
-
-## 5. Phase Gate Handoff
-
-Use when transitioning between NEXUS phases.
-
-```markdown
-# NEXUS Phase Gate Handoff
-
-## Transition
-| Field | Value |
-|-------|-------|
-| **From Phase** | Phase [N] — [Name] |
-| **To Phase** | Phase [N+1] — [Name] |
-| **Gate Keeper(s)** | [Agent Name(s)] |
-| **Gate Result** | [PASSED / FAILED] |
-| **Timestamp** | [YYYY-MM-DDTHH:MM:SSZ] |
-
-## Gate Criteria Results
-| # | Criterion | Threshold | Result | Evidence |
-|---|-----------|-----------|--------|----------|
-| 1 | [Criterion] | [Threshold] | ✅ PASS / ❌ FAIL | [Evidence reference] |
-| 2 | [Criterion] | [Threshold] | ✅ PASS / ❌ FAIL | [Evidence reference] |
-| 3 | [Criterion] | [Threshold] | ✅ PASS / ❌ FAIL | [Evidence reference] |
-
-## Documents Carried Forward
-1. [Document name] — [Purpose for next phase]
-2. [Document name] — [Purpose for next phase]
-3. [Document name] — [Purpose for next phase]
-
-## Key Constraints for Next Phase
-- [Constraint 1 from this phase's findings]
-- [Constraint 2 from this phase's findings]
-
-## Agent Activation for Next Phase
-| Agent | Role | Priority |
-|-------|------|----------|
-| [Agent 1] | [Role in next phase] | [Immediate / Day 2 / As needed] |
-| [Agent 2] | [Role in next phase] | [Immediate / Day 2 / As needed] |
-
-## Risks Carried Forward
-| Risk | Severity | Mitigation | Owner |
-|------|----------|------------|-------|
-| [Risk] | [P0-P3] | [Mitigation plan] | [Agent] |
-```
-
----
-
-## 6. Sprint Handoff
-
-Use at sprint boundaries.
-
-```markdown
-# NEXUS Sprint Handoff
-
-## Sprint Summary
-| Field | Value |
-|-------|-------|
-| **Sprint** | [Number] |
-| **Duration** | [Start date] → [End date] |
-| **Sprint Goal** | [Goal statement] |
-| **Velocity** | [Planned] / [Actual] story points |
-
-## Completion Status
-| Task ID | Description | Status | QA Attempts | Notes |
-|---------|-------------|--------|-------------|-------|
-| [ID] | [Description] | ✅ Complete | [N] | [Notes] |
-| [ID] | [Description] | ✅ Complete | [N] | [Notes] |
-| [ID] | [Description] | ⚠️ Carried Over | [N] | [Reason] |
-
-## Quality Metrics
-- **First-pass QA rate**: [X]%
-- **Average retries**: [N]
-- **Tasks completed**: [X/Y]
-- **Story points delivered**: [N]
-
-## Carried Over to Next Sprint
-| Task ID | Description | Reason | Priority |
-|---------|-------------|--------|----------|
-| [ID] | [Description] | [Why not completed] | [RICE score] |
-
-## Retrospective Insights
-**What went well**: [Key successes]
-**What to improve**: [Key improvements]
-**Action items**: [Specific changes for next sprint]
-
-## Next Sprint Preview
-**Sprint goal**: [Proposed goal]
-**Key tasks**: [Top priority items]
-**Dependencies**: [Cross-team dependencies]
-```
-
----
-
-## 7. Incident Handoff
-
-Use during incident response.
-
-```markdown
-# NEXUS Incident Handoff
-
-## Incident
-| Field | Value |
-|-------|-------|
-| **Severity** | [P0 / P1 / P2 / P3] |
-| **Detected by** | [Agent or system] |
-| **Detection time** | [Timestamp] |
-| **Assigned to** | [Agent Name] |
-| **Status** | [Investigating / Mitigating / Resolved / Post-mortem] |
-
-## Description
-**What happened**: [Clear description of the incident]
-**Impact**: [Who/what is affected and how severely]
-**Timeline**:
-- [HH:MM] — [Event]
-- [HH:MM] — [Event]
-- [HH:MM] — [Event]
-
-## Current State
-**Systems affected**: [List]
-**Workaround available**: [Yes/No — describe if yes]
-**Estimated resolution**: [Time estimate]
-
-## Actions Taken
-1. [Action taken and result]
-2. [Action taken and result]
-
-## Handoff Context
-**For next responder**:
-- [What's been tried]
-- [What hasn't been tried yet]
-- [Suspected root cause]
-- [Relevant logs/metrics to check]
-
-## Stakeholder Communication
-**Last update sent**: [Timestamp]
-**Next update due**: [Timestamp]
-**Communication channel**: [Where updates are posted]
-```
-
----
-
-## Usage Guide
-
-| Situation | Template to Use |
-|-----------|----------------|
-| Assigning work to another agent | Standard Handoff (#1) |
-| QA approves a task | QA PASS (#2) |
-| QA rejects a task | QA FAIL (#3) |
-| Task exceeds 3 retries | Escalation Report (#4) |
-| Moving between phases | Phase Gate Handoff (#5) |
-| End of sprint | Sprint Handoff (#6) |
-| System incident | Incident Handoff (#7) |
+<sub>Adaptado do NEXUS (templates de handoff entre agentes de software) para a operação de agência.</sub>
