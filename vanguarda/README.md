@@ -4,7 +4,8 @@
 |---|---|
 | `BASE-CONHECIMENTO.md` | Contexto da agência que todos os agentes seguem |
 | `agentes-vanguarda.txt` | Núcleo de marketing: 44 agentes prioritários (usado com `--selecao`) |
-| `instalar.sh` | Instala os agentes, injeta o bloco de contexto e libera os conectores |
+| `instalar.sh` | Instala os agentes, injeta o bloco de contexto e libera os conectores (Linux/macOS/Git Bash) |
+| `instalar.ps1` | Instalação global no **Windows** (PowerShell), sem precisar de bash |
 
 ## Instalar / atualizar
 
@@ -19,6 +20,15 @@ herdam as ferramentas da sessão (conectores Google Ads, Semrush, Nekt, Notion e
 
 O núcleo de marketing (`agentes-vanguarda.txt`) exclui os agentes de plataformas chinesas e os de
 áreas sem relação direta com marketing; use `--selecao` para instalar apenas esse núcleo.
+## Windows (PowerShell)
+
+```powershell
+git clone -b claude/adoring-curie-otvobg https://github.com/jussaracavalcante-sketch/agency-agents.git
+cd agency-agents
+powershell -ExecutionPolicy Bypass -File .\vanguarda\instalar.ps1            # 279 agentes em %USERPROFILE%\.claude\agents
+powershell -ExecutionPolicy Bypass -File .\vanguarda\instalar.ps1 -Selecao   # só o núcleo de marketing (44)
+```
+
 ## Caminho da base de conhecimento
 
 - Instalação no projeto (`.claude/agents`): o bloco usa o caminho relativo
