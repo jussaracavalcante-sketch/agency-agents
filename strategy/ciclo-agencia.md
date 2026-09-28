@@ -1,6 +1,6 @@
 # 🔄 Ciclo de Operação da Agência
 
-> Documento-mestre de como a agência entrega Social Media, Mídia Paga, Marca e Vendas com apoio dos 38 agentes de IA deste repositório.
+> Documento-mestre de como a agência entrega Social Media, Mídia Paga, Marca e Vendas com apoio dos 39 agentes de IA deste repositório.
 > **Versão** 1.0 · **Data** 28/09/2026 · **Status** rascunho para validação da liderança · **Base** levantamento de rotinas de 09/2026: 14 formulários de Social Media (inclui SAC e analistas multifunção) e 2 de Mídia Paga + identidade pública da agência
 
 ---
@@ -103,7 +103,7 @@ Papéis descritos a partir das rotinas levantadas. O documento não identifica p
 | **Supervisão de Mídia Paga** | Prioriza a fila do time, conduz a daily, revisa tecnicamente toda campanha antes de ativar, audita rastreamento, controla atrasos no VJOB, valida relatórios, gere carteira por complexidade (e-commerce × leads), faz 1:1 e check-in semanais, defende verba com Account e cliente | Otimizações e reestruturações de campanha, redistribuição de contas entre analistas (com justificativa à Diretoria) | Verba fora do contrato, contratação, descontos ou ressarcimentos, mudança estrutural do setor |
 | **Analista de Mídia Paga** | Checa saldo e ritmo de verba, sobe e otimiza campanhas (Meta, Google, TikTok), implementa pixel/CAPI/GTM/GA4, atende dúvidas técnicas do Account, faz o relatório mensal para validação | Pausar peças fracas, redistribuir verba diária dentro do total aprovado, testar públicos e formatos | Mudar a verba total, criar estrutura fora do escopo, enviar relatório ao cliente sem validação |
 | **Analista de SAC (redes sociais)** | Monitora comentários e directs ao longo do dia, classifica (elogio, dúvida, reclamação, caso sensível), responde com a ficha da marca, leva reclamações ao privado, repassa ao cliente o que exige apuração, mantém o banco de respostas; apoia o time inserindo o planejamento no iClips | Redação da resposta dentro da ficha da marca, quando levar ao privado, ajuste de tom ao contexto | Informação comercial não confirmada, posicionamento em caso sensível, pós-venda que exige apuração |
-| **Fast Mídia** | Demandas rápidas de conteúdo e publicação | Execução dentro do padrão | Qualquer peça sem aprovação |
+| **Fast Mídia (Supervisão de Edição de Vídeo + Fasts)** | Captação e edição rápida de vídeo em campo: agendamento pelo sistema Fast Mídia Tools, gravação com briefing, material bruto na pasta de ingest em até 24 h, edição no bloco reservado, controle de transporte (99) | Distribuição de jobs entre Fasts, execução técnica da gravação e da edição | Agendamento duplo no dia ou fora da folga de 2 h, gravação fora do briefing, exceções em campo |
 | **Diretoria de Operações** | Valida capacidade, realocações, casos graves, relatório de operação | Estrutura da operação | — |
 | **Cliente** | Fornece briefing, ofertas e materiais; **aprova por escrito** | Aprovação final | — |
 
@@ -125,14 +125,14 @@ O setor tem **15 pessoas** sob uma Supervisão de Social Media que responde à D
 
 ## 5. Agentes de IA por fase
 
-Os 38 agentes ativos estão em [`brand/`](../brand/), [`marketing/`](../marketing/), [`paid-media/`](../paid-media/) e [`sales/`](../sales/). Prompts prontos em [agent-activation-prompts.md](coordination/agent-activation-prompts.md).
+Os 39 agentes ativos estão em [`brand/`](../brand/), [`marketing/`](../marketing/), [`paid-media/`](../paid-media/) e [`sales/`](../sales/). Prompts prontos em [agent-activation-prompts.md](coordination/agent-activation-prompts.md).
 
 | Fase | Agentes principais | Agentes sob demanda |
 |---|---|---|
 | 0 | Outbound Strategist · Discovery Coach · Proposal Strategist · Paid Media Auditor | Offer & Lead Gen Strategist · Deal Strategist · Pipeline Analyst · Social Media Strategist (auditoria de redes) |
 | 1 | Brand Guardian · Social Media Strategist · Tracking & Measurement Specialist | Account Strategist · SEO Specialist · AEO Foundations Architect |
 | 2 | Social Media Strategist · Content Creator · Instagram Curator | TikTok Strategist · LinkedIn Content Creator · Growth Hacker · Email Marketing Strategist · Podcast Strategist |
-| 3 | Content Creator · Visual Storyteller · Image Prompt Engineer · Short-Video Editing Coach | Carousel Growth Engine · Ad Creative Strategist · Brand Guardian |
+| 3 | Content Creator · Visual Storyteller · Image Prompt Engineer · Short-Video Editing Coach · Fast Mídia Coordinator (captação em campo) | Carousel Growth Engine · Ad Creative Strategist · Brand Guardian |
 | 4 | Brand Guardian · Ad Creative Strategist (políticas de anúncio) | PR & Communications Manager (temas sensíveis) |
 | 5 | Instagram Curator · Paid Social Strategist · PPC Campaign Strategist · Tracking & Measurement Specialist | TikTok Strategist · Twitter Engager · Video Optimization Specialist · Programmatic & Display Buyer · Reddit Community Builder |
 | 6 | Social Media Strategist · Paid Media Auditor · Account Strategist | Search Query Analyst · X/Twitter Intelligence Analyst · AI Citation Strategist · Agentic Search Optimizer · Pipeline Analyst |

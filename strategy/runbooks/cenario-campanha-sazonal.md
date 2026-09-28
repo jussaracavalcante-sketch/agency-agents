@@ -30,6 +30,7 @@ Fases cobertas: [Fase 2](../playbooks/fase-2-planejamento-mensal.md) (plano da c
 | Image Prompt Engineer | Prompts de imagem para moodboard e peças de apoio | D.A. / Designers |
 | Carousel Growth Engine | Carrosséis de oferta e de "como participar" | Analista de Social Media |
 | Short-Video Editing Coach | Roteiro de corte de Reels, teasers e cobertura de evento | Produção audiovisual |
+| Fast Mídia Coordinator | Agenda de gravações da campanha, briefing de campo, ingest do bruto e bloco de edição | Supervisão de Edição de Vídeo (Fast Mídia) |
 | Instagram Curator | Sequência de Stories, contagem regressiva, destaques | Analista de Social Media |
 | PPC Campaign Strategist | Campanha de pesquisa para a data (se no escopo) | Tráfego (Mídia Paga) |
 | Tracking & Measurement Specialist | UTMs, eventos e conversões da campanha | Tráfego (Mídia Paga) |
@@ -162,6 +163,7 @@ Especialistas — activation: "semana 2+"
   marketing-instagram-curator
   paid-media-ppc-strategist
   paid-media-tracking-specialist
+  marketing-fast-midia-coordinator
 
 Apoio — activation: "sob demanda"
   marketing-tiktok-strategist

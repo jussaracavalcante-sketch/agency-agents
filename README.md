@@ -130,6 +130,7 @@ Growing your audience, one authentic interaction at a time.
 | 🔍 [SEO Specialist](marketing/marketing-seo-specialist.md) | Technical SEO, content strategy, link building | Driving sustainable organic search growth |
 | 🎧 [Podcast Strategist](marketing/marketing-podcast-strategist.md) | Podcast content strategy, platform optimization | Chinese podcast market strategy and operations |
 | 🎬 [Short-Video Editing Coach](marketing/marketing-short-video-editing-coach.md) | Post-production, editing workflows, platform specs | Hands-on short-video editing training and optimization |
+| 🎥 [Fast Mídia Coordinator](marketing/marketing-fast-midia-coordinator.md) | Field video capture ops: scheduling, mandatory briefing, raw-footage ingest, edit block, transport receipts (Fast Mídia Tools: Notion, Drive, Calendar, WhatsApp) | Coordinating on-site shoots end to end without lost briefings or footage |
 | 🎙️ [Global Podcast Strategist](marketing/marketing-global-podcast-strategist.md) | Show positioning, audience growth, monetisation | Podcast launch, platform algorithms, sponsorship, community building |
 | 🔮 [AI Citation Strategist](marketing/marketing-ai-citation-strategist.md) | AEO/GEO, AI recommendation visibility, citation auditing | Improving brand visibility across ChatGPT, Claude, Gemini, Perplexity |
 | 🎬 [Video Optimization Specialist](marketing/marketing-video-optimization-specialist.md) | YouTube algorithm strategy, chaptering, thumbnail concepts | YouTube channel growth, video SEO, audience retention optimization |
@@ -277,7 +278,7 @@ Each agent is designed with:
 
 ## 📊 Stats
 
-- 🎭 **38 active agents** across 4 agency divisions (Marketing, Paid Media, Sales, Brand); the rest of the library is archived in `_arquivo/`
+- 🎭 **39 active agents** across 4 agency divisions (Marketing, Paid Media, Sales, Brand); the rest of the library is archived in `_arquivo/`
 - 📝 **10,000+ lines** of personality, process, and code examples
 - ⏱️ **Months of iteration** from real-world usage
 - 🌟 **Battle-tested** in production environments

@@ -2,7 +2,7 @@
 
 > **Modo**: Conta completa · Campanha · Demanda pontual | **Duração**: diária, durante todo o mês | **Agentes**: Instagram Curator, TikTok Strategist, Twitter Engager, Paid Social Strategist, PPC Campaign Strategist, Tracking & Measurement Specialist, Video Optimization Specialist
 >
-> **Dono humano**: Analista de Social Media (publicação e comunidade) · SAC / Fast Mídia (atendimento) · Tráfego (mídia paga) | **Supervisão**: Supervisão de Social Media | **Gate**: G5
+> **Dono humano**: Analista de Social Media (publicação e comunidade) · SAC (atendimento) · Tráfego (mídia paga) | **Supervisão**: Supervisão de Social Media | **Gate**: G5
 
 ---
 
@@ -28,7 +28,7 @@ Princípios:
 
 ## Papéis humanos (RACI resumida)
 
-| Atividade | Analista de Social | Supervisão | SAC / Fast Mídia | Tráfego | Account | Cliente |
+| Atividade | Analista de Social | Supervisão | SAC | Tráfego | Account | Cliente |
 |---|---|---|---|---|---|---|
 | Agendamento (mLabs / Meta Business Suite) | R | A | — | — | — | I |
 | Postagem manual de ofertas diárias e Stories | R | A | C | — | — | C |

@@ -27,6 +27,7 @@ Fases cobertas: [Fase 2](../playbooks/fase-2-planejamento-mensal.md) · [Fase 3]
 |--------|------------------|--------------------|
 | Carousel Growth Engine | Estrutura de carrosséis (roteiro de slides) | Analista de Social Media + D.A. |
 | Short-Video Editing Coach | Roteiro de corte e edição de Reels no CapCut | Analista de Social Media / Produção audiovisual |
+| Fast Mídia Coordinator | Gravações em campo do mês pelo sistema de agendamento, com briefing e ingest em 24 h (apoio sob demanda) | Supervisão de Edição de Vídeo (Fast Mídia) |
 | Visual Storyteller | Direcionamento de arte no briefing ao D.A. | D.A. / Designers |
 | Image Prompt Engineer | Prompts de imagem para referência ou peça (com revisão) | D.A. / Head de Criação |
 | TikTok Strategist | Pautas e formatos de vídeo curto, se no escopo | Analista de Social Media |
@@ -174,6 +175,7 @@ Apoio — activation: "sob demanda"
   marketing-twitter-engager
   marketing-growth-hacker
   sales-account-strategist
+  marketing-fast-midia-coordinator
 ```
 
 ---

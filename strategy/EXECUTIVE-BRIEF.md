@@ -6,7 +6,7 @@
 
 ## O que é
 
-O **Ciclo de Operação da Agência** é o método padrão de entrega de **Social Media, Mídia Paga, Marca e Vendas**. Ele organiza 7 fases, 10 papéis humanos e 38 agentes de IA em um fluxo único, auditável e alinhado ao SGQ (ISO 9001:2015).
+O **Ciclo de Operação da Agência** é o método padrão de entrega de **Social Media, Mídia Paga, Marca e Vendas**. Ele organiza 7 fases, 10 papéis humanos e 39 agentes de IA em um fluxo único, auditável e alinhado ao SGQ (ISO 9001:2015).
 
 ```
 Fase 0 Prospecção → Fase 1 Onboarding → [ Fase 2 Planejar → 3 Produzir → 4 Aprovar → 5 Publicar → 6 Medir ] ↺ todo mês

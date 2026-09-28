@@ -22,6 +22,7 @@
 | 6 | [Interações que exigem o Cliente](#social--sac) | Social → SAC / Cliente | [Fase 5](../playbooks/fase-5-publicacao-e-midia.md) |
 | 6b | [Ficha da marca para SAC](#ficha-da-marca-para-sac) | Analista da conta → SAC | [Fase 5](../playbooks/fase-5-publicacao-e-midia.md) |
 | 6c | [Ata de alinhamento com o cliente](#ata-de-alinhamento-com-o-cliente) | Reunião → Social | [Fase 3](../playbooks/fase-3-producao.md) |
+| 6d | [Pedido de gravação](#social--fast-mídia) | Social → Fast Mídia | [Fase 3](../playbooks/fase-3-producao.md) |
 | 7 | [Relatório de operação mensal](#supervisão--diretoria-de-operações) | Supervisão → Diretoria de Operações | [Fase 6](../playbooks/fase-6-resultados.md) |
 | 8 | [Escalonamento de atraso/risco](#escalonamento-de-atraso) | Qualquer papel → nível acima | Transversal |
 | 9 | [Fechamento de fase (gate)](#fechamento-de-fase) | Dono da fase → próxima fase | Todas |
@@ -300,6 +301,34 @@ numerados por peça. Sem retorno até o prazo, as peças não serão publicadas 
 
 ## Próximos passos*
 - [Briefings a abrir, com card VJOB]
+```
+
+## Social → Fast Mídia
+
+**Pedido de gravação em campo.** O job é criado pela Supervisão de Edição de Vídeo no sistema de agendamento. Este bloco é o que o Analista precisa ter pronto para o briefing de gravação.
+
+```markdown
+# Pedido de gravação — [identificação interna]
+
+| Campo | Valor |
+|---|---|
+| **Cliente / sub-cliente*** | [pasta do cliente no Drive] |
+| **Objetivo e formato*** | [Reels / institucional / cobertura / produto] |
+| **Data e janela desejadas*** | [DD/MM/AAAA, manhã ou tarde] |
+| **Local (endereço completo)*** | [...] |
+| **Contato do cliente no local*** | [papel — telefone fica no sistema, não aqui] |
+| **Transporte (99)*** | [Sim / Não] |
+| **Prazo do material bruto*** | [até 24 h após a gravação ou data acordada] |
+| **Bloco de edição*** | [DD/MM, manhã ou tarde] |
+
+## Roteiro / lista de tomadas*
+1. [Cena — fala ou texto na tela]
+
+## Restrições do cliente
+- [áreas proibidas, produtos obrigatórios, pessoas que não podem aparecer]
+
+## Termo de uso de imagem necessário?*
+- [ ] Sim — quem: [papéis]   - [ ] Não
 ```
 
 ## Supervisão → Diretoria de Operações

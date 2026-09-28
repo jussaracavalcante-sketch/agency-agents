@@ -109,6 +109,7 @@ Em saúde, farmácia, financeiro e outros segmentos regulados, o conteúdo técn
 ### Agenda de captação e acervo audiovisual
 
 - **Agenda de captação** mensal por conta, fechada junto com o calendário (Fase 2), já considerando a disponibilidade de porta-vozes, equipes e ambientes.
+- **Gravação com o Fast Mídia**: quando a captação é feita pelo setor Fast Mídia, o pedido entra **só pelo sistema de agendamento** (nunca por DM). O Analista preenche o briefing de gravação antes da véspera, e o material bruto chega na pasta de ingest do job em até 24 h. Veja o [Fast Mídia Coordinator](../../marketing/marketing-fast-midia-coordinator.md) e o modelo [Social → Fast Mídia](../coordination/handoff-templates.md#social--fast-mídia).
 - **Cobertura de eventos**: roteiro de tomadas, Stories em tempo real com texto pré-aprovado e separação de material para posts e Reels posteriores.
 - **Acervo**: pastas padronizadas por cliente → ano → mês → evento/pauta, com arquivos nomeados `AAAA-MM-DD_cliente_tema_formato_v1`, para reaproveitar fotos e vídeos sem perder tempo procurando.
 
