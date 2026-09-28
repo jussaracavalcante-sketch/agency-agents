@@ -19,3 +19,10 @@ herdam as ferramentas da sessão (conectores Google Ads, Semrush, Nekt, Notion e
 
 O núcleo de marketing (`agentes-vanguarda.txt`) exclui os agentes de plataformas chinesas e os de
 áreas sem relação direta com marketing; use `--selecao` para instalar apenas esse núcleo.
+## Caminho da base de conhecimento
+
+- Instalação no projeto (`.claude/agents`): o bloco usa o caminho relativo
+  `vanguarda/BASE-CONHECIMENTO.md`, válido em qualquer máquina que clonar o repositório.
+- Instalação global (`~/.claude/agents` ou outra pasta): o bloco grava o **caminho completo** do
+  clone local, para que os agentes encontrem a base em qualquer projeto. Mantenha o clone no mesmo
+  lugar; se movê-lo, rode `./vanguarda/instalar.sh ~/.claude/agents` de novo.

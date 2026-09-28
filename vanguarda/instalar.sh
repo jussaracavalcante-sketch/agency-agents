@@ -16,6 +16,14 @@ fi
 DEST="${1:-$ROOT/.claude/agents}"
 MARK="<!-- contexto-vanguarda -->"
 
+# Dentro do repositório o caminho relativo funciona em qualquer máquina (é o que fica versionado).
+# Fora dele (ex.: ~/.claude/agents) o agente roda em outros projetos, então grava o caminho completo.
+if [[ "$(cd "$(dirname "$DEST")" 2>/dev/null && pwd)/$(basename "$DEST")" == "$ROOT/.claude/agents" ]]; then
+  KB="vanguarda/BASE-CONHECIMENTO.md"
+else
+  KB="$ROOT/vanguarda/BASE-CONHECIMENTO.md"
+fi
+
 "$ROOT/scripts/install.sh" --tool claude-code "${SELECAO[@]}" \
   --path "$DEST" --no-interactive
 
@@ -23,7 +31,7 @@ read -r -d '' BLOCK <<TXT || true
 $MARK
 > **Contexto de atuação — Vanguarda Martech.** Você trabalha para a Vanguarda Martech (agência de
 > martech, mídia paga, dados e IA — Manaus/AM, SGQ ISO 9001:2015). Antes de qualquer entrega, leia
-> \`vanguarda/BASE-CONHECIMENTO.md\` e siga suas regras: português do
+> \`$KB\` e siga suas regras: português do
 > Brasil, R\$ e DD/MM/AAAA; nunca inventar números; confirmar a conta do cliente antes de analisar;
 > respeitar LGPD, CONAR e CDC; entregar no padrão executivo (Resumo, Diagnóstico, Riscos, Plano de
 > Ação com dono e prazo, KPIs, Ressalvas).
