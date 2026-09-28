@@ -43,7 +43,21 @@ Pedido: [TEXTO DO PEDIDO]
 Devolva: objetivo, formato e medidas, texto da arte, legenda, CTA, referências, prazo e dúvidas em aberto.
 ```
 
-## 4. As 5 regras que não se quebram
+### Pelo app Agency Agents (desktop)
+
+O app lê qualquer clone deste repositório como catálogo. Ele mostra as 4 divisões, os 39 agentes e os 5 runbooks da agência, e ignora o `_arquivo/`.
+
+1. Clone o repositório da agência numa pasta local:
+   ```bash
+   git clone https://github.com/jussaracavalcante-sketch/agency-agents.git
+   ```
+2. Abra o app → **Configurações → Catálogo** → escolha **clone próprio (user clone)** e aponte para a pasta clonada.
+3. Ative **"gerenciar com permissão"** para o app atualizar o catálogo com `git pull --ff-only` quando houver agentes novos.
+4. Instale os agentes na ferramenta desejada (Claude Code, Cursor, Codex, Gemini CLI…) pelo próprio app.
+
+> A opção "gerenciado" do app clona o catálogo público original, não o da agência. Use sempre o clone próprio.
+
+
 
 1. **Demanda que não está no VJOB não existe.** WhatsApp é conversa; VJOB é registro.
 2. **O Social trabalha a partir do planejado.** Extra passa pelo filtro Account + Supervisão.
