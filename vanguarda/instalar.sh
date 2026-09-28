@@ -25,6 +25,9 @@ $MARK
 TXT
 
 for f in "$DEST"/*.md; do
+  # remove a lista fixa de ferramentas do frontmatter: sem ela o agente herda todas as
+  # ferramentas da sessão, inclusive os conectores (Google Ads, Semrush, Nekt, Notion)
+  sed -i '2,/^---$/{/^tools:/d}' "$f"
   grep -q "$MARK" "$f" && continue
   # insere o bloco logo após o fechamento do frontmatter YAML (segunda linha '---')
   awk -v block="$BLOCK" 'BEGIN{n=0} {print} /^---$/ && n<2 {n++; if(n==2){print ""; print block}}' "$f" > "$f.tmp"
