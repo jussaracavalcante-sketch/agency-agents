@@ -95,6 +95,10 @@ Analista de Social ──► Supervisão de Social Media ──► Account ─�
 - **Direito de imagem**: autorização de uso de imagem de colaboradores, clientes finais e influenciadores; licença de fotos, fontes e músicas.
 - **CONAR**: publicidade identificada (#publi quando houver parceria), sem comparativo enganoso, cuidado reforçado com público infantil, bebidas e medicamentos.
 
+### Feedback do cliente → checklist de ajustes
+
+Feedback que chega em várias mensagens, ou perto da publicação, gera retrabalho. O Analista cola as mensagens da rodada (sem dados pessoais) e pede ao **Content Creator** uma lista numerada de ajustes por peça, apontando conflitos entre pedidos. Essa lista é confirmada com o cliente antes de ir à Criação e é registrada no card ([Cliente → Social](../coordination/handoff-templates.md#cliente--social)). Feedback de última hora fora da janela combinada entra como nova rodada.
+
 ## Quality Gate G4
 
 - [ ] Checklist interno de qualidade concluído e anexado ao card

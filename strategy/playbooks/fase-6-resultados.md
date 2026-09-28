@@ -102,6 +102,11 @@ Métricas diárias ─► Coleta mensal ─► Relatório de conta ─► Reuni�
 VJOB (prazos, extras, retrabalho) ─► Relatório de operação ─► Diretoria ──────────┘
 ```
 
+### (c) Indicadores de SAC e painel comparável entre marcas
+
+- **SAC** (quando no escopo): volume de interações atendidas, pendências abertas, tempo médio de resposta (quando houver SLA formal), temas recorrentes de dúvida e reclamação, casos levados ao privado e casos escalonados. Temas recorrentes voltam como pauta de conteúdo na Fase 2 (ex.: FAQ em carrossel).
+- **Painel padronizado**: a mesma planilha ou dashboard de indicadores para todas as contas e marcas (seguidores, alcance, engajamento, visualizações, desempenho por conteúdo). Isso permite comparar marcas do mesmo grupo e meses diferentes sem retrabalho de consolidação.
+
 ## Quality Gate G6
 
 - [ ] Relatório de conta entregue ao Cliente, validado pela Supervisão

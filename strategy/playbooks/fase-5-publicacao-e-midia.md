@@ -76,6 +76,7 @@ Princípios:
 | 3 | Classificar o que exige retorno do Cliente (preço, estoque, reclamação, troca, saúde, jurídico) | Analista / SAC | Planilha / card | Imediato |
 | 4 | Repassar ao Cliente/SAC com o [template Social → SAC](../coordination/handoff-templates.md#social--sac) | Analista | WhatsApp / Google Chat | 5 min por lote |
 | 5 | Dar o retorno público ou privado após resposta do Cliente | Analista / SAC | Rede social | 1–3 min |
+| 5b | Consultar a ficha da marca antes de responder dúvida comercial ou de campanha | SAC | Ficha da marca (Drive) | 1 min |
 | 6 | Sinais de crise (volume anormal de reclamações, tema sensível) → escalonar | Analista → Supervisão → Account | Google Chat | Imediato |
 
 ### C. Integração com Tráfego (mídia paga)
@@ -88,6 +89,35 @@ Princípios:
 | 4 | Ativar impulsionamento ou campanha, com verba e período aprovados | Tráfego | Meta Ads / Google Ads | 15–45 min |
 | 5 | Monitorar reprovação de anúncio e primeiros resultados (24–48h) | Tráfego | Gerenciador de anúncios | 10 min por dia |
 | 6 | Avisar o Analista sobre anúncio reprovado ou comentário em anúncio | Tráfego → Analista | Google Chat | Imediato |
+
+### D. SAC em redes sociais — fluxo do Analista de SAC
+
+O atendimento em redes é **relacionamento com o consumidor**, não só resposta a comentário. A resposta depende do post, da campanha, da marca e da informação oficial disponível.
+
+**Classificação de cada interação**
+
+| Tipo | Exemplo | Quem responde | Onde responde |
+|---|---|---|---|
+| Elogio | "Adorei o atendimento" | SAC | Público, no tom da marca |
+| Dúvida simples | horário, endereço, regulamento da campanha | SAC, com a ficha da marca | Público ou direct |
+| Dúvida comercial | preço, estoque, financiamento, disponibilidade | SAC **só com informação confirmada**; senão, repassa ao Cliente | Direct / canal indicado pelo Cliente |
+| Reclamação | produto, entrega, atendimento na loja | SAC faz a contenção pública e leva ao privado; o Cliente apura | Público (curto) + privado |
+| Caso sensível | saúde, jurídico, exposição de terceiros, ameaça de viralização | Supervisão decide o texto; Account aciona o Cliente | Privado; público só com texto aprovado |
+
+**Resposta a reclamação (padrão)**
+```
+1. Resposta pública curta: reconhece, pede desculpas pelo transtorno, convida ao privado
+2. No privado: pede só os dados necessários para apurar (nº do pedido, loja, data), nunca documento ou dado sensível no comentário
+3. Repasse ao Cliente pelo template Social → SAC, com prazo de retorno
+4. Retorno ao consumidor com a solução do Cliente; registrar status "Encerrado"
+```
+
+**Regras do SAC**
+- **Nunca informar o que não foi confirmado**: condição comercial, disponibilidade, prazo de entrega, pós-venda. Na dúvida, "vou verificar e retorno por aqui" e repasse.
+- **Ficha da marca obrigatória** para cada conta atendida: produtos e serviços, campanhas vigentes com regras e datas, contatos oficiais, dúvidas frequentes com resposta aprovada, temas proibidos ([modelo](../coordination/handoff-templates.md#ficha-da-marca-para-sac)). A ficha é atualizada **antes** de cada campanha entrar no ar.
+- **Uma voz por conta**: quando mais de uma pessoa atende a mesma conta, todos usam a mesma ficha e o mesmo banco de respostas. Resposta nova e recorrente entra no banco.
+- **IA como apoio**: sugere classificação, sinaliza comentário negativo ou sensível e propõe rascunho no tom da marca. O SAC revisa e adapta ao contexto antes de publicar.
+- **Apoio ao time**: o SAC também insere o planejamento mensal aprovado no iClips, a pedido do Analista responsável pela conta.
 
 ## Checklist de publicação (por peça)
 

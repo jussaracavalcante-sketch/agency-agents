@@ -20,6 +20,7 @@
 | 4 | [Consolidação de feedback (rodada)](#cliente--social) | Cliente → Social | [Fase 4](../playbooks/fase-4-aprovacao.md) |
 | 5 | [Peça aprovada para mídia](#social--tráfego) | Social → Tráfego | [Fase 5](../playbooks/fase-5-publicacao-e-midia.md) |
 | 6 | [Interações que exigem o Cliente](#social--sac) | Social → SAC / Cliente | [Fase 5](../playbooks/fase-5-publicacao-e-midia.md) |
+| 6b | [Ficha da marca para SAC](#ficha-da-marca-para-sac) | Analista da conta → SAC | [Fase 5](../playbooks/fase-5-publicacao-e-midia.md) |
 | 7 | [Relatório de operação mensal](#supervisão--diretoria-de-operações) | Supervisão → Diretoria de Operações | [Fase 6](../playbooks/fase-6-resultados.md) |
 | 8 | [Escalonamento de atraso/risco](#escalonamento-de-atraso) | Qualquer papel → nível acima | Transversal |
 | 9 | [Fechamento de fase (gate)](#fechamento-de-fase) | Dono da fase → próxima fase | Todas |
@@ -237,6 +238,38 @@ numerados por peça. Sem retorno até o prazo, as peças não serão publicadas 
 - **Resposta do Cliente**: [...]
 - **Respondido ao público em**: [DD/MM/AAAA HH:MM] por [Analista / SAC]
 - **Status***: [Aberto / Respondido / Encerrado]
+```
+
+## Ficha da marca para SAC
+
+**Base de consulta do atendimento.** Mantida pelo Analista da conta com informações do Cliente; atualizada antes de cada campanha. Todos que atendem a conta usam a mesma ficha.
+
+```markdown
+# Ficha da marca — [identificação interna]
+
+| Campo | Valor |
+|---|---|
+| **Tom de voz e tratamento*** | [ex.: próximo, "você", emojis moderados] |
+| **Canais oficiais de contato*** | [WhatsApp, telefone, site — só os oficiais] |
+| **Horários e endereços*** | [lojas/unidades] |
+| **Atualizada em*** | [DD/MM/AAAA] por [papel] |
+
+## Campanhas vigentes*
+| Campanha | Período | Regras/mecânica | Link do regulamento |
+|---|---|---|---|
+
+## Perguntas frequentes com resposta aprovada*
+| Pergunta | Resposta aprovada | Aprovada por (papel) |
+|---|---|---|
+
+## Encaminhamentos*
+| Tema | Para onde direcionar | Prazo de retorno do Cliente |
+|---|---|---|
+| Preço / estoque | [canal] | [...] |
+| Pós-venda / troca | [canal] | [...] |
+
+## Temas proibidos ou sensíveis*
+- [ex.: não comentar concorrentes; saúde → sempre privado; jurídico → Supervisão]
 ```
 
 ## Supervisão → Diretoria de Operações

@@ -1,7 +1,7 @@
 # 🔄 Ciclo de Operação da Agência
 
 > Documento-mestre de como a agência entrega Social Media, Mídia Paga, Marca e Vendas com apoio dos 38 agentes de IA deste repositório.
-> **Versão** 1.0 · **Data** 28/09/2026 · **Status** rascunho para validação da liderança · **Base** levantamento de rotinas dos setores de Social Media e Mídia Paga (09/2026) + identidade pública da agência
+> **Versão** 1.0 · **Data** 28/09/2026 · **Status** rascunho para validação da liderança · **Base** levantamento de rotinas dos setores de Social Media (incluindo SAC e analistas multifunção) e Mídia Paga (09/2026) + identidade pública da agência
 
 ---
 
@@ -25,6 +25,11 @@ O levantamento das rotinas do setor de Social Media mostra que o trabalho é bem
 | Mídia: supervisão absorve execução e perde tempo de estratégia | Alta | Paid Media Auditor na revisão técnica; delegação da execução ao Analista |
 | Mídia: mudança de verba pedida só por WhatsApp | Média | Regra: alteração de verba só vale por e-mail ou chamado no VJOB |
 | Mídia: conferência manual de saldo, UTM e tags | Média | Alertas de saldo a 90% e script de auditoria de UTM/tags (Tracking & Measurement Specialist) |
+| Esquecimento de datas importantes | Alta | [Fase 2](playbooks/fase-2-planejamento-mensal.md): calendário anual por conta com alertas |
+| Urgências interrompem o planejado | Alta | [Fase 2](playbooks/fase-2-planejamento-mensal.md): níveis P1–P3 e janela diária reservada para urgências |
+| Conteúdo técnico sem validador definido (saúde e outros regulados) | Alta | [Fase 3](playbooks/fase-3-producao.md): validador técnico obrigatório no briefing |
+| SAC: respostas diferentes na mesma conta e informação de campanha desatualizada | Média | [Fase 5](playbooks/fase-5-publicacao-e-midia.md): ficha da marca única e banco de respostas |
+| Acervo de fotos e vídeos difícil de reaproveitar | Média | [Fase 3](playbooks/fase-3-producao.md): padrão de pastas e nomes de arquivo |
 
 **Princípio central:** os agentes de IA preparam, sugerem e revisam; **pessoas decidem, aprovam e publicam**. Nenhuma peça vai ao ar sem aprovação escrita do cliente.
 
@@ -87,13 +92,14 @@ Papéis descritos a partir das rotinas levantadas. O documento não identifica p
 |---|---|---|---|
 | **Account** | Porta de entrada do cliente; alinha expectativas, campanhas e escopo; valida planejamento e relatório com o cliente | Encaminhamento da demanda à área certa | Mudança de escopo, custo adicional |
 | **Supervisão de Social Media** | Prioriza a fila, conduz a daily, monitora prazos e atrasos, garante qualidade e aderência ao plano, gere carteira e capacidade (Sede, House, SAC), faz 1:1 e check-in semanais, reporta à Diretoria de Operações | Prioridades, redistribuição de analistas, encaminhamentos operacionais | Contratação, custo, mudança estrutural de escopo ou equipe, validação visual crítica (Head de Criação) |
-| **Analista de Social Media** | Planeja o mês, escreve pautas e legendas, faz o briefing ao D.A., acompanha a peça, envia para aprovação, agenda e publica, responde à comunidade, mede e faz o relatório de conta; roteiriza, capta e edita quando aplicável | Texto de legenda, horário de postagem, resposta ao público, sequência de Stories, formato sugerido | Publicar fora do planejado, mudar identidade ou oferta, qualquer peça sem aprovação do cliente |
+| **Analista de Social Media** | Planeja o mês, escreve pautas e legendas, faz o briefing ao D.A., acompanha a peça, envia para aprovação, agenda e publica, responde à comunidade, mede e faz o relatório de conta; roteiriza, capta e edita quando aplicável. Em algumas contas o papel é **multifunção** (Social + direção de arte + audiovisual), inclusive cobertura de eventos e comunicação interna do cliente; em carteiras **multimarca** alterna tom de voz por marca | Texto de legenda, horário de postagem, resposta ao público, sequência de Stories, formato sugerido | Publicar fora do planejado, mudar identidade ou oferta, qualquer peça sem aprovação do cliente |
 | **Criação (D.A. / designers)** | Produz e ajusta peças a partir do briefing | Execução visual dentro do briefing | Desvio de identidade visual |
 | **Head de Criação** | Valida qualidade visual quando acionado | Padrão visual | — |
 | **Redação / Audiovisual** | Texto, roteiro, captação e edição quando não feitos pelo Social | Execução técnica | — |
 | **Supervisão de Mídia Paga** | Prioriza a fila do time, conduz a daily, revisa tecnicamente toda campanha antes de ativar, audita rastreamento, controla atrasos no VJOB, valida relatórios, gere carteira por complexidade (e-commerce × leads), faz 1:1 e check-in semanais, defende verba com Account e cliente | Otimizações e reestruturações de campanha, redistribuição de contas entre analistas (com justificativa à Diretoria) | Verba fora do contrato, contratação, descontos ou ressarcimentos, mudança estrutural do setor |
 | **Analista de Mídia Paga** | Checa saldo e ritmo de verba, sobe e otimiza campanhas (Meta, Google, TikTok), implementa pixel/CAPI/GTM/GA4, atende dúvidas técnicas do Account, faz o relatório mensal para validação | Pausar peças fracas, redistribuir verba diária dentro do total aprovado, testar públicos e formatos | Mudar a verba total, criar estrutura fora do escopo, enviar relatório ao cliente sem validação |
-| **SAC / Fast Mídia** | Atendimento em redes e demandas rápidas | Respostas padrão | Respostas que envolvam política comercial do cliente |
+| **Analista de SAC (redes sociais)** | Monitora comentários e directs ao longo do dia, classifica (elogio, dúvida, reclamação, caso sensível), responde com a ficha da marca, leva reclamações ao privado, repassa ao cliente o que exige apuração, mantém o banco de respostas; apoia o time inserindo o planejamento no iClips | Redação da resposta dentro da ficha da marca, quando levar ao privado, ajuste de tom ao contexto | Informação comercial não confirmada, posicionamento em caso sensível, pós-venda que exige apuração |
+| **Fast Mídia** | Demandas rápidas de conteúdo e publicação | Execução dentro do padrão | Qualquer peça sem aprovação |
 | **Diretoria de Operações** | Valida capacidade, realocações, casos graves, relatório de operação | Estrutura da operação | — |
 | **Cliente** | Fornece briefing, ofertas e materiais; **aprova por escrito** | Aprovação final | — |
 
@@ -220,6 +226,9 @@ Prioridades a partir das sugestões do próprio time. Estimativas de ganho vêm 
 | 7 | Coleta automática de métricas + relatório com insights | Relatórios manuais | 2–4 h/mês (Supervisão); 1–2 h por relatório | 6 |
 | 8 | Checklist de publicação automatizado | Conferência manual | 30 min/dia | 5 |
 | 9 | Biblioteca de prompts por atividade | IA caso a caso | — | Transversal |
+| 10 | Classificação de comentários e alerta de caso sensível no SAC | Demora em achar reclamação crítica | contínuo | 5 |
+| 11 | Calendário anual com alertas de datas por conta | Datas esquecidas | recorrente | 2 |
+| 12 | Resumo de feedback do cliente em checklist de ajustes | Retrabalho por feedback fragmentado | recorrente | 4 |
 
 ---
 

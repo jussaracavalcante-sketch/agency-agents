@@ -93,6 +93,8 @@ Cada linha do calendário é uma pauta. Pauta sem algum campo não segue para o 
 - **Do segmento**: datas de saúde, campanhas de conscientização, dias temáticos do setor.
 - **Do cliente**: aniversário da marca, inaugurações, ofertas semanais, campanhas de loja.
 
+**Calendário anual com alertas:** cada conta mantém um calendário anual de datas (sazonais, do segmento e do próprio cliente) revisado todo mês no fechamento do planejamento. Esquecer uma data importante gera conteúdo em cima da hora. O ideal é um alerta automático 30 e 15 dias antes de cada data (meta sugerida — validar).
+
 Regra: data sazonal só entra se tiver relação com o negócio do cliente. Evitar post "por obrigação".
 
 ### Regra do planejado e filtro de demanda extra
@@ -109,6 +111,22 @@ Pedido fora do calendário
 ```
 
 Demandas de outras áreas (site, SAC, eventos) que chegam ao Social via Account são devolvidas à área correta pela Supervisão.
+
+### Urgência × planejado — níveis de prioridade
+
+Urgências concorrem com o planejado e interrompem o trabalho. Classificar toda demanda nova ajuda a proteger o calendário:
+
+| Nível | Critério | Tratamento |
+|---|---|---|
+| P1 — Crítica | Crise, erro publicado, obrigação legal, oferta relâmpago do cliente | Entra no mesmo dia; Supervisão redistribui a fila |
+| P2 — Alta | Muda uma data de campanha já aprovada | Até 2 dias úteis, com troca de pauta registrada |
+| P3 — Normal | Nova ideia, conteúdo extra, ajuste não urgente | Próximo planejamento ou filtro de demanda extra |
+
+**Janela reservada para urgências:** cada analista reserva um bloco fixo por dia (sugestão: 1 h, validar) para P1 e P2. Assim a urgência não desmonta o restante da fila.
+
+### Tipos de escopo que o planejamento cobre
+
+Além do feed e dos Stories, algumas contas incluem **comunicação interna e institucional** (campanhas para colaboradores, treinamentos, comunicados, segurança do trabalho) e **cobertura de eventos**. Esses itens entram no calendário com pauta própria e com o solicitante da área do cliente identificado.
 
 ## Quality Gate G2
 

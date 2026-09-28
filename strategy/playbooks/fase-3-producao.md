@@ -99,6 +99,23 @@ Manter modelos (templates) de Stories aprovados por cliente para acelerar a prod
 - **Termo de uso de imagem** assinado por qualquer pessoa que apareça (colaboradores do cliente, consumidores, influenciadores).
 - **Edição** no CapCut: legenda embutida, música licenciada/da biblioteca da plataforma, exportação no formato do canal.
 
+### Conteúdo técnico e segmentos regulados
+
+Em saúde, farmácia, financeiro e outros segmentos regulados, o conteúdo técnico precisa de **validação técnica** além da aprovação do cliente.
+- O briefing indica o **profissional validador** (ex.: médico responsável pelo tema) e o prazo da validação.
+- Conteúdo de saúde segue as normas do conselho profissional e da vigilância sanitária aplicáveis (publicidade médica, medicamentos). Nada de promessa de resultado, antes/depois sem base normativa ou autodiagnóstico.
+- Gravação com profissional de saúde: roteiro e perguntas enviados antes, termo de uso de imagem assinado, revisão técnica do corte final.
+
+### Agenda de captação e acervo audiovisual
+
+- **Agenda de captação** mensal por conta, fechada junto com o calendário (Fase 2), já considerando a disponibilidade de porta-vozes, equipes e ambientes.
+- **Cobertura de eventos**: roteiro de tomadas, Stories em tempo real com texto pré-aprovado e separação de material para posts e Reels posteriores.
+- **Acervo**: pastas padronizadas por cliente → ano → mês → evento/pauta, com arquivos nomeados `AAAA-MM-DD_cliente_tema_formato_v1`, para reaproveitar fotos e vídeos sem perder tempo procurando.
+
+### Carteira multimarca
+
+Quando um analista atende várias marcas do mesmo grupo (ou marcas próprias de um varejista), cada marca tem **ficha de tom de voz e público própria**. A legenda ou roteiro gerado com IA sempre usa a ficha da marca certa. Antes de enviar ao cliente, revise se não houve mistura de linguagem entre marcas.
+
 ### Checklist de revisão interna (antes de ir ao cliente)
 
 - [ ] Peça corresponde à pauta aprovada (tema, formato, canal, data)
@@ -108,6 +125,7 @@ Manter modelos (templates) de Stories aprovados por cliente para acelerar a prod
 - [ ] Legenda no tom de voz do cliente e com CTA
 - [ ] Regras legais do segmento e da plataforma atendidas
 - [ ] Direito de imagem garantido (termo, banco licenciado ou imagem própria)
+- [ ] Conteúdo técnico validado pelo profissional indicado (segmentos regulados)
 - [ ] Uso de IA revisado por humano e sem elementos proibidos (ver limites abaixo)
 - [ ] Dimensões e duração corretas para o canal
 - [ ] Arquivo final nomeado no padrão e anexado ao job
