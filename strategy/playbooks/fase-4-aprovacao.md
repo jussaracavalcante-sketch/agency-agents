@@ -95,6 +95,10 @@ Analista de Social ──► Supervisão de Social Media ──► Account ─�
 - **Direito de imagem**: autorização de uso de imagem de colaboradores, clientes finais e influenciadores; licença de fotos, fontes e músicas.
 - **CONAR**: publicidade identificada (#publi quando houver parceria), sem comparativo enganoso, cuidado reforçado com público infantil, bebidas e medicamentos.
 
+### Apresentação de aprovação
+
+Quando a conta aprova por apresentação (PPT ou PDF), use um modelo único: capa com cliente e período → uma página por peça (arte, legenda, data, canal) → campo "aprovado / ajuste" por peça → página final com prazo de retorno. O cliente responde no mesmo arquivo ou por escrito no canal oficial, e a resposta vai para o card.
+
 ### Feedback do cliente → checklist de ajustes
 
 Feedback que chega em várias mensagens, ou perto da publicação, gera retrabalho. O Analista cola as mensagens da rodada (sem dados pessoais) e pede ao **Content Creator** uma lista numerada de ajustes por peça, apontando conflitos entre pedidos. Essa lista é confirmada com o cliente antes de ir à Criação e é registrada no card ([Cliente → Social](../coordination/handoff-templates.md#cliente--social)). Feedback de última hora fora da janela combinada entra como nova rodada.

@@ -119,6 +119,26 @@ O atendimento em redes é **relacionamento com o consumidor**, não só resposta
 - **IA como apoio**: sugere classificação, sinaliza comentário negativo ou sensível e propõe rascunho no tom da marca. O SAC revisa e adapta ao contexto antes de publicar.
 - **Apoio ao time**: o SAC também insere o planejamento mensal aprovado no iClips, a pedido do Analista responsável pela conta.
 
+### E. Publicação multicanal, conteúdo do cliente e lives
+
+**Adaptação por canal.** O mesmo conteúdo não é publicado igual em todos os canais. O Analista adapta formato, legenda e CTA:
+
+| Canal | Ajuste mínimo |
+|---|---|
+| Instagram (feed, Reels, Stories) | Capa do Reels, legenda com CTA, marcações, Stories de reforço |
+| Facebook | Legenda mais direta, link quando houver destino |
+| TikTok / Kwai | Vídeo vertical nativo, texto na tela nos 3 primeiros segundos, legenda curta, som da plataforma quando couber |
+| YouTube (Shorts e vídeo) | Título pesquisável, descrição com palavra-chave, miniatura ([Video Optimization Specialist](../coordination/agent-activation-prompts.md)) |
+| LinkedIn | Linguagem institucional ou B2B, sem excesso de emojis |
+
+Quando a publicação é manual em vários canais, o Analista confere cada canal depois de publicar e marca o check no VJOB. Ferramenta de agendamento integrada é preferível sempre que o canal permitir.
+
+**Conteúdo enviado pronto pelo cliente** (ofertas, cards, Reels da própria marca): segue o fluxo mesmo sem produção interna. O Analista confere oferta, validade, identidade e formato, registra no card a aprovação ou o envio do cliente e só depois publica.
+
+**Lives recorrentes**: roteiro ou pauta, horário, responsável pela condução, checagem de conexão e áudio, texto de divulgação nos Stories antes da live e corte de trechos para Reels depois. O procedimento fica documentado para que a live não dependa de uma única pessoa.
+
+**Comunidade com escala definida**: quando o próprio Analista responde a comunidade junto com produção e publicação, as respostas atrasam. Defina janelas fixas no dia ou uma escala de community management por conta, com o SAC quando houver.
+
 ## Checklist de publicação (por peça)
 
 - [ ] Status "Aprovado" com registro escrito no card

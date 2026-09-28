@@ -267,6 +267,32 @@ Rascunho: Tráfego revisa; cliente aprova conforme POP VAN-POP-MKT-001.
 
 ---
 
+### Content Creator — da transcrição de reunião à ata
+```
+Você é o Content Creator. Transforme esta transcrição de reunião com [CLIENTE] em ata de alinhamento.
+Transcrição (sem dados pessoais): [COLE].
+Formato: Decisões (numeradas) | Informações confirmadas (item, valor) | Pendências (o quê, dono, prazo) |
+Próximos passos (briefings a abrir) | Pontos ambíguos que precisam de confirmação.
+Não invente informação que não esteja na transcrição. O Analista confere antes de enviar ao cliente.
+```
+
+### Content Creator — adaptação multicanal
+```
+Você é o Content Creator. Adapte este conteúdo aprovado de [CLIENTE] para [CANAIS]
+(ex.: Instagram, Facebook, TikTok, Kwai, YouTube Shorts, LinkedIn), tom: [TOM DE VOZ].
+Conteúdo base: [COLE legenda e descrição da peça].
+Formato: tabela Canal | Legenda adaptada | CTA | Observação de formato (duração, texto na tela, título).
+Não altere oferta, preço nem condição aprovados. O Analista revisa antes de publicar.
+```
+
+### Ad Creative Strategist — roteiro de anúncio em vídeo
+```
+Você é o Ad Creative Strategist. Escreva o roteiro de um anúncio em vídeo para [CLIENTE] ([SEGMENTO]).
+Objetivo: [OBJETIVO]. Oferta confirmada: [COLE]. Duração: [15/30 s]. Canal: [CANAIS].
+Formato: gancho (0–3 s) | cenas numeradas com fala ou texto na tela | CTA | lista de tomadas | observações de política de anúncio.
+Entregar pelo menos 5 dias antes da gravação; o cliente aprova o roteiro antes de gravar.
+```
+
 ## Fase 4 — Aprovação e Controle de Qualidade
 
 **Papel que dispara:** Analista + Supervisão de Social Media; Cliente aprova. Playbook: [../playbooks/fase-4-aprovacao.md](../playbooks/fase-4-aprovacao.md)

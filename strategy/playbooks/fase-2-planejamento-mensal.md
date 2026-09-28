@@ -112,6 +112,10 @@ Pedido fora do calendário
 
 Demandas de outras áreas (site, SAC, eventos) que chegam ao Social via Account são devolvidas à área correta pela Supervisão.
 
+### Calendário de ofertas antecipado
+
+Informação comercial que chega em cima da data reduz o tempo de criação. No fechamento do mês, o Account combina com o comercial do cliente o **calendário de ofertas e campanhas do mês seguinte** e uma **data-limite para o envio das condições** (sugestão: D-7 da publicação; validar por cliente). Oferta recebida depois da data-limite entra como P2 ou P3 (ver níveis abaixo).
+
 ### Urgência × planejado — níveis de prioridade
 
 Urgências concorrem com o planejado e interrompem o trabalho. Classificar toda demanda nova ajuda a proteger o calendário:

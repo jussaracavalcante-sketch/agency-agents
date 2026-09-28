@@ -1,7 +1,7 @@
 # 🔄 Ciclo de Operação da Agência
 
 > Documento-mestre de como a agência entrega Social Media, Mídia Paga, Marca e Vendas com apoio dos 38 agentes de IA deste repositório.
-> **Versão** 1.0 · **Data** 28/09/2026 · **Status** rascunho para validação da liderança · **Base** levantamento de rotinas dos setores de Social Media (incluindo SAC e analistas multifunção) e Mídia Paga (09/2026) + identidade pública da agência
+> **Versão** 1.0 · **Data** 28/09/2026 · **Status** rascunho para validação da liderança · **Base** levantamento de rotinas de 09/2026: 14 formulários de Social Media (inclui SAC e analistas multifunção) e 2 de Mídia Paga + identidade pública da agência
 
 ---
 
@@ -30,6 +30,10 @@ O levantamento das rotinas do setor de Social Media mostra que o trabalho é bem
 | Conteúdo técnico sem validador definido (saúde e outros regulados) | Alta | [Fase 3](playbooks/fase-3-producao.md): validador técnico obrigatório no briefing |
 | SAC: respostas diferentes na mesma conta e informação de campanha desatualizada | Média | [Fase 5](playbooks/fase-5-publicacao-e-midia.md): ficha da marca única e banco de respostas |
 | Acervo de fotos e vídeos difícil de reaproveitar | Média | [Fase 3](playbooks/fase-3-producao.md): padrão de pastas e nomes de arquivo |
+| Informação comercial chega em cima da data de publicação | Alta | [Fase 2](playbooks/fase-2-planejamento-mensal.md): calendário de ofertas antecipado e data-limite de envio |
+| Briefing montado só a partir de transcrição de reunião; mudança depois de iniciada a produção | Alta | [Fase 3](playbooks/fase-3-producao.md): ata de alinhamento, checklist antes da pauta, briefing validado |
+| Uma função acumula roteiro, captação, edição, publicação, comunidade e lives | Alta | Estrutura do time (seção 4): redistribuição das etapas operacionais |
+| Publicação manual em vários canais (Instagram, Facebook, TikTok, Kwai, YouTube, LinkedIn) | Média | [Fase 5](playbooks/fase-5-publicacao-e-midia.md): adaptação por canal e agendamento integrado quando possível |
 
 **Princípio central:** os agentes de IA preparam, sugerem e revisam; **pessoas decidem, aprovam e publicam**. Nenhuma peça vai ao ar sem aprovação escrita do cliente.
 
@@ -104,6 +108,20 @@ Papéis descritos a partir das rotinas levantadas. O documento não identifica p
 | **Cliente** | Fornece briefing, ofertas e materiais; **aprova por escrito** | Aprovação final | — |
 
 ---
+
+### Estrutura do time de Social Media
+
+O setor tem **15 pessoas** sob uma Supervisão de Social Media que responde à Diretoria de Operações. O levantamento de 09/2026 reuniu 14 formulários do setor.
+
+| Perfil | O que muda na rotina |
+|---|---|
+| Supervisão (1) | Gestão da operação, da carteira e da capacidade; 1:1 e check-ins; interface com as outras áreas |
+| Analistas de Social Media (júnior, pleno e sênior) | Ciclo completo por carteira de clientes. Os seniores atendem mais contas simultâneas e passam 4–5 h/dia só organizando demandas e briefings, o que reforça a prioridade de automação |
+| Analistas multifunção | Somam direção de arte, captação, edição, publicação multicanal e lives em contas específicas |
+| Analista de SAC | Atendimento em redes e apoio operacional (inserção do planejamento no iClips) |
+| Alocação Sede / House | Parte do time atua dedicada a um cliente (House/In Company), às vezes formando social medias internos do próprio cliente, com repasse gradual de tarefas |
+
+**Regra de capacidade:** quando uma função acumula roteiro, captação, edição, publicação e comunidade, a Supervisão redistribui as etapas operacionais para liberar tempo de planejamento. Isso vale inclusive para o repasse a social medias internos do cliente, que deve seguir um procedimento documentado.
 
 ## 5. Agentes de IA por fase
 
@@ -229,6 +247,10 @@ Prioridades a partir das sugestões do próprio time. Estimativas de ganho vêm 
 | 10 | Classificação de comentários e alerta de caso sensível no SAC | Demora em achar reclamação crítica | contínuo | 5 |
 | 11 | Calendário anual com alertas de datas por conta | Datas esquecidas | recorrente | 2 |
 | 12 | Resumo de feedback do cliente em checklist de ajustes | Retrabalho por feedback fragmentado | recorrente | 4 |
+| 13 | Transcrição de reunião → ata com decisões e pendências | Briefing incompleto | 15–30 min por reunião | 3 |
+| 14 | Transcrição e legendagem automática de vídeos | Tempo de edição | variável | 3 |
+| 15 | Adaptação automática de conteúdo por canal (feed, Stories, Reels, anúncio, Kwai, YouTube) | Publicação multicanal manual | 10–30 min por conteúdo | 5 |
+| 16 | Alertas de vencimento e de tarefas do dia seguinte no VJOB | Conferência manual de tarefas | 15–30 min/dia por pessoa | Transversal |
 
 ---
 

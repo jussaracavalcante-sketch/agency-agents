@@ -14,7 +14,7 @@ Fase 0 Prospecção → Fase 1 Onboarding → [ Fase 2 Planejar → 3 Produzir �
 
 ## Por que agora
 
-O levantamento das rotinas do setor de Social Media (09/2026) mostra que o gargalo não é execução, e sim **as passagens entre pessoas**:
+O levantamento de rotinas de 09/2026 (14 formulários de Social Media, incluindo SAC, e 2 de Mídia Paga) mostra que o gargalo não é execução, e sim **as passagens entre pessoas**:
 
 - **Aprovação do cliente** atrasa publicação (prioridade alta em todas as rotinas).
 - **Briefing incompleto** gera retrabalho entre Social e Criação.

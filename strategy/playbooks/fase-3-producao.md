@@ -116,6 +116,31 @@ Em saúde, farmácia, financeiro e outros segmentos regulados, o conteúdo técn
 
 Quando um analista atende várias marcas do mesmo grupo (ou marcas próprias de um varejista), cada marca tem **ficha de tom de voz e público própria**. A legenda ou roteiro gerado com IA sempre usa a ficha da marca certa. Antes de enviar ao cliente, revise se não houve mistura de linguagem entre marcas.
 
+### Da reunião ao briefing (e briefing congelado)
+
+- **Transcrição de reunião não é briefing.** Depois de cada alinhamento com o cliente, o Analista gera a **ata de alinhamento** (decisões, informações confirmadas, pendências com dono e prazo) e, a partir dela, o briefing ([modelo](../coordination/handoff-templates.md#ata-de-alinhamento-com-o-cliente)). A IA pode resumir a transcrição; o Analista confere antes de circular.
+- **Checklist antes de iniciar a pauta**: sem oferta, preço, validade, especificação técnica (ex.: versão e condições de veículo ou moto) e aprovador definidos, a pauta não começa.
+- **Briefing validado antes da produção**: mudança de direcionamento depois que a Criação começou vira **nova rodada**, registrada, com novo prazo.
+
+### Kits de campanha por tipo de cliente
+
+Campanhas recorrentes seguem uma **sequência padrão de peças**, montada de uma vez a partir das informações do cliente:
+
+| Tipo | Sequência do kit |
+|---|---|
+| Varejo / ofertas | Oferta confirmada → cards de feed → Stories → Reels → peça para anúncio |
+| Educação / cursos | Cronograma de cursos → cursos em destaque → flyer → peça impressa (A3) → cards → Stories → roteiro de anúncio |
+| Automotivo / concessionária | Condição comercial validada → peça por modelo/versão → carrossel comparativo → Reels de produto → anúncio |
+| Institucional / datas | Mensagem da data → peça principal → Stories → adaptação para canais secundários |
+
+**Roteiro de anúncio em vídeo**: entregue pelo menos 5 dias antes da gravação (prazo praticado pelo time; validar com a Supervisão).
+
+### Ajustes rápidos, captação e áudio
+
+- **Ajuste rápido pelo Analista** (texto, data, preço, recorte) com editor de imagem ou IA é permitido quando não muda layout nem identidade. Mudança de composição volta para a Criação.
+- **Kit de captação** por equipe: iluminação e microfone de lapela. Sem áudio limpo, o Reels perde retenção.
+- **Spot de áudio ou locução com voz sintética** (IA): exige licença de uso da ferramenta e aprovação do cliente. Imitar voz de pessoa real é proibido sem autorização expressa.
+
 ### Checklist de revisão interna (antes de ir ao cliente)
 
 - [ ] Peça corresponde à pauta aprovada (tema, formato, canal, data)

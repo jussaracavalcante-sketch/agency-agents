@@ -21,6 +21,7 @@
 | 5 | [Peça aprovada para mídia](#social--tráfego) | Social → Tráfego | [Fase 5](../playbooks/fase-5-publicacao-e-midia.md) |
 | 6 | [Interações que exigem o Cliente](#social--sac) | Social → SAC / Cliente | [Fase 5](../playbooks/fase-5-publicacao-e-midia.md) |
 | 6b | [Ficha da marca para SAC](#ficha-da-marca-para-sac) | Analista da conta → SAC | [Fase 5](../playbooks/fase-5-publicacao-e-midia.md) |
+| 6c | [Ata de alinhamento com o cliente](#ata-de-alinhamento-com-o-cliente) | Reunião → Social | [Fase 3](../playbooks/fase-3-producao.md) |
 | 7 | [Relatório de operação mensal](#supervisão--diretoria-de-operações) | Supervisão → Diretoria de Operações | [Fase 6](../playbooks/fase-6-resultados.md) |
 | 8 | [Escalonamento de atraso/risco](#escalonamento-de-atraso) | Qualquer papel → nível acima | Transversal |
 | 9 | [Fechamento de fase (gate)](#fechamento-de-fase) | Dono da fase → próxima fase | Todas |
@@ -270,6 +271,35 @@ numerados por peça. Sem retorno até o prazo, as peças não serão publicadas 
 
 ## Temas proibidos ou sensíveis*
 - [ex.: não comentar concorrentes; saúde → sempre privado; jurídico → Supervisão]
+```
+
+## Ata de alinhamento com o cliente
+
+**Base de todo briefing que nasce de reunião.** A transcrição sozinha não serve de briefing.
+
+```markdown
+# Ata de alinhamento — [identificação interna] — [DD/MM/AAAA]
+
+| Campo | Valor |
+|---|---|
+| **Participantes (papéis)*** | [Account, Analista, cliente — papéis, sem dados pessoais] |
+| **Objetivo da reunião*** | [...] |
+
+## Decisões*
+1. [...]
+
+## Informações confirmadas*
+| Item | Valor | Confirmado por (papel) |
+|---|---|---|
+| Oferta / condição | [...] | [...] |
+| Datas | [...] | [...] |
+
+## Pendências*
+| Pendência | Dono | Prazo |
+|---|---|---|
+
+## Próximos passos*
+- [Briefings a abrir, com card VJOB]
 ```
 
 ## Supervisão → Diretoria de Operações
