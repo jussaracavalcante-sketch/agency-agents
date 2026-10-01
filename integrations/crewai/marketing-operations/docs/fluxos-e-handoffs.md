@@ -122,9 +122,13 @@ Com a flag ligada, o fluxo é:
    chamando o endpoint de retomada da automação:
    ```json
    POST <API_URL>/resume
-   {"execution_id": "...", "task_id": "portao_g1", "human_feedback": "Aprovado. Ajustar X.",
-    "is_approve": true, "taskWebhookUrl": "...", "crewWebhookUrl": "...", "humanInputWebhook": {...}}
+   {"executionId": "<kickoff_id>", "taskId": "<task_id recebido no webhook>",
+    "humanFeedback": "Aprovado. Ajustar X.", "isApprove": true,
+    "taskWebhookUrl": "...", "crewWebhookUrl": "...", "humanInputWebhook": {...}}
    ```
+   Os campos são **camelCase** (a API rejeita `execution_id`). O `taskId` é o UUID enviado no
+   webhook de aprovação, não o nome da tarefa. A resposta traz um novo `kickoff_id` para
+   acompanhar a continuação. Validado em 2026-10-01 com a execução e73d4895 → bff9e967.
    `is_approve: false` faz a tarefa ser refeita com o feedback como contexto; `true` segue para
    a próxima tarefa. Os webhooks precisam ser repetidos na retomada (não são herdados).
 4. **Registro.** O receptor grava o evento (`tipo = human_input`) e a resposta fica no trace da
