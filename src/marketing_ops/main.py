@@ -23,7 +23,7 @@ from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 
-from .crew import MarketingOpsCrew
+from marketing_ops.crew import MarketingOpsCrew
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 load_dotenv()
@@ -114,12 +114,12 @@ def main() -> None:
     inputs = carregar_briefing(args.briefing)
 
     if args.report:
-        from .crew_variants import PerformanceReportCrew
+        from marketing_ops.crew_variants import PerformanceReportCrew
 
         inputs.update({"caminho_dados": args.report, "periodo_relatorio": args.periodo})
         resultado = PerformanceReportCrew().crew().kickoff(inputs=inputs)
     elif args.hierarchical:
-        from .crew_variants import MarketingOpsHierarchicalCrew
+        from marketing_ops.crew_variants import MarketingOpsHierarchicalCrew
 
         resultado = MarketingOpsHierarchicalCrew().crew().kickoff(inputs=inputs)
     else:
