@@ -43,7 +43,7 @@ ao CrewAI, aplicamos esta receita:
 ## Pré-requisitos
 
 - Python 3.10–3.13
-- `pip install crewai[tools] uv` (a CLI `crewai` usa `uv` para gerir dependências)
+- `pip install "crewai[tools,anthropic]>=1.0" uv` (a plataforma CrewAI exige versão 1.0 ou superior)
 - Chave de um provedor LLM (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc.)
 - `SERPER_API_KEY` para pesquisa web (opcional, recomendado)
 
