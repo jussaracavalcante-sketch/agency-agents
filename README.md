@@ -200,7 +200,7 @@ F5                                       ███████ ▶
 
 | O quê | Por quê | Quem | Quando | Onde | Como | Quanto |
 |-------|---------|------|--------|------|------|--------|
-| Configurar ambiente CrewAI | Base para tudo | Head de IA | Sem. 1 | Repositório | `requirements.txt`, `.env`, `crew.py` | Horas de setup |
+| Configurar ambiente CrewAI | Base para tudo | Head de IA | Sem. 1 | Repositório | `pyproject.toml`, `.env`, `crew.py` | Horas de setup |
 | Carregar brand book e benchmarks | Reduz alucinação e desvio de marca | Marketing + IA | Sem. 1 | `knowledge/` | Markdown/PDF indexados | Baixo |
 | Validar núcleo (F1) com 2 briefings reais | Provar qualidade antes de escalar | Head de IA + Planejamento | Sem. 2 | Crew | Rodar, revisar, ajustar prompts | Tokens |
 | Expandir para multicanal (F2) | Cobrir a operação completa | Head de IA + Conteúdo + Mídia | Sem. 3–4 | Crew | Ativar agentes 06–09, 11 | Tokens |
