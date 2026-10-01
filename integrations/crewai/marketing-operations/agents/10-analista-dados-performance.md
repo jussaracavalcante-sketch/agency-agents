@@ -71,4 +71,4 @@
 
 ## 7. Referência Agency
 
-`paid-media/paid-media-tracking-specialist.md`, `project-management/project-management-experiment-tracker.md`, `specialized/data-consolidation-agent.md`, `specialized/report-distribution-agent.md`.
+`paid-media/paid-media-tracking-specialist.md`, `_arquivo/project-management/project-management-experiment-tracker.md`, `_arquivo/specialized/data-consolidation-agent.md`, `_arquivo/specialized/report-distribution-agent.md`.

@@ -72,4 +72,4 @@
 
 ## 7. Referência Agency
 
-`design/design-brand-guardian.md`, `specialized/data-privacy-officer.md`, `specialized/healthcare-marketing-compliance.md`, `specialized/legal-document-review.md`.
+`brand/design-brand-guardian.md`, `_arquivo/specialized/data-privacy-officer.md`, `_arquivo/specialized/healthcare-marketing-compliance.md`, `_arquivo/specialized/legal-document-review.md`.

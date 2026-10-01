@@ -79,4 +79,4 @@ Formato: Markdown com as seções Resumo, Concorrência, Tendências, Oportunida
 
 ## 8. Referência Agency
 
-Inspirado em `specialized/agents-orchestrator.md`, `project-management/project-management-studio-producer.md` e `specialized/operations-manager.md`.
+Inspirado em `_arquivo/specialized/agents-orchestrator.md`, `_arquivo/project-management/project-management-studio-producer.md` e `_arquivo/specialized/operations-manager.md`.

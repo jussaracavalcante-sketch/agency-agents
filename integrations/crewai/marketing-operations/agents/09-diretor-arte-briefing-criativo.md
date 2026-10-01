@@ -72,4 +72,4 @@
 
 ## 7. Referência Agency
 
-`design/design-brand-guardian.md`, `design/` (visual storyteller, UI designer), `paid-media/paid-media-creative-strategist.md`.
+`brand/design-brand-guardian.md`, `design/` (visual storyteller, UI designer), `paid-media/paid-media-creative-strategist.md`.

@@ -74,4 +74,4 @@ fontes:
 
 ## 7. Referência Agency
 
-`marketing/marketing-content-creator.md`, `marketing/marketing-book-co-author.md`, `marketing/marketing-linkedin-content-creator.md`.
+`marketing/marketing-content-creator.md`, `_arquivo/marketing/marketing-book-co-author.md`, `marketing/marketing-linkedin-content-creator.md`.
