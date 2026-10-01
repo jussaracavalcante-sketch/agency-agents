@@ -25,6 +25,7 @@ from crewai_tools import FileReadTool, ScrapeWebsiteTool, SerperDevTool
 
 from marketing_ops.tools import (
     AnalyticsReadTool,
+    BrandBookTool,
     CrmReadTool,
     PaidMediaReadTool,
     PublishTool,
@@ -164,6 +165,7 @@ scrape = ScrapeWebsiteTool()
 read_file = FileReadTool()
 seo_tool = SeoKeywordTool()
 analytics_tool = AnalyticsReadTool()
+brand_book = BrandBookTool()
 crm_tool = CrmReadTool()
 paid_media_tool = PaidMediaReadTool()
 publish_tool = PublishTool(enabled=WRITE_TOOLS_ENABLED)
@@ -192,7 +194,7 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["estrategista_campanhas"],
             llm=MODEL,
-            tools=_tools(search, read_file),
+            tools=_tools(brand_book, search, read_file),
         )
 
     @agent
@@ -200,7 +202,7 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["pesquisador_mercado"],
             llm=MODEL,
-            tools=_tools(search, scrape, read_file, seo_tool),
+            tools=_tools(brand_book, search, scrape, read_file, seo_tool),
         )
 
     @agent
@@ -216,7 +218,7 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["redator_conteudo"],
             llm=MODEL,
-            tools=_tools(search, read_file),
+            tools=_tools(brand_book, search, read_file),
         )
 
     @agent
@@ -224,7 +226,7 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["estrategista_social"],
             llm=MODEL,
-            tools=_tools(search, read_file),
+            tools=_tools(brand_book, search, read_file),
         )
 
     @agent
@@ -232,7 +234,7 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["especialista_email_crm"],
             llm=MODEL,
-            tools=[read_file, crm_tool],
+            tools=[brand_book, read_file, crm_tool],
         )
 
     @agent
@@ -240,12 +242,12 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["gestor_midia_paga"],
             llm=MODEL,
-            tools=_tools(search, read_file, paid_media_tool),
+            tools=_tools(brand_book, search, read_file, paid_media_tool),
         )
 
     @agent
     def diretor_arte(self) -> Agent:
-        return Agent(config=self.agents_config["diretor_arte"], llm=MODEL, tools=[read_file])
+        return Agent(config=self.agents_config["diretor_arte"], llm=MODEL, tools=[brand_book, read_file])
 
     @agent
     def analista_dados(self) -> Agent:
@@ -260,7 +262,7 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["guardiao_marca_compliance"],
             llm=MODEL,
-            tools=_tools(search, read_file),
+            tools=_tools(brand_book, search, read_file),
         )
 
     @agent

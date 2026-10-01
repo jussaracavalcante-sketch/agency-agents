@@ -44,8 +44,8 @@ brief_estrategico:
     baseline e fonte, KPI norteador, personas (dores, gatilhos, objeções, canais), proposta de
     valor, matriz de mensagens (persona × etapa do funil), mix de canais com papel no funil e KPI
     próprio, alocação do orçamento total de {orcamento_total} (soma 100%, cenários conservador e
-    otimista), hipóteses a testar e riscos. Respeite o brand book fornecido no contexto de
-    conhecimento. Prazo da campanha: {prazo}.
+    otimista), hipóteses a testar e riscos. Consulte o guia de marca do cliente com a ferramenta brand_book_lookup antes de definir
+    mensagens e tom; respeite-o. Prazo da campanha: {prazo}.
     Este documento será lido por um(a) diretor(a) em 5 minutos: seja objetivo.
   expected_output: >
     Documento Markdown "Brief Estratégico" com as 9 seções do template (Contexto, Objetivos
@@ -57,7 +57,7 @@ brief_estrategico:
 revisao_g1:
   description: >
     Revise o brief estratégico quanto a: coerência com o briefing, objetivos mensuráveis com
-    baseline, aderência ao brand book (tom, termos proibidos, claims permitidos), riscos
+    baseline, aderência ao guia de marca do cliente (consulte com brand_book_lookup: DNA, tom, paleta, termos), riscos
     regulatórios das mensagens propostas (CONAR/CDC, setor regulado) e itens [VALIDAR] não
     resolvidos. Emita parecer: Aprovado, Aprovado com ajustes (lista) ou Reprovado (motivo e
     regra). Não reescreva o brief.
@@ -86,7 +86,7 @@ producao_conteudo:
   description: >
     Escreva o(s) conteúdo(s) longo(s) definidos no brief estratégico aprovado (por exemplo,
     artigo pilar e landing page), seguindo integralmente os requisitos on-page do mapa de SEO e
-    o brand book. Inclua o cabeçalho de metadados (titulo, title_seo, meta_description, slug,
+    o guia de marca do cliente (consulte-o com a ferramenta brand_book_lookup). Inclua o cabeçalho de metadados (titulo, title_seo, meta_description, slug,
     kw_principal, persona, etapa_funil, cta_principal, notas_visuais, fontes), 3 variações de
     título e 2 de CTA. Nenhum dado sem fonte. Marque [AVAL ESPECIALISTA] onde couber.
   expected_output: >
