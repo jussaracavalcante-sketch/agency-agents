@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 from crewai import Agent, Crew, Process, Task
 
-from .crew import MAX_RPM, MODEL, MarketingOpsCrew, analytics_tool, read_file
+from marketing_ops.crew import MAX_RPM, MODEL, MarketingOpsCrew, analytics_tool, read_file
 
 
 def build_hierarchical_crew() -> Crew:
