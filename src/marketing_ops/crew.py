@@ -16,6 +16,7 @@ plataforma CrewAI encontre uma única classe @CrewBase neste arquivo.
 from __future__ import annotations
 
 import os
+import tempfile
 from pathlib import Path
 
 from crewai import Agent, Crew, Process, Task
@@ -36,12 +37,42 @@ OUTPUT_DIR = Path(os.getenv("CREW_OUTPUT_DIR", "output"))
 LOG_FILE = os.getenv("CREW_LOG_FILE", "")
 
 
+def _resolver_output_dir() -> Path | None:
+    """
+    Devolve uma pasta GRAVÁVEL para os artefatos (output_file das tarefas e log).
+    Tenta OUTPUT_DIR; se o diretório de trabalho for somente leitura (caso de alguns
+    containers), cai para a pasta temporária do sistema. Nunca derruba a crew.
+    """
+    candidatos = [OUTPUT_DIR, Path(tempfile.gettempdir()) / "marketing_ops_output"]
+    for pasta in candidatos:
+        try:
+            pasta.mkdir(parents=True, exist_ok=True)
+            sonda = pasta / ".gravavel"
+            sonda.touch()
+            sonda.unlink()
+            return pasta.resolve()
+        except OSError:
+            continue
+    return None
+
+
 def _garantir_output_dir() -> None:
-    """Cria a pasta de saída (tarefas gravam output_file nela). Nunca derruba a crew."""
-    try:
-        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    except OSError:
-        pass
+    """Compatibilidade: cria a pasta de saída sem lançar erro."""
+    _resolver_output_dir()
+
+
+def _aplicar_pasta_de_saida(tasks: list[Task]) -> str | None:
+    """
+    Reescreve os output_file das tarefas para caminhos absolutos dentro da pasta gravável
+    e devolve o caminho do log (ou None se desativado/impossível).
+    """
+    pasta = _resolver_output_dir()
+    for t in tasks:
+        if t.output_file:
+            t.output_file = str(pasta / Path(t.output_file).name) if pasta else None
+    if LOG_FILE and pasta:
+        return str(pasta / Path(LOG_FILE).name)
+    return None
 
 
 # Também na importação: cobre qualquer caminho de carga que não passe por crew().
@@ -300,7 +331,7 @@ class MarketingOpsCrew:
 
     @crew
     def crew(self) -> Crew:
-        _garantir_output_dir()
+        log_file = _aplicar_pasta_de_saida(self.tasks)
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
@@ -308,5 +339,5 @@ class MarketingOpsCrew:
             memory=True,  # memória curta/longa entre tarefas (ver docs/governanca-qualidade.md)
             max_rpm=MAX_RPM,
             verbose=True,
-            output_log_file=LOG_FILE or None,
+            output_log_file=log_file,
         )

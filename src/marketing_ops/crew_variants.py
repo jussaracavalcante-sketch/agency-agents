@@ -18,10 +18,10 @@ import yaml
 from crewai import Agent, Crew, Process, Task
 
 from marketing_ops.crew import (
-    LOG_FILE,
     MAX_RPM,
     MODEL,
     MarketingOpsCrew,
+    _aplicar_pasta_de_saida,
     _garantir_output_dir,
     analytics_tool,
     read_file,
@@ -30,7 +30,6 @@ from marketing_ops.crew import (
 
 def build_hierarchical_crew() -> Crew:
     """Mesmos agentes e tarefas da crew principal, com o gerente como manager_agent."""
-    _garantir_output_dir()
     main = MarketingOpsCrew().crew()  # agentes/tarefas só existem após .crew() no 1.x
     manager = next(a for a in main.agents if a.role.strip().startswith("Gerente"))
     workers = [a for a in main.agents if a is not manager]
@@ -38,6 +37,7 @@ def build_hierarchical_crew() -> Crew:
     for t in tasks:  # tarefas do gerente ficam sem agente fixo: o manager as conduz
         if t.agent is manager:
             t.agent = None
+    log_file = _aplicar_pasta_de_saida(tasks)
     return Crew(
         agents=workers,
         tasks=tasks,
@@ -46,7 +46,7 @@ def build_hierarchical_crew() -> Crew:
         memory=True,
         max_rpm=MAX_RPM,
         verbose=True,
-        output_log_file=LOG_FILE or None,
+        output_log_file=log_file,
     )
 
 
@@ -86,7 +86,14 @@ def build_report_crew() -> Crew:
         agent=analista,
         output_file=t_cfg.get("output_file"),
     )
-    return Crew(agents=[analista], tasks=[relatorio], process=Process.sequential, verbose=True)
+    log_file = _aplicar_pasta_de_saida([relatorio])
+    return Crew(
+        agents=[analista],
+        tasks=[relatorio],
+        process=Process.sequential,
+        verbose=True,
+        output_log_file=log_file,
+    )
 
 
 class PerformanceReportCrew:
