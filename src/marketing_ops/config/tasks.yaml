@@ -61,6 +61,8 @@ revisao_g1:
     regulatórios das mensagens propostas (CONAR/CDC, setor regulado) e itens [VALIDAR] não
     resolvidos. Emita parecer: Aprovado, Aprovado com ajustes (lista) ou Reprovado (motivo e
     regra). Não reescreva o brief.
+    IMPORTANTE: todas as entregas a revisar já estão no CONTEXTO desta tarefa (saídas das tarefas
+    anteriores). NÃO tente abrir arquivos nem caminhos de output; trabalhe com o texto do contexto.
   expected_output: >
     Parecer Markdown com resultado, checklist por dimensão (status, apontamento, regra,
     correção sugerida) e riscos residuais.
@@ -157,6 +159,8 @@ revisao_g2:
     de mídia, direção de arte) quanto a marca, qualidade editorial, veracidade e fontes, LGPD,
     CONAR/CDC, políticas de plataforma e setor regulado. Emita um parecer por entrega com
     resultado, apontamentos (regra + correção) e riscos residuais. Não reescreva as peças.
+    IMPORTANTE: todas as entregas a revisar já estão no CONTEXTO desta tarefa (saídas das tarefas
+    anteriores). NÃO tente abrir arquivos nem caminhos de output; trabalhe com o texto do contexto.
   expected_output: >
     Documento Markdown com um parecer por entrega (template de checklist) e um quadro-resumo
     final: entrega × resultado × nº de ajustes.
@@ -209,6 +213,8 @@ revisao_g3:
     Revise o pacote de publicação e o plano de medição: versões corretas, ajustes de G2
     aplicados, UTMs conformes, horários com fuso, base legal dos públicos e segmentos, ausência
     de itens [VALIDAR] ou [AVAL ESPECIALISTA] pendentes. Emita parecer final.
+    IMPORTANTE: todas as entregas a revisar já estão no CONTEXTO desta tarefa (saídas das tarefas
+    anteriores). NÃO tente abrir arquivos nem caminhos de output; trabalhe com o texto do contexto.
   expected_output: >
     Parecer Markdown do pacote com resultado, checklist e riscos residuais.
   agent: guardiao_marca_compliance

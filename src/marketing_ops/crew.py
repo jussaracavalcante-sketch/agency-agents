@@ -108,6 +108,12 @@ def _aplicar_pasta_de_saida(tasks: list[Task]) -> str | None:
             t.output_file = str(pasta / Path(t.output_file).name) if pasta else None
         if t.human_input and not HUMAN_GATES:
             t.human_input = False
+            t.description += (
+                "\n\nMODO SEM HUMANO NESTA EXECUÇÃO: não há aprovador disponível. Produza apenas o PEDIDO "
+                "de aprovação com o campo Decisão = PENDENTE DE APROVAÇÃO HUMANA. É PROIBIDO inventar nome "
+                "de aprovador, data de decisão, aprovação ou reprovação. Liste o que o humano precisa decidir "
+                "e siga com as entregas como estão, marcando as pendências."
+            )
     if LOG_FILE and pasta:
         return str(pasta / Path(LOG_FILE).name)
     return None
