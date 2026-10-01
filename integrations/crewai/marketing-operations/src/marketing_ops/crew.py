@@ -135,8 +135,10 @@ MODEL_LIGHT = os.getenv("MODEL_LIGHT", MODEL)
 MAX_RPM = int(os.getenv("CREW_MAX_RPM", "20"))
 WRITE_TOOLS_ENABLED = os.getenv("CREW_ENABLE_WRITE_TOOLS", "false").lower() == "true"
 
-# Ferramentas compartilhadas (instanciadas uma vez)
-search = SerperDevTool()
+# Ferramentas compartilhadas (instanciadas uma vez). Pesquisa web só com SERPER_API_KEY:
+# sem a chave, os agentes trabalham com o briefing, o conhecimento carregado e o scraping
+# de URLs informadas, marcando dados externos como [VALIDAR].
+search = SerperDevTool() if os.getenv("SERPER_API_KEY") else None
 scrape = ScrapeWebsiteTool()
 read_file = FileReadTool()
 seo_tool = SeoKeywordTool()
@@ -144,6 +146,11 @@ analytics_tool = AnalyticsReadTool()
 crm_tool = CrmReadTool()
 paid_media_tool = PaidMediaReadTool()
 publish_tool = PublishTool(enabled=WRITE_TOOLS_ENABLED)
+
+
+def _tools(*itens):
+    """Lista de ferramentas sem as indisponíveis (None)."""
+    return [t for t in itens if t is not None]
 
 
 @CrewBase
@@ -164,7 +171,7 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["estrategista_campanhas"],
             llm=MODEL,
-            tools=[search, read_file],
+            tools=_tools(search, read_file),
         )
 
     @agent
@@ -172,7 +179,7 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["pesquisador_mercado"],
             llm=MODEL,
-            tools=[search, scrape, read_file, seo_tool],
+            tools=_tools(search, scrape, read_file, seo_tool),
         )
 
     @agent
@@ -180,7 +187,7 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["especialista_seo"],
             llm=MODEL,
-            tools=[search, scrape, read_file, seo_tool],
+            tools=_tools(search, scrape, read_file, seo_tool),
         )
 
     @agent
@@ -188,7 +195,7 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["redator_conteudo"],
             llm=MODEL,
-            tools=[search, read_file],
+            tools=_tools(search, read_file),
         )
 
     @agent
@@ -196,7 +203,7 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["estrategista_social"],
             llm=MODEL,
-            tools=[search, read_file],
+            tools=_tools(search, read_file),
         )
 
     @agent
@@ -212,7 +219,7 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["gestor_midia_paga"],
             llm=MODEL,
-            tools=[search, read_file, paid_media_tool],
+            tools=_tools(search, read_file, paid_media_tool),
         )
 
     @agent
@@ -232,7 +239,7 @@ class MarketingOpsCrew:
         return Agent(
             config=self.agents_config["guardiao_marca_compliance"],
             llm=MODEL,
-            tools=[search, read_file],
+            tools=_tools(search, read_file),
         )
 
     @agent
