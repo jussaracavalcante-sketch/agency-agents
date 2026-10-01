@@ -65,5 +65,8 @@ class BrandBookTool(BaseTool):
                     f"(seção '{secao}' não encontrada em {arq.name}; seções: "
                     + ", ".join(re.findall(r"(?m)^#{1,3} \**(.+?)\**\s*$", texto)[:20]) + ")"
                 )
-            partes.append(f"=== {arq.name} ===\n{texto.strip()}")
+            aviso = ""
+            if re.search(r"(?m)^completo:\s*(false|n[aã]o)\s*$", arq.read_text(encoding="utf-8")[:1500], re.I):
+                aviso = "[GUIA INCOMPLETO: texto truncado na extração; marque decisões de marca não cobertas como [VALIDAR]]\n"
+            partes.append(f"=== {arq.name} ===\n{aviso}{texto.strip()}")
         return "\n\n".join(partes)[:20000]
