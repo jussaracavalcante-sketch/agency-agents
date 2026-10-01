@@ -75,6 +75,9 @@ portao_g1:
     do brief estratégico, o resultado do parecer de revisão e os riscos principais. Peça a
     decisão: aprovar, aprovar com ajustes ou reprovar. Se houver ajustes, liste-os e incorpore
     ao brief antes de seguir. Registre a decisão (data, aprovador, observações).
+    REGRA DE RETRABALHO: se esta tarefa for refeita após feedback humano, a saída DEVE conter o
+    documento completo revisado (não um resumo das mudanças), porque as tarefas seguintes dependem
+    do texto integral. Registre a decisão humana recebida (data, decisão, ajustes) antes do documento.
   expected_output: >
     Registro de decisão G1 em Markdown: resumo apresentado, decisão, ajustes solicitados,
     brief estratégico final (versão aprovada).
@@ -173,6 +176,9 @@ portao_g2:
     dos pareceres, os ajustes pendentes e amostras (1 título, 1 post, 1 e-mail, 1 anúncio).
     Peça a decisão por entrega. Coordene a incorporação dos ajustes com os agentes responsáveis
     e registre a decisão (data, aprovador, observações).
+    REGRA DE RETRABALHO: se esta tarefa for refeita após feedback humano, a saída DEVE conter o
+    documento completo revisado (não um resumo das mudanças), porque as tarefas seguintes dependem
+    do texto integral. Registre a decisão humana recebida (data, decisão, ajustes) antes do documento.
   expected_output: >
     Registro de decisão G2 em Markdown: quadro de decisões por entrega, ajustes aplicados e
     lista de entregas liberadas para publicação.
@@ -227,6 +233,9 @@ portao_g3:
     o status do checklist de rastreamento. Peça autorização explícita para publicar/agendar e
     ativar campanhas. Registre a decisão (data, aprovador, canais autorizados, orçamento
     autorizado).
+    REGRA DE RETRABALHO: se esta tarefa for refeita após feedback humano, a saída DEVE conter o
+    documento completo revisado (não um resumo das mudanças), porque as tarefas seguintes dependem
+    do texto integral. Registre a decisão humana recebida (data, decisão, ajustes) antes do documento.
   expected_output: >
     Registro de decisão G3 em Markdown com canais e orçamento autorizados e eventuais
     restrições.
