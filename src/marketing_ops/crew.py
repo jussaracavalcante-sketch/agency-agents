@@ -6,11 +6,11 @@ performance, roda em uma crew separada pós-campanha). Os textos de role/goal/ba
 description/expected_output vivem em config/agents.yaml e config/tasks.yaml; este arquivo
 só liga agentes, tarefas, ferramentas, dependências (context) e processo.
 
-Processo:
-  - MarketingOpsCrew: pipeline completo em `Process.sequential` com a ordem definida abaixo.
-    O gerente conduz os portões humanos (human_input=True) como tarefas explícitas.
-  - MarketingOpsHierarchicalCrew: variante `Process.hierarchical` em que o gerente delega
-    livremente. Use após estabilizar o fluxo sequencial (ver README, fase F3).
+Processo: pipeline completo em `Process.sequential` com a ordem definida abaixo. O gerente
+conduz os portões humanos (human_input=True) como tarefas explícitas.
+
+Variantes (hierárquica e relatório pós-campanha) ficam em crew_variants.py para que a
+plataforma CrewAI encontre uma única classe @CrewBase neste arquivo.
 """
 
 from __future__ import annotations
@@ -293,50 +293,3 @@ class MarketingOpsCrew:
             verbose=True,
             output_log_file="output/crew_log.json",
         )
-
-
-@CrewBase
-class MarketingOpsHierarchicalCrew(MarketingOpsCrew):
-    """
-    Variante hierárquica: o gerente decide a ordem e delega. Mantém as mesmas tarefas e
-    agentes; o gerente é passado como `manager_agent` e removido da lista de executores.
-    """
-
-    @crew
-    def crew(self) -> Crew:
-        manager = self.gerente_operacoes()
-        workers = [a for a in self.agents if a.role.strip() != manager.role.strip()]
-        return Crew(
-            agents=workers,
-            tasks=self.tasks,
-            process=Process.hierarchical,
-            manager_agent=manager,
-            memory=True,
-            max_rpm=MAX_RPM,
-            verbose=True,
-            output_log_file="output/crew_log.json",
-        )
-
-
-@CrewBase
-class PerformanceReportCrew:
-    """Crew enxuta pós-campanha: só o Analista de Dados e a tarefa de relatório."""
-
-    agents_config = "config/agents.yaml"
-    tasks_config = "config/tasks.yaml"
-
-    @agent
-    def analista_dados(self) -> Agent:
-        return Agent(
-            config=self.agents_config["analista_dados"],
-            llm=MODEL,
-            tools=[read_file, analytics_tool],
-        )
-
-    @task
-    def relatorio_performance(self) -> Task:
-        return Task(config=self.tasks_config["relatorio_performance"])
-
-    @crew
-    def crew(self) -> Crew:
-        return Crew(agents=self.agents, tasks=self.tasks, process=Process.sequential, verbose=True)
