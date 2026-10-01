@@ -47,6 +47,7 @@ def build_hierarchical_crew() -> Crew:
         max_rpm=MAX_RPM,
         verbose=True,
         output_log_file=log_file,
+        chat_llm=MODEL,
     )
 
 
@@ -93,6 +94,7 @@ def build_report_crew() -> Crew:
         process=Process.sequential,
         verbose=True,
         output_log_file=log_file,
+        chat_llm=MODEL,
     )
 
 
