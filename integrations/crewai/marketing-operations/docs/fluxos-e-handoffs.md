@@ -101,3 +101,34 @@ Ver template completo em [`../agents/11-guardiao-marca-compliance.md`](../agents
 As tarefas 6, 7, 8 e 9 são independentes entre si após G1 (exceto 9 que lê 8 para públicos
 de CRM). Em CrewAI, marque-as com `async_execution: true` e deixe `direcao_arte` aguardar
 todas via `context`. Ganho esperado: 30–40% no tempo da fase 2.
+
+## 7. Portões humanos na plataforma CrewAI (Human-in-the-Loop)
+
+Os portões G1, G2 e G3 só pausam a execução quando `CREW_HUMAN_GATES=true` está nas
+variáveis de ambiente da automação. Com a flag desligada (padrão), eles produzem um pedido
+com "PENDENTE DE APROVAÇÃO HUMANA" e a execução segue até o fim.
+
+Com a flag ligada, o fluxo é:
+
+1. **Kickoff com webhook de aprovação.** Além de `taskWebhookUrl` e `crewWebhookUrl`, o corpo
+   do kickoff leva `humanInputWebhook` com a URL do receptor e autenticação bearer:
+   ```json
+   "humanInputWebhook": {"url": "<receptor>?tipo=human_input", "authentication": {"strategy": "bearer", "token": "<segredo>"}}
+   ```
+2. **Pausa no portão.** A execução fica em "Awaiting Input" na aba Executions e aparece em
+   "Human in the Loop". A plataforma envia ao receptor um evento com `execution_id`, `task_id`
+   e a saída da tarefa (o pedido de aprovação do Gerente).
+3. **Decisão.** O aprovador decide pela aba Human in the Loop **ou** por quem opera a API,
+   chamando o endpoint de retomada da automação:
+   ```json
+   POST <API_URL>/resume
+   {"execution_id": "...", "task_id": "portao_g1", "human_feedback": "Aprovado. Ajustar X.",
+    "is_approve": true, "taskWebhookUrl": "...", "crewWebhookUrl": "...", "humanInputWebhook": {...}}
+   ```
+   `is_approve: false` faz a tarefa ser refeita com o feedback como contexto; `true` segue para
+   a próxima tarefa. Os webhooks precisam ser repetidos na retomada (não são herdados).
+4. **Registro.** O receptor grava o evento (`tipo = human_input`) e a resposta fica no trace da
+   plataforma; o Gerente consolida as decisões no sumário executivo.
+
+Aprovadores sugeridos: G1 planejamento/atendimento, G2 criação e marca (jurídico quando setor
+regulado), G3 dono(a) do orçamento.
