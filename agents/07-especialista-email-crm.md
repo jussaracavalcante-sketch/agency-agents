@@ -68,4 +68,4 @@
 
 ## 7. Referência Agency
 
-`marketing/marketing-email-strategist.md`, `marketing/marketing-private-domain-operator.md`.
+`marketing/marketing-email-strategist.md`, `_arquivo/marketing/marketing-private-domain-operator.md`.

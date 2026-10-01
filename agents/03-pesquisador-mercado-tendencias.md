@@ -69,4 +69,4 @@
 
 ## 7. Referência Agency
 
-`research/research-synthesist.md`, `marketing/marketing-x-twitter-intelligence-analyst.md`, `product/` (trend researcher).
+`_arquivo/research/research-synthesist.md`, `marketing/marketing-x-twitter-intelligence-analyst.md`, `product/` (trend researcher).

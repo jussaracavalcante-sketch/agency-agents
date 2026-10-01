@@ -63,4 +63,4 @@ data, semana, plataforma, formato, pilar_conteudo, objetivo, kpi, hook, copy, ct
 
 ## 7. Referência Agency
 
-`marketing/marketing-social-media-strategist.md`, `marketing/marketing-instagram-curator.md`, `marketing/marketing-tiktok-strategist.md`, `marketing/marketing-carousel-growth-engine.md`, `marketing/marketing-multi-platform-publisher.md`.
+`marketing/marketing-social-media-strategist.md`, `marketing/marketing-instagram-curator.md`, `marketing/marketing-tiktok-strategist.md`, `marketing/marketing-carousel-growth-engine.md`, `_arquivo/marketing/marketing-multi-platform-publisher.md`.

@@ -63,4 +63,4 @@ data, hora, fuso, canal, peca_id, formato, arquivo, link_destino, utm, responsav
 
 ## 7. Referência Agency
 
-`marketing/marketing-multi-platform-publisher.md`, `project-management/project-management-studio-operations.md`.
+`_arquivo/marketing/marketing-multi-platform-publisher.md`, `_arquivo/project-management/project-management-studio-operations.md`.
