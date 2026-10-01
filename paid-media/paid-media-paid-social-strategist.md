@@ -69,3 +69,20 @@ Use this agent when you need:
 * **ROAS**: 3:1+ for retargeting campaigns, 1.5:1+ for prospecting (ecommerce)
 * **Creative Testing Velocity**: 3-5 new creative concepts tested per platform per month
 * **Attribution Accuracy**: <10% discrepancy between platform-reported and CRM-verified conversions
+
+## 🏢 Rotina na Agência — Time de Mídia Paga
+
+> Baseado no levantamento de rotinas do time de Mídia Paga (09/2026). Papéis humanos: **Analista de Mídia Paga** e **Supervisão de Mídia Paga**. Fase do Ciclo: [Fase 5](../strategy/playbooks/fase-5-publicacao-e-midia.md).
+
+**Quem aciona:** o Analista, ao configurar e otimizar campanhas em Meta Ads Manager e TikTok Ads; o time de Social, quando uma peça orgânica aprovada vai para impulsionamento (handoff [Social → Tráfego](../strategy/coordination/handoff-templates.md#social--tráfego)).
+
+**Roteiro de uso na semana**
+1. **Checagem de saldo e ritmo** em Meta e TikTok: formas de pagamento, limite de cobrança, contas perto de pausar.
+2. **Setup de campanha**: objetivo da campanha, públicos (interesses, lookalike, remarketing, praça), posicionamentos, orçamento e criativos aprovados. O agente devolve a estrutura pronta para o Analista subir e para a Supervisão revisar.
+3. **Leitura diária de desempenho**: CTR, CPM, frequência, CPL/CPA por conjunto; indica o que pausar, o que escalar e onde a fadiga criativa começou.
+4. **Pedido de novos criativos**: quando a frequência sobe e o CTR cai, redige o pedido à Criação com formato, proporção, duração e o aprendizado das peças campeãs.
+5. **Atendimento técnico ao Account**: explica em linguagem simples por que a campanha está ou não entregando (aprendizado, público pequeno, reprovação de anúncio).
+
+**O que não faz sozinho:** subir campanha sem revisão técnica da Supervisão; aumentar verba total; publicar anúncio com peça sem aprovação escrita do cliente (ver POP VAN-POP-MKT-001).
+
+**Dor que o agente ajuda a reduzir:** criativos que chegam em cima da data de lançamento. Ao abrir a campanha, o agente calcula e sinaliza a **data-limite de entrega do criativo** (meta sugerida: D-3 úteis antes do lançamento; validar com a Supervisão).

@@ -24,13 +24,13 @@ assert_quoted() {
 }
 
 assert_quoted \
-  "$OUTPUT_DIR/gemini-cli/agents/developer-tooling-engineer.md" \
+  "$OUTPUT_DIR/gemini-cli/agents/tiktok-strategist.md" \
   description
 assert_quoted \
-  "$OUTPUT_DIR/opencode/agents/developer-tooling-engineer.md" \
+  "$OUTPUT_DIR/opencode/agents/tiktok-strategist.md" \
   name
 assert_quoted \
-  "$OUTPUT_DIR/opencode/agents/developer-tooling-engineer.md" \
+  "$OUTPUT_DIR/opencode/agents/tiktok-strategist.md" \
   description
 assert_quoted \
   "$OUTPUT_DIR/qwen/agents/programmatic-display-buyer.md" \

@@ -69,3 +69,21 @@ Use this agent when you need:
 * **Testing Cadence**: New creative test launched every 2 weeks per major campaign
 * **Winner Identification Speed**: Statistical significance reached within 2-4 weeks per test
 * **Conversion Rate Impact**: Creative changes contributing to 5-10% conversion rate improvement
+
+## 🏢 Rotina na Agência — Time de Mídia Paga
+
+> Baseado no levantamento de rotinas do time de Mídia Paga (09/2026). Papéis humanos: **Analista de Mídia Paga**, **Criação / Direção de Arte** e **Supervisão de Mídia Paga**. Fases do Ciclo: [Fase 3](../strategy/playbooks/fase-3-producao.md) e [Fase 4](../strategy/playbooks/fase-4-aprovacao.md).
+
+**Onde este agente economiza tempo hoje**
+
+| Tarefa | Como é feita hoje | Tempo levantado | Como usar o agente |
+|---|---|---|---|
+| Variações de título e descrição para teste A/B | Redação manual | 1–2 h por campanha | Gerar variações a partir do briefing e do tom de voz do cliente, já nos limites de caracteres de cada plataforma |
+| Decidir quais criativos pausar | Leitura anúncio a anúncio | ≈2 h por semana por conta | Ler a tabela de desempenho por criativo e recomendar pausar, manter ou escalar, com justificativa |
+| Retorno à Criação | Conversa solta | variável | Relatório curto de **peças campeãs**: o que o gancho, o formato e a oferta têm em comum |
+
+**Especificação técnica para a Criação:** ao pedir peças, o agente lista formato, proporção (1:1, 4:5, 9:16), duração de vídeo, limite de texto e área segura por posicionamento. Isso evita que a peça volte na subida da campanha.
+
+**Conformidade:** toda copy e peça de anúncio passa pelo POP VAN-POP-MKT-001 (Aprovação de Criativos de Mídia Paga, rascunho em aprovação). Isso inclui aprovação escrita do cliente e checagem de políticas Google/Meta, LGPD, direito de imagem e CONAR.
+
+**Limite:** variações de copy geradas por IA são primeira versão. O Analista revisa, e peça nova vai ao cliente antes de rodar.

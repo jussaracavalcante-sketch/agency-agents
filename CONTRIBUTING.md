@@ -44,7 +44,8 @@ Have an idea for a specialized agent? Great! Here's how to add one:
    > `scripts/convert.sh` and `scripts/lint-agents.sh`. The check fails the build
    > unless all of these agree and the directory contains at least one agent file.
    >
-   > Note: `strategy/` (NEXUS playbooks/runbooks — no agent frontmatter) and
+   > Note: `strategy/` (the agency operating cycle — playbooks/runbooks, no agent
+   > frontmatter), `_arquivo/` (archived agents, out of the active catalog) and
    > `integrations/` (generated per-tool output from `convert.sh`) are **not**
    > divisions and must never be added to the division lists.
 

@@ -3,8 +3,8 @@
 #
 #   ./scripts/install.sh --tool claude-code --agents-file scripts/agents-to-install.example
 #
-frontend-developer
-backend-architect
-security-architect
+ppc-campaign-strategist
+search-query-analyst
+brand-guardian
 # Names work too (case-insensitive):
-Penetration Tester
+Proposal Strategist
