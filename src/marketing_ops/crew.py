@@ -98,13 +98,15 @@ def _garantir_output_dir() -> None:
 
 def _aplicar_pasta_de_saida(tasks: list[Task]) -> str | None:
     """
-    Reescreve os output_file das tarefas para caminhos absolutos dentro da pasta gravável
-    e devolve o caminho do log (ou None se desativado/impossível).
+    Reescreve os output_file das tarefas para caminhos absolutos dentro da pasta gravável,
+    aplica a política de portões humanos e devolve o caminho do log (ou None).
     """
     pasta = _resolver_output_dir()
     for t in tasks:
         if t.output_file:
             t.output_file = str(pasta / Path(t.output_file).name) if pasta else None
+        if t.human_input and not HUMAN_GATES:
+            t.human_input = False
     if LOG_FILE and pasta:
         return str(pasta / Path(LOG_FILE).name)
     return None
@@ -148,6 +150,11 @@ _blindar_log_em_arquivo()
 MODEL_LIGHT = os.getenv("MODEL_LIGHT", MODEL if "MODEL" in os.environ else _PADRAO_LEVE)
 MAX_RPM = int(os.getenv("CREW_MAX_RPM", "20"))
 WRITE_TOOLS_ENABLED = os.getenv("CREW_ENABLE_WRITE_TOOLS", "false").lower() == "true"
+# Portões humanos (G1/G2/G3) pausam a execução à espera de resposta. No terminal isso é um
+# prompt; na plataforma CrewAI exige a configuração de Human-in-the-Loop (webhook). Sem
+# essa configuração a execução trava ou é descartada, por isso o padrão aqui é desligado:
+# os portões viram tarefas normais que produzem o pedido de aprovação como documento.
+HUMAN_GATES = os.getenv("CREW_HUMAN_GATES", "false").lower() == "true"
 
 # Ferramentas compartilhadas (instanciadas uma vez). Pesquisa web só com SERPER_API_KEY:
 # sem a chave, os agentes trabalham com o briefing, o conhecimento carregado e o scraping
