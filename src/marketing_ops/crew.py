@@ -430,4 +430,5 @@ class MarketingOpsCrew:
             max_rpm=MAX_RPM,
             verbose=True,
             output_log_file=log_file,
+            chat_llm=MODEL,  # habilita a aba Chat da plataforma (orquestra inputs e dispara a crew)
         )
