@@ -47,6 +47,21 @@ ao CrewAI, aplicamos esta receita:
 - Chave de um provedor LLM (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc.)
 - `SERPER_API_KEY` para pesquisa web (opcional, recomendado)
 
+## Deploy na plataforma CrewAI via GitHub
+
+A plataforma CrewAI exige o `pyproject.toml` na **raiz** da branch e não tem campo de
+subdiretório. Por isso existe a branch de deploy **`crewai-marketing-ops`**, gerada a partir
+da subpasta `marketing-operations/` com `git subtree split`. Aponte a automação do CrewAI para
+ela. Após qualquer mudança na subpasta, regenere e envie a branch:
+
+```bash
+git subtree split --prefix=integrations/crewai/marketing-operations -b crewai-marketing-ops
+git push -f origin crewai-marketing-ops   # branch derivada: force push é esperado
+```
+
+Variáveis de ambiente a cadastrar na automação: `ANTHROPIC_API_KEY`, `MODEL`,
+`SERPER_API_KEY` (ver `marketing-operations/.env.example`).
+
 ## Início rápido
 
 ```bash
