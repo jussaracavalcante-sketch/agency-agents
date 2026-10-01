@@ -31,7 +31,21 @@ from marketing_ops.tools import (
     SeoKeywordTool,
 )
 
-MODEL = os.getenv("MODEL", "anthropic/claude-sonnet-5-5")
+
+
+def _modelo_padrao() -> tuple[str, str]:
+    """Escolhe o provedor pela chave disponível quando MODEL não é informado."""
+    if os.getenv("ANTHROPIC_API_KEY"):
+        return "anthropic/claude-sonnet-5-5", "anthropic/claude-haiku-4-5-20251001"
+    if os.getenv("OPENAI_API_KEY"):
+        return "openai/gpt-4o", "openai/gpt-4o-mini"
+    if os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"):
+        return "gemini/gemini-2.5-pro", "gemini/gemini-2.5-flash"
+    return "openai/gpt-4o", "openai/gpt-4o-mini"
+
+
+_PADRAO, _PADRAO_LEVE = _modelo_padrao()
+MODEL = os.getenv("MODEL", _PADRAO)
 OUTPUT_DIR = Path(os.getenv("CREW_OUTPUT_DIR", "output"))
 # Log em arquivo é opcional: a plataforma CrewAI já guarda o trace de cada execução.
 LOG_FILE = os.getenv("CREW_LOG_FILE", "")
@@ -131,7 +145,7 @@ def _blindar_log_em_arquivo() -> None:
 
 
 _blindar_log_em_arquivo()
-MODEL_LIGHT = os.getenv("MODEL_LIGHT", MODEL)
+MODEL_LIGHT = os.getenv("MODEL_LIGHT", MODEL if "MODEL" in os.environ else _PADRAO_LEVE)
 MAX_RPM = int(os.getenv("CREW_MAX_RPM", "20"))
 WRITE_TOOLS_ENABLED = os.getenv("CREW_ENABLE_WRITE_TOOLS", "false").lower() == "true"
 
