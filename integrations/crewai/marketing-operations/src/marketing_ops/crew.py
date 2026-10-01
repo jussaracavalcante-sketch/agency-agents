@@ -42,6 +42,10 @@ def _garantir_output_dir() -> None:
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     except OSError:
         pass
+
+
+# Também na importação: cobre qualquer caminho de carga que não passe por crew().
+_garantir_output_dir()
 MODEL_LIGHT = os.getenv("MODEL_LIGHT", MODEL)
 MAX_RPM = int(os.getenv("CREW_MAX_RPM", "20"))
 WRITE_TOOLS_ENABLED = os.getenv("CREW_ENABLE_WRITE_TOOLS", "false").lower() == "true"
