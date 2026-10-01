@@ -16,6 +16,7 @@ plataforma CrewAI encontre uma única classe @CrewBase neste arquivo.
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
@@ -30,6 +31,17 @@ from marketing_ops.tools import (
 )
 
 MODEL = os.getenv("MODEL", "anthropic/claude-sonnet-5-5")
+OUTPUT_DIR = Path(os.getenv("CREW_OUTPUT_DIR", "output"))
+# Log em arquivo é opcional: a plataforma CrewAI já guarda o trace de cada execução.
+LOG_FILE = os.getenv("CREW_LOG_FILE", "")
+
+
+def _garantir_output_dir() -> None:
+    """Cria a pasta de saída (tarefas gravam output_file nela). Nunca derruba a crew."""
+    try:
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
 MODEL_LIGHT = os.getenv("MODEL_LIGHT", MODEL)
 MAX_RPM = int(os.getenv("CREW_MAX_RPM", "20"))
 WRITE_TOOLS_ENABLED = os.getenv("CREW_ENABLE_WRITE_TOOLS", "false").lower() == "true"
@@ -284,6 +296,7 @@ class MarketingOpsCrew:
 
     @crew
     def crew(self) -> Crew:
+        _garantir_output_dir()
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
@@ -291,5 +304,5 @@ class MarketingOpsCrew:
             memory=True,  # memória curta/longa entre tarefas (ver docs/governanca-qualidade.md)
             max_rpm=MAX_RPM,
             verbose=True,
-            output_log_file="output/crew_log.json",
+            output_log_file=LOG_FILE or None,
         )
