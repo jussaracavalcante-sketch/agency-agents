@@ -75,4 +75,4 @@
 
 ## 7. Referência Agency
 
-`marketing/marketing-growth-hacker.md`, `marketing/marketing-social-media-strategist.md`, `strategy/runbooks/scenario-marketing-campaign.md`.
+`marketing/marketing-growth-hacker.md`, `marketing/marketing-social-media-strategist.md`, `strategy/runbooks/cenario-campanha-sazonal.md`.
