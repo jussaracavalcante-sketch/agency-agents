@@ -40,6 +40,7 @@
 
 | Classe | Nome exposto | Contrato | Integração-alvo (F4) |
 |--------|--------------|----------|----------------------|
+| `BrandBookTool` | `brand_book_lookup` | `cliente, secao? → guia de identidade visual do cliente (knowledge/<slug>/*.md)` | Google Drive (guias extraídos; atualização manual ou por script) |
 | `SeoKeywordTool` | `seo_keyword_research` | `termo, pais → volume, dificuldade, intenção` | Semrush API (`phrase_this`, `phrase_related`) |
 | `CrmReadTool` | `crm_read` | `consulta → segmentos, fluxos, métricas agregadas` | RD Station / HubSpot API (somente GET) |
 | `PaidMediaReadTool` | `paid_media_read` | `plataforma, consulta → benchmarks, histórico, termos de busca` | Google Ads (GAQL), Meta Marketing API |

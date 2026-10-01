@@ -216,6 +216,7 @@ marketing-operations/
 ├── README.md                      ← este documento (visão executiva)
 ├── agents/                        ← fichas detalhadas dos 12 agentes
 ├── pyproject.toml / uv.lock       ← padrão CrewAI (crewai run / deploy na plataforma)
+├── knowledge/                     ← guias de identidade visual por cliente (brand_book_lookup)
 ├── docs/
 │   ├── fluxos-e-handoffs.md       ← sequência de tarefas, portões, templates de handoff
 │   ├── ferramentas.md             ← ferramentas nativas e customizadas por agente
