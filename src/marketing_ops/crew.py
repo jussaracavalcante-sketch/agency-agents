@@ -98,6 +98,39 @@ def _aplicar_pasta_de_saida(tasks: list[Task]) -> str | None:
 
 # Também na importação: cobre qualquer caminho de carga que não passe por crew().
 _garantir_output_dir()
+
+
+def _blindar_log_em_arquivo() -> None:
+    """
+    O runtime da plataforma CrewAI pode anexar um log relativo (ex.: output/crew_log.json)
+    à crew depois de montada, e gravá-lo a partir de um diretório de trabalho que nós não
+    controlamos. Um log que falha nunca deve derrubar uma campanha: antes de cada gravação,
+    criamos a pasta do arquivo; se ainda assim falhar, registramos no stderr e seguimos.
+    """
+    try:
+        from crewai.utilities import file_handler as fh
+    except Exception:  # noqa: BLE001 - blindagem opcional
+        return
+    if getattr(fh.FileHandler, "_marketing_ops_blindado", False):
+        return
+    original_log = fh.FileHandler.log
+
+    def log_resiliente(self, **kwargs):  # type: ignore[no-untyped-def]
+        try:
+            pasta = os.path.dirname(os.path.abspath(self._path))
+            os.makedirs(pasta, exist_ok=True)
+            return original_log(self, **kwargs)
+        except Exception as exc:  # noqa: BLE001
+            import sys
+
+            print(f"[marketing_ops] log em arquivo ignorado: {exc}", file=sys.stderr)
+            return None
+
+    fh.FileHandler.log = log_resiliente  # type: ignore[method-assign]
+    fh.FileHandler._marketing_ops_blindado = True  # type: ignore[attr-defined]
+
+
+_blindar_log_em_arquivo()
 MODEL_LIGHT = os.getenv("MODEL_LIGHT", MODEL)
 MAX_RPM = int(os.getenv("CREW_MAX_RPM", "20"))
 WRITE_TOOLS_ENABLED = os.getenv("CREW_ENABLE_WRITE_TOOLS", "false").lower() == "true"
