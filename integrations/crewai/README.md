@@ -18,8 +18,8 @@ fluxos de handoff, portões de aprovação humana, indicadores e governança.
 
 | Conceito CrewAI | O que é | Onde está documentado aqui |
 |-----------------|---------|----------------------------|
-| **Agent** | Papel com `role`, `goal`, `backstory`, ferramentas e limites | `marketing-operations/agents/*.md` + `config/agents.yaml` |
-| **Task** | Unidade de trabalho com `description`, `expected_output`, `agent`, `context` | `marketing-operations/config/tasks.yaml` + `docs/fluxos-e-handoffs.md` |
+| **Agent** | Papel com `role`, `goal`, `backstory`, ferramentas e limites | `marketing-operations/agents/*.md` + `src/marketing_ops/config/agents.yaml` |
+| **Task** | Unidade de trabalho com `description`, `expected_output`, `agent`, `context` | `marketing-operations/src/marketing_ops/config/tasks.yaml` + `docs/fluxos-e-handoffs.md` |
 | **Crew** | Conjunto de agentes + tarefas + processo (`sequential` / `hierarchical`) | `marketing-operations/src/marketing_ops/crew.py` |
 | **Tools** | Funções/integrações que o agente pode acionar | `marketing-operations/docs/ferramentas.md` |
 | **Memory / Knowledge** | Memória de curto e longo prazo, bases de conhecimento (brand book, benchmarks) | `marketing-operations/docs/governanca-qualidade.md` |

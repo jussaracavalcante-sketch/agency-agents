@@ -1,7 +1,7 @@
 # Template de Briefing — entrada da crew
 
 O briefing é o único insumo obrigatório da crew. Suas chaves viram as variáveis `{…}` de
-`config/tasks.yaml` e `config/agents.yaml`. Salve como YAML e rode:
+`src/marketing_ops/config/tasks.yaml` e `agents.yaml`. Salve como YAML e rode:
 
 ```bash
 python -m marketing_ops.main --briefing briefings/<cliente>-<campanha>.yaml
