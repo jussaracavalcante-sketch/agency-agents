@@ -17,11 +17,20 @@ from pathlib import Path
 import yaml
 from crewai import Agent, Crew, Process, Task
 
-from marketing_ops.crew import MAX_RPM, MODEL, MarketingOpsCrew, analytics_tool, read_file
+from marketing_ops.crew import (
+    LOG_FILE,
+    MAX_RPM,
+    MODEL,
+    MarketingOpsCrew,
+    _garantir_output_dir,
+    analytics_tool,
+    read_file,
+)
 
 
 def build_hierarchical_crew() -> Crew:
     """Mesmos agentes e tarefas da crew principal, com o gerente como manager_agent."""
+    _garantir_output_dir()
     main = MarketingOpsCrew().crew()  # agentes/tarefas só existem após .crew() no 1.x
     manager = next(a for a in main.agents if a.role.strip().startswith("Gerente"))
     workers = [a for a in main.agents if a is not manager]
@@ -37,7 +46,7 @@ def build_hierarchical_crew() -> Crew:
         memory=True,
         max_rpm=MAX_RPM,
         verbose=True,
-        output_log_file="output/crew_log.json",
+        output_log_file=LOG_FILE or None,
     )
 
 
@@ -58,6 +67,7 @@ def build_report_crew() -> Crew:
     Só o Analista de Dados e a tarefa de relatório. Montada sem @CrewBase porque, no 1.x,
     o decorador exige que todos os agentes referenciados em tasks.yaml tenham método.
     """
+    _garantir_output_dir()
     a_cfg = _carregar_config("agents.yaml")["analista_dados"]
     t_cfg = _carregar_config("tasks.yaml")["relatorio_performance"]
     analista = Agent(
