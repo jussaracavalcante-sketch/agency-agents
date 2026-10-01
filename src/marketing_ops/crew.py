@@ -56,8 +56,29 @@ def _resolver_output_dir() -> Path | None:
     return None
 
 
+def _cwd_gravavel() -> bool:
+    try:
+        sonda = Path.cwd() / ".gravavel_cwd"
+        sonda.touch()
+        sonda.unlink()
+        return True
+    except OSError:
+        return False
+
+
 def _garantir_output_dir() -> None:
-    """Compatibilidade: cria a pasta de saída sem lançar erro."""
+    """
+    Garante que exista uma pasta `output/` relativa ao diretório de trabalho, porque o
+    runtime da plataforma pode gravar um log relativo (`output/crew_log.json`) por conta
+    própria. Se o diretório de trabalho for somente leitura, muda para a pasta temporária,
+    onde `output/` pode ser criada. Nunca lança erro.
+    """
+    try:
+        if not _cwd_gravavel():
+            os.chdir(tempfile.gettempdir())
+        Path("output").mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
     _resolver_output_dir()
 
 
