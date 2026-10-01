@@ -215,19 +215,20 @@ F5                                       ███████ ▶
 marketing-operations/
 ├── README.md                      ← este documento (visão executiva)
 ├── agents/                        ← fichas detalhadas dos 12 agentes
-├── config/
-│   ├── agents.yaml                ← definição CrewAI dos agentes (role/goal/backstory)
-│   └── tasks.yaml                 ← definição CrewAI das tarefas (description/expected_output)
+├── pyproject.toml / uv.lock       ← padrão CrewAI (crewai run / deploy na plataforma)
 ├── docs/
 │   ├── fluxos-e-handoffs.md       ← sequência de tarefas, portões, templates de handoff
 │   ├── ferramentas.md             ← ferramentas nativas e customizadas por agente
 │   ├── governanca-qualidade.md    ← guardrails, LGPD/CONAR, memória, avaliação
 │   └── template-briefing.md       ← briefing padrão de entrada da crew
 ├── src/marketing_ops/
-│   ├── crew.py                    ← classe @CrewBase com agentes, tarefas e processo
-│   ├── main.py                    ← ponto de entrada (kickoff)
+│   ├── config/
+│   │   ├── agents.yaml            ← definição CrewAI dos agentes (role/goal/backstory)
+│   │   └── tasks.yaml             ← definição CrewAI das tarefas (description/expected_output)
+│   ├── crew.py                    ← classe @CrewBase principal (sequential)
+│   ├── crew_variants.py           ← variantes: hierárquica e relatório pós-campanha
+│   ├── main.py                    ← entrypoints run/train/replay/test + CLI
 │   └── tools/                     ← esqueleto de ferramentas customizadas
-├── requirements.txt
 └── .env.example
 ```
 

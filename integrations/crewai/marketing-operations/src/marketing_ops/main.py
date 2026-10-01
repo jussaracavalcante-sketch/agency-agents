@@ -1,27 +1,31 @@
 """
-main.py — ponto de entrada da Equipe de Operação de Marketing.
+main.py — entrypoints da Equipe de Operação de Marketing (padrão CrewAI).
 
-Uso:
-  python -m marketing_ops.main                       # pipeline completo com briefing de exemplo
-  python -m marketing_ops.main --briefing meu.yaml   # pipeline com briefing próprio
-  python -m marketing_ops.main --hierarchical        # variante hierárquica
-  python -m marketing_ops.main --report dados.csv --periodo "semana 1"   # relatório pós-campanha
+  crewai run                 → run()      pipeline completo com o briefing padrão
+  crewai train -n 3 -f f.pkl → train()
+  crewai replay -t <task_id> → replay()
+  crewai test -n 2 -m <llm>  → test()
 
-O briefing segue docs/template-briefing.md (chaves = variáveis {…} de tasks.yaml).
+Linha de comando direta:
+  python -m marketing_ops.main [--briefing meu.yaml] [--hierarchical]
+  python -m marketing_ops.main --report dados.csv --periodo "semana 1"
+
+O briefing segue docs/template-briefing.md (chaves = variáveis {…} de config/tasks.yaml).
 """
 
 from __future__ import annotations
 
 import argparse
-import os
 import sys
+import warnings
 from pathlib import Path
 
 import yaml
 from dotenv import load_dotenv
 
-from .crew import MarketingOpsCrew, MarketingOpsHierarchicalCrew, PerformanceReportCrew
+from .crew import MarketingOpsCrew
 
+warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 load_dotenv()
 
 BRIEFING_EXEMPLO = {
@@ -43,15 +47,60 @@ BRIEFING_EXEMPLO = {
 }
 
 
-def carregar_briefing(caminho: str | None) -> dict:
+def carregar_briefing(caminho: str | None = None) -> dict:
     if not caminho:
-        return BRIEFING_EXEMPLO
+        return dict(BRIEFING_EXEMPLO)
     dados = yaml.safe_load(Path(caminho).read_text(encoding="utf-8"))
     faltando = [k for k in BRIEFING_EXEMPLO if k not in dados]
     if faltando:
         sys.exit(f"Briefing incompleto. Faltam as chaves: {', '.join(faltando)}")
     return dados
 
+
+def _preparar() -> dict:
+    Path("output").mkdir(exist_ok=True)
+    return carregar_briefing()
+
+
+# ───────────── entrypoints padrão do CrewAI (pyproject [project.scripts]) ─────────────
+
+def run():
+    """Executa a crew com o briefing padrão (sobrescreva via inputs na plataforma)."""
+    try:
+        return MarketingOpsCrew().crew().kickoff(inputs=_preparar())
+    except Exception as e:
+        raise Exception(f"Erro ao executar a crew: {e}") from e
+
+
+def train():
+    """crewai train -n <iterações> -f <arquivo.pkl>"""
+    try:
+        MarketingOpsCrew().crew().train(
+            n_iterations=int(sys.argv[1]), filename=sys.argv[2], inputs=_preparar()
+        )
+    except Exception as e:
+        raise Exception(f"Erro ao treinar a crew: {e}") from e
+
+
+def replay():
+    """crewai replay -t <task_id>"""
+    try:
+        MarketingOpsCrew().crew().replay(task_id=sys.argv[1])
+    except Exception as e:
+        raise Exception(f"Erro ao reexecutar a crew: {e}") from e
+
+
+def test():
+    """crewai test -n <iterações> -m <modelo avaliador>"""
+    try:
+        MarketingOpsCrew().crew().test(
+            n_iterations=int(sys.argv[1]), eval_llm=sys.argv[2], inputs=_preparar()
+        )
+    except Exception as e:
+        raise Exception(f"Erro ao testar a crew: {e}") from e
+
+
+# ───────────── linha de comando direta ─────────────
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Equipe de Operação de Marketing (CrewAI)")
@@ -65,9 +114,13 @@ def main() -> None:
     inputs = carregar_briefing(args.briefing)
 
     if args.report:
+        from .crew_variants import PerformanceReportCrew
+
         inputs.update({"caminho_dados": args.report, "periodo_relatorio": args.periodo})
         resultado = PerformanceReportCrew().crew().kickoff(inputs=inputs)
     elif args.hierarchical:
+        from .crew_variants import MarketingOpsHierarchicalCrew
+
         resultado = MarketingOpsHierarchicalCrew().crew().kickoff(inputs=inputs)
     else:
         resultado = MarketingOpsCrew().crew().kickoff(inputs=inputs)

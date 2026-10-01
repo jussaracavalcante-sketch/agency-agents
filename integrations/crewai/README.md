@@ -43,7 +43,7 @@ ao CrewAI, aplicamos esta receita:
 ## Pré-requisitos
 
 - Python 3.10–3.13
-- `pip install crewai crewai-tools` (ou `uv add crewai crewai-tools`)
+- `pip install crewai[tools] uv` (a CLI `crewai` usa `uv` para gerir dependências)
 - Chave de um provedor LLM (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc.)
 - `SERPER_API_KEY` para pesquisa web (opcional, recomendado)
 
@@ -52,8 +52,8 @@ ao CrewAI, aplicamos esta receita:
 ```bash
 cd integrations/crewai/marketing-operations
 cp .env.example .env            # preencha as chaves
-pip install -r requirements.txt
-python -m marketing_ops.main    # executa a crew com o briefing de exemplo
+uv sync                         # ou: pip install -e .
+crewai run                      # executa a crew com o briefing de exemplo
 ```
 
 Veja o [README da equipe de Operação de Marketing](marketing-operations/README.md)
