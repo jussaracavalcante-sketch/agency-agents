@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { usuarioAtual, admin, podeDecidir } from "@/lib/supabase";
 import { obterExecucao } from "@/lib/execucoes";
 import Decisao from "./Decisao";
+import { TAREFAS, TOTAL_TAREFAS, rotuloTarefa } from "@/lib/agentes";
 
 export const dynamic = "force-dynamic";
 
@@ -23,10 +24,13 @@ export default async function Revisao({ params }: { params: { id: string } }) {
               <pre className="doc">{exec.pendente.output}</pre>
             </div>
           )}
-          <h3>Entregas geradas ({tarefas.length})</h3>
+          <h3>Entregas geradas ({new Set(tarefas.map((e) => e.task_name)).size} de {TOTAL_TAREFAS})</h3>
           {tarefas.slice().reverse().map((e) => (
             <details key={e.id} className="card">
-              <summary>{e.task_name}</summary>
+              <summary>
+                {TAREFAS[e.task_name || ""]?.ordem ? `${TAREFAS[e.task_name!].ordem}. ` : ""}{rotuloTarefa(e.task_name || "")}
+                <span className="mut" style={{ fontWeight: 400 }}> · {TAREFAS[e.task_name || ""]?.papel ?? "agente"} · {new Date(e.recebido_em).toLocaleTimeString("pt-BR", { timeZone: "America/Manaus" })}</span>
+              </summary>
               <pre className="doc">{e.output}</pre>
             </details>
           ))}

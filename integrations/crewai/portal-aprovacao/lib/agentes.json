@@ -1,0 +1,348 @@
+{
+ "agentes": [
+  {
+   "chave": "gerente_operacoes",
+   "papel": "Gerente de Operações de Marketing",
+   "objetivo": "Transformar o briefing da campanha em um plano de execução claro, delegar cada etapa ao especialista correto, garantir que os portões de aprovação G1, G2 e G3 sejam respeitados e consolidar o resultado final em um sumário executivo de uma página.",
+   "delega": true,
+   "ferramentas": [],
+   "tarefas": [
+    {
+     "nome": "portao_g1",
+     "ordem": 5
+    },
+    {
+     "nome": "portao_g2",
+     "ordem": 13
+    },
+    {
+     "nome": "aplicacao_g2",
+     "ordem": 14
+    },
+    {
+     "nome": "portao_g3",
+     "ordem": 18
+    },
+    {
+     "nome": "aplicacao_g3",
+     "ordem": 19
+    },
+    {
+     "nome": "sumario_executivo",
+     "ordem": 21
+    }
+   ]
+  },
+  {
+   "chave": "estrategista_campanhas",
+   "papel": "Estrategista de Campanhas de Marketing",
+   "objetivo": "Converter briefing, pesquisa de mercado e mapa de palavras-chave em um brief estratégico acionável: objetivos SMART, personas, proposta de valor, matriz de mensagens, mix de canais, alocação de orçamento e KPIs, pronto para aprovação em G1.",
+   "delega": false,
+   "ferramentas": [
+    "Guia de marca do cliente",
+    "Pesquisa web (Serper)",
+    "Leitura de arquivos"
+   ],
+   "tarefas": [
+    {
+     "nome": "brief_estrategico",
+     "ordem": 3
+    },
+    {
+     "nome": "aplicacao_g1",
+     "ordem": 6
+    }
+   ]
+  },
+  {
+   "chave": "pesquisador_mercado",
+   "papel": "Pesquisador(a) de Mercado e Tendências",
+   "objetivo": "Produzir inteligência de mercado verificável sobre {cliente} no segmento {segmento}: panorama, concorrentes, tendências dos últimos 6-12 meses, comportamento do público e oportunidades de posicionamento, sempre com fonte citada (URL e data).",
+   "delega": false,
+   "ferramentas": [
+    "Guia de marca do cliente",
+    "Pesquisa web (Serper)",
+    "Leitura de sites",
+    "Leitura de arquivos",
+    "Palavras-chave (SEO)"
+   ],
+   "tarefas": [
+    {
+     "nome": "pesquisa_mercado",
+     "ordem": 1
+    }
+   ]
+  },
+  {
+   "chave": "especialista_seo",
+   "papel": "Especialista em SEO e Otimização para Busca por IA",
+   "objetivo": "Mapear a demanda de busca do público de {cliente}, agrupar palavras-chave por intenção e etapa do funil, priorizar pautas e especificar requisitos on-page que o Redator consiga seguir sem perguntas, incluindo oportunidades de resposta direta para assistentes de IA.",
+   "delega": false,
+   "ferramentas": [
+    "Pesquisa web (Serper)",
+    "Leitura de sites",
+    "Leitura de arquivos",
+    "Palavras-chave (SEO)"
+   ],
+   "tarefas": [
+    {
+     "nome": "mapa_seo",
+     "ordem": 2
+    }
+   ]
+  },
+  {
+   "chave": "redator_conteudo",
+   "papel": "Redator(a) de Conteúdo Longo e Conversão",
+   "objetivo": "Escrever conteúdo original, útil e persuasivo (artigos, landing pages, roteiros) que siga o brief estratégico, os requisitos on-page de SEO e o brand book de {cliente}, com metadados, variações de título e CTA e notas visuais, pronto para revisão.",
+   "delega": false,
+   "ferramentas": [
+    "Guia de marca do cliente",
+    "Pesquisa web (Serper)",
+    "Leitura de arquivos"
+   ],
+   "tarefas": [
+    {
+     "nome": "producao_conteudo",
+     "ordem": 7
+    }
+   ]
+  },
+  {
+   "chave": "estrategista_social",
+   "papel": "Estrategista e Copywriter de Social Media",
+   "objetivo": "Transformar o brief e o conteúdo-base em um calendário editorial multicanal com copies, hooks, formatos e CTAs adaptados a cada plataforma ({plataformas_sociais}), com objetivo e KPI por post e orientação de engajamento.",
+   "delega": false,
+   "ferramentas": [
+    "Guia de marca do cliente",
+    "Pesquisa web (Serper)",
+    "Leitura de arquivos"
+   ],
+   "tarefas": [
+    {
+     "nome": "calendario_social",
+     "ordem": 8
+    }
+   ]
+  },
+  {
+   "chave": "especialista_email_crm",
+   "papel": "Especialista em E-mail Marketing, Automação e CRM",
+   "objetivo": "Desenhar segmentação com base legal, fluxos de automação (boas-vindas, nutrição, reativação, pós-venda) e e-mails com assunto, pré-header, corpo e CTA que conduzam o lead pelo funil, respeitando LGPD, entregabilidade e benchmarks atuais.",
+   "delega": false,
+   "ferramentas": [
+    "Guia de marca do cliente",
+    "Leitura de arquivos",
+    "CRM (leitura)"
+   ],
+   "tarefas": [
+    {
+     "nome": "fluxos_email",
+     "ordem": 9
+    }
+   ]
+  },
+  {
+   "chave": "gestor_midia_paga",
+   "papel": "Gestor(a) de Mídia Paga (Search, Social e Programática)",
+   "objetivo": "Estruturar as campanhas pagas de {cliente} com orçamento de {orcamento_midia}: arquitetura por plataforma e funil, públicos, palavras-chave e negativas, copies de anúncios, briefing de criativos, lances, projeções com premissas declaradas e rotina de otimização.",
+   "delega": false,
+   "ferramentas": [
+    "Guia de marca do cliente",
+    "Pesquisa web (Serper)",
+    "Leitura de arquivos",
+    "Mídia paga (leitura)"
+   ],
+   "tarefas": [
+    {
+     "nome": "plano_midia_paga",
+     "ordem": 10
+    }
+   ]
+  },
+  {
+   "chave": "diretor_arte",
+   "papel": "Diretor(a) de Arte e Briefing Criativo",
+   "objetivo": "Traduzir mensagens e copies em direção visual executável: conceito criativo, briefing por peça, especificações técnicas por formato e prompts de geração de imagem alinhados ao brand book de {cliente}, prontos para um designer humano ou ferramenta de geração.",
+   "delega": false,
+   "ferramentas": [
+    "Guia de marca do cliente",
+    "Leitura de arquivos"
+   ],
+   "tarefas": [
+    {
+     "nome": "direcao_arte",
+     "ordem": 11
+    }
+   ]
+  },
+  {
+   "chave": "analista_dados",
+   "papel": "Analista de Dados e Performance de Marketing",
+   "objetivo": "Garantir que tudo o que a crew produz seja mensurável e medido: plano de medição (KPIs, eventos, UTMs, conversões, dashboard), checklist de rastreamento antes de G3 e relatórios de performance com insights e recomendações priorizadas.",
+   "delega": false,
+   "ferramentas": [
+    "Leitura de arquivos",
+    "Analytics (leitura)"
+   ],
+   "tarefas": [
+    {
+     "nome": "plano_medicao",
+     "ordem": 15
+    }
+   ]
+  },
+  {
+   "chave": "guardiao_marca_compliance",
+   "papel": "Guardião(ã) de Marca, Qualidade e Compliance",
+   "objetivo": "Revisar toda entrega antes dos portões G1, G2 e G3 quanto a marca, qualidade editorial, veracidade, LGPD, CONAR/CDC e políticas de plataformas, emitindo parecer objetivo (Aprovado, Aprovado com ajustes ou Reprovado) com regra citada e correção sugerida.",
+   "delega": false,
+   "ferramentas": [
+    "Guia de marca do cliente",
+    "Pesquisa web (Serper)",
+    "Leitura de arquivos"
+   ],
+   "tarefas": [
+    {
+     "nome": "revisao_g1",
+     "ordem": 4
+    },
+    {
+     "nome": "revisao_g2",
+     "ordem": 12
+    },
+    {
+     "nome": "revisao_g3",
+     "ordem": 17
+    }
+   ]
+  },
+  {
+   "chave": "coordenador_publicacao",
+   "papel": "Coordenador(a) de Publicação e Distribuição",
+   "objetivo": "Consolidar as entregas aprovadas em um pacote de publicação único com cronograma, checklist por canal, assets nomeados e rastreamento validado; após aprovação humana em G3, executar ou orientar a publicação e registrar o log.",
+   "delega": false,
+   "ferramentas": [
+    "Leitura de arquivos",
+    "Publicação (desligada)"
+   ],
+   "tarefas": [
+    {
+     "nome": "pacote_publicacao",
+     "ordem": 16
+    },
+    {
+     "nome": "execucao_publicacao",
+     "ordem": 20
+    }
+   ]
+  }
+ ],
+ "tarefas": {
+  "portao_g1": {
+   "agente": "gerente_operacoes",
+   "papel": "Gerente de Operações de Marketing",
+   "ordem": 5
+  },
+  "portao_g2": {
+   "agente": "gerente_operacoes",
+   "papel": "Gerente de Operações de Marketing",
+   "ordem": 13
+  },
+  "aplicacao_g2": {
+   "agente": "gerente_operacoes",
+   "papel": "Gerente de Operações de Marketing",
+   "ordem": 14
+  },
+  "portao_g3": {
+   "agente": "gerente_operacoes",
+   "papel": "Gerente de Operações de Marketing",
+   "ordem": 18
+  },
+  "aplicacao_g3": {
+   "agente": "gerente_operacoes",
+   "papel": "Gerente de Operações de Marketing",
+   "ordem": 19
+  },
+  "sumario_executivo": {
+   "agente": "gerente_operacoes",
+   "papel": "Gerente de Operações de Marketing",
+   "ordem": 21
+  },
+  "brief_estrategico": {
+   "agente": "estrategista_campanhas",
+   "papel": "Estrategista de Campanhas de Marketing",
+   "ordem": 3
+  },
+  "aplicacao_g1": {
+   "agente": "estrategista_campanhas",
+   "papel": "Estrategista de Campanhas de Marketing",
+   "ordem": 6
+  },
+  "pesquisa_mercado": {
+   "agente": "pesquisador_mercado",
+   "papel": "Pesquisador(a) de Mercado e Tendências",
+   "ordem": 1
+  },
+  "mapa_seo": {
+   "agente": "especialista_seo",
+   "papel": "Especialista em SEO e Otimização para Busca por IA",
+   "ordem": 2
+  },
+  "producao_conteudo": {
+   "agente": "redator_conteudo",
+   "papel": "Redator(a) de Conteúdo Longo e Conversão",
+   "ordem": 7
+  },
+  "calendario_social": {
+   "agente": "estrategista_social",
+   "papel": "Estrategista e Copywriter de Social Media",
+   "ordem": 8
+  },
+  "fluxos_email": {
+   "agente": "especialista_email_crm",
+   "papel": "Especialista em E-mail Marketing, Automação e CRM",
+   "ordem": 9
+  },
+  "plano_midia_paga": {
+   "agente": "gestor_midia_paga",
+   "papel": "Gestor(a) de Mídia Paga (Search, Social e Programática)",
+   "ordem": 10
+  },
+  "direcao_arte": {
+   "agente": "diretor_arte",
+   "papel": "Diretor(a) de Arte e Briefing Criativo",
+   "ordem": 11
+  },
+  "plano_medicao": {
+   "agente": "analista_dados",
+   "papel": "Analista de Dados e Performance de Marketing",
+   "ordem": 15
+  },
+  "revisao_g1": {
+   "agente": "guardiao_marca_compliance",
+   "papel": "Guardião(ã) de Marca, Qualidade e Compliance",
+   "ordem": 4
+  },
+  "revisao_g2": {
+   "agente": "guardiao_marca_compliance",
+   "papel": "Guardião(ã) de Marca, Qualidade e Compliance",
+   "ordem": 12
+  },
+  "revisao_g3": {
+   "agente": "guardiao_marca_compliance",
+   "papel": "Guardião(ã) de Marca, Qualidade e Compliance",
+   "ordem": 17
+  },
+  "pacote_publicacao": {
+   "agente": "coordenador_publicacao",
+   "papel": "Coordenador(a) de Publicação e Distribuição",
+   "ordem": 16
+  },
+  "execucao_publicacao": {
+   "agente": "coordenador_publicacao",
+   "papel": "Coordenador(a) de Publicação e Distribuição",
+   "ordem": 20
+  }
+ }
+}
