@@ -47,6 +47,12 @@ brief_estrategico:
     otimista), hipóteses a testar e riscos. Consulte o guia de marca do cliente com a ferramenta brand_book_lookup antes de definir
     mensagens e tom; respeite-o. Prazo da campanha: {prazo}.
     Este documento será lido por um(a) diretor(a) em 5 minutos: seja objetivo.
+    NÃO invente serviços, produtos, personas com nome próprio ou canais que não constem do briefing, do guia de marca
+    ou do conhecimento do cliente (por exemplo, telemedicina, quando o briefing não a menciona); o que for proposta
+    sem base deve vir marcado [VALIDAR]. Em Fontes, cite apenas ferramentas e tabelas realmente disponíveis:
+    nunca cite Google Analytics se não houver integração, nem relatórios que ninguém forneceu. O orçamento de mídia
+    ({orcamento_midia}) é um subconjunto do orçamento total ({orcamento_total}): a tabela de orçamento deve separar mídia
+    paga de produção e conteúdo.
   expected_output: >
     Documento Markdown "Brief Estratégico" com as 9 seções do template (Contexto, Objetivos
     SMART, Público e personas, Proposta de valor e matriz de mensagens, Mix de canais, Orçamento,
@@ -63,6 +69,10 @@ revisao_g1:
     regra). Não reescreva o brief.
     IMPORTANTE: todas as entregas a revisar já estão no CONTEXTO desta tarefa (saídas das tarefas
     anteriores). NÃO tente abrir arquivos nem caminhos de output; trabalhe com o texto do contexto.
+    CHECAGEM OBRIGATÓRIA DO OBJETIVO: compare literalmente o objetivo do brief com o objetivo do briefing
+    ({objetivo}). Se o brief trocar, suavizar ou acrescentar metas que não estão no briefing (por exemplo, percentuais
+    sem baseline), a dimensão Coerência com o briefing é REPROVADA, com a correção exata. Verifique também se alguma
+    fonte citada não existe entre as ferramentas disponíveis ({ferramenta_analytics}).
   expected_output: >
     Parecer Markdown com resultado, checklist por dimensão (status, apontamento, regra,
     correção sugerida) e riscos residuais.
@@ -78,6 +88,8 @@ portao_g1:
     feita na tarefa seguinte (aplicacao_g1). Se esta tarefa for refeita após feedback humano, comece a
     saída com o registro literal do feedback recebido (data, decisão e ajustes pedidos, em transcrição)
     e depois reapresente o pedido. Nunca invente aprovador, data ou decisão.
+    Reproduza o parecer do Guardião literalmente, como foi emitido: você não pode alterá-lo nem afirmar que ajustes
+    foram cumpridos ou que o Guardião revisou de novo, porque isso só acontece na tarefa de revisão.
   expected_output: >
     Pedido de aprovação G1 em Markdown: resumo de 10 linhas, parecer do Guardião, riscos, ajustes
     exigidos pelo Guardião e, quando houver, o feedback humano transcrito literalmente.
@@ -198,6 +210,8 @@ portao_g2:
     decisão por entrega: aprovar, ajustar ou reprovar. NÃO reescreva peças aqui; a aplicação da decisão é
     feita na tarefa seguinte (aplicacao_g2). Se esta tarefa for refeita após feedback humano, comece a
     saída com o registro literal do feedback recebido. Nunca invente aprovador, data ou decisão.
+    Reproduza o parecer do Guardião literalmente, como foi emitido: você não pode alterá-lo nem afirmar que ajustes
+    foram cumpridos ou que o Guardião revisou de novo, porque isso só acontece na tarefa de revisão.
   expected_output: >
     Pedido de aprovação G2 em Markdown: quadro de pareceres por entrega, ajustes pendentes, amostras e,
     quando houver, o feedback humano transcrito literalmente.
@@ -242,6 +256,9 @@ pacote_publicacao:
     cronograma de publicação por canal (data, hora, fuso {fuso_horario}, peça, link, UTM,
     responsável, status) e checklist pré-publicação por canal, conferindo UTMs contra o
     dicionário. NÃO publique nem agende nada nesta tarefa.
+    O cronograma deve conter APENAS peças das entregas liberadas em aplicacao_g2; peça de entrega bloqueada não pode
+    aparecer. Em Responsável escreva "a definir" e em Link escreva "a definir após a publicação": nunca invente nomes
+    de pessoas, links ou canais sem entrega correspondente. Um plano ou um documento interno não é uma peça de canal.
   expected_output: >
     Documento Markdown com Índice do pacote, Cronograma de publicação (tabela) e Checklist
     pré-publicação por canal com status.
@@ -268,6 +285,8 @@ portao_g3:
     agendar e ativar campanhas. A aplicação da decisão é feita na tarefa seguinte (aplicacao_g3). Se esta
     tarefa for refeita após feedback humano, comece a saída com o registro literal do feedback recebido.
     Nunca invente aprovador, data ou decisão.
+    Reproduza o parecer do Guardião literalmente, como foi emitido: você não pode alterá-lo nem afirmar que ajustes
+    foram cumpridos ou que o Guardião revisou de novo, porque isso só acontece na tarefa de revisão.
   expected_output: >
     Pedido de aprovação G3 em Markdown: cronograma, orçamento a ativar, parecer final, status do
     rastreamento e, quando houver, o feedback humano transcrito literalmente.
@@ -282,6 +301,11 @@ aplicacao_g3:
     restrições e condições para publicar. Cruze com o parecer final do Guardião: todo item bloqueante
     não resolvido impede o canal afetado, então liste os canais bloqueados e o que falta para liberá-los.
     O status NÃO pode ser APROVADO sem restrições se houver item bloqueante em aberto.
+    REGRA DE CANAIS: um canal só pode constar como autorizado se TODAS as suas peças pertencem a entregas liberadas em
+    aplicacao_g2 e não há item bloqueante do Guardião em aberto para ele. Peça de entrega bloqueada, ou checklist de
+    conformidade pendente, coloca o canal em Canais bloqueados. Orçamento autorizado só existe para canais autorizados:
+    se nenhum canal estiver autorizado, o orçamento autorizado é R$ 0 e o status é APROVADO COM RESTRIÇÕES: NENHUM CANAL
+    AUTORIZADO. Valores marcados [VALIDAR] no briefing continuam [VALIDAR] no registro.
   expected_output: >
     Registro de decisão G3 em Markdown: status, canais autorizados e bloqueados, orçamento autorizado,
     restrições e condições.
