@@ -97,6 +97,11 @@ portao_g1:
     A SAÍDA FINAL deste portão é a única que a tarefa seguinte lê. Ela deve SEMPRE trazer no topo o histórico completo
     dos feedbacks humanos recebidos, de todas as rodadas, em transcrição literal, seguido da decisão final, mesmo quando
     a última mensagem do humano for apenas "Aprovado.". Nunca descarte o feedback de uma rodada anterior.
+    FORMATO OBRIGATÓRIO DA SAÍDA, em todas as passadas (inclusive retrabalho): (1) "Histórico de feedbacks humanos" com cada rodada
+    transcrita literalmente; (2) "Parecer do Guardião (cópia literal)": copie o texto integral do parecer da tarefa de revisão, sem
+    resumir, reordenar, renomear o resultado (Reprovado continua Reprovado) nem acrescentar "revisado" ou "com ajustes"; só o Guardião
+    altera o próprio parecer; (3) resumo e riscos, usando apenas o que consta nas entregas; (4) pedido de decisão. Se o feedback humano
+    pedir correções, registre-as como pendentes para a tarefa de aplicação: este portão não as executa nem afirma que foram cumpridas.
   expected_output: >
     Pedido de aprovação G1 em Markdown: resumo de 10 linhas, parecer do Guardião, riscos, ajustes
     exigidos pelo Guardião e, quando houver, o feedback humano transcrito literalmente.
@@ -113,7 +118,7 @@ aplicacao_g1:
     Riscos e premissas; Fontes), aplicando: (a) os ajustes exigidos pelo Guardião no parecer revisao_g1;
     (b) o feedback e os ajustes humanos transcritos no pedido do portão G1, quando houver; (c) o objetivo
     e os dados do briefing original ({objetivo}; orçamento total {orcamento_total}; mídia
-    {orcamento_midia}; prazo {prazo}). Nunca troque o objetivo do briefing por metas inventadas e use
+    {orcamento_midia}; prazo {prazo}). Na seção Fontes cite apenas tabelas/ferramentas realmente consultadas, sem inventar ano, versão ou documento; não introduza KPI sem baseline disponível (marque [VALIDAR]). Nunca troque o objetivo do briefing por metas inventadas e use
     como fonte de dados apenas o que está disponível ({ferramenta_analytics}). Comece a saída com o bloco
     "Registro de decisão G1" (status, ajustes aplicados, ajustes não aplicados e por quê) e depois traga
     o documento INTEGRAL, nunca um resumo das mudanças, porque as tarefas seguintes dependem do texto
@@ -204,6 +209,9 @@ revisao_g2:
     IMPORTANTE: todas as entregas a revisar já estão no CONTEXTO desta tarefa (saídas das tarefas
     anteriores). NÃO tente abrir arquivos nem caminhos de output; trabalhe com o texto do contexto.
     RESULTADO POR ENTREGA = o PIOR resultado entre as dimensões avaliadas nela; uma dimensão Reprovada torna a entrega Reprovada.
+    Confira também cada peça contra o brief final aprovado: serviço, procedimento, tecnologia ou promessa clínica que não conste do
+    briefing original nem do brief aprovado, e claim de saúde sem fonte (ex.: recuperação mais rápida, menos invasivo, resultado garantido),
+    tornam a peça Reprovada nas dimensões veracidade e setor regulado.
   expected_output: >
     Documento Markdown com um parecer por entrega (template de checklist) e um quadro-resumo
     final: entrega × resultado × nº de ajustes.
@@ -223,6 +231,11 @@ portao_g2:
     A SAÍDA FINAL deste portão é a única que a tarefa seguinte lê. Ela deve SEMPRE trazer no topo o histórico completo
     dos feedbacks humanos recebidos, de todas as rodadas, em transcrição literal, seguido da decisão final, mesmo quando
     a última mensagem do humano for apenas "Aprovado.". Nunca descarte o feedback de uma rodada anterior.
+    FORMATO OBRIGATÓRIO DA SAÍDA, em todas as passadas (inclusive retrabalho): (1) "Histórico de feedbacks humanos" com cada rodada
+    transcrita literalmente; (2) "Parecer do Guardião (cópia literal)": copie o texto integral do parecer da tarefa de revisão, sem
+    resumir, reordenar, renomear o resultado (Reprovado continua Reprovado) nem acrescentar "revisado" ou "com ajustes"; só o Guardião
+    altera o próprio parecer; (3) resumo e riscos, usando apenas o que consta nas entregas; (4) pedido de decisão. Se o feedback humano
+    pedir correções, registre-as como pendentes para a tarefa de aplicação: este portão não as executa nem afirma que foram cumpridas.
   expected_output: >
     Pedido de aprovação G2 em Markdown: quadro de pareceres por entrega, ajustes pendentes, amostras e,
     quando houver, o feedback humano transcrito literalmente.
@@ -302,6 +315,11 @@ portao_g3:
     A SAÍDA FINAL deste portão é a única que a tarefa seguinte lê. Ela deve SEMPRE trazer no topo o histórico completo
     dos feedbacks humanos recebidos, de todas as rodadas, em transcrição literal, seguido da decisão final, mesmo quando
     a última mensagem do humano for apenas "Aprovado.". Nunca descarte o feedback de uma rodada anterior.
+    FORMATO OBRIGATÓRIO DA SAÍDA, em todas as passadas (inclusive retrabalho): (1) "Histórico de feedbacks humanos" com cada rodada
+    transcrita literalmente; (2) "Parecer do Guardião (cópia literal)": copie o texto integral do parecer da tarefa de revisão, sem
+    resumir, reordenar, renomear o resultado (Reprovado continua Reprovado) nem acrescentar "revisado" ou "com ajustes"; só o Guardião
+    altera o próprio parecer; (3) resumo e riscos, usando apenas o que consta nas entregas; (4) pedido de decisão. Se o feedback humano
+    pedir correções, registre-as como pendentes para a tarefa de aplicação: este portão não as executa nem afirma que foram cumpridas.
   expected_output: >
     Pedido de aprovação G3 em Markdown: cronograma, orçamento a ativar, parecer final, status do
     rastreamento e, quando houver, o feedback humano transcrito literalmente.
