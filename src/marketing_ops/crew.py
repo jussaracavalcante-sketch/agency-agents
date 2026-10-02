@@ -97,6 +97,11 @@ def _garantir_output_dir() -> None:
     _resolver_output_dir()
 
 
+_REGRA_DE_INSUMOS = (
+    "\n\nREGRA DE INSUMOS: as saídas das tarefas anteriores e os dados do briefing já estão no seu CONTEXTO. "
+    "Não tente abrir arquivos ou caminhos e nunca responda que não consegue acessar documentos: entregue o "
+    "documento pedido com o que está no contexto e marque o que faltar como [VALIDAR]."
+)
 _MODO_COM_HUMANO = (
     "\n\nMODO DO PORTÃO: HUMANO ATIVO. Esta tarefa só executa depois que um aprovador humano liberou o "
     "portão correspondente. Trate a decisão como APROVADA, aplicando os ajustes e o feedback humano "
@@ -107,6 +112,44 @@ _MODO_SEM_HUMANO = (
     "Aplique apenas os ajustes obrigatórios apontados pelo Guardião, marque o documento como VERSÃO NÃO "
     "APROVADA POR HUMANO e não registre aprovação, aprovador ou data de decisão."
 )
+
+
+_FRASES_DE_FALHA = (
+    "erro ao tentar acessar",
+    "não consigo acessar",
+    "não consegui acessar",
+    "não tenho acesso",
+    "não poderei completar",
+    "forneça acesso",
+    "forneça o conteúdo",
+    "verifique se os documentos",
+    "unable to access",
+    "cannot access",
+    "i don't have access",
+    "please provide the",
+)
+_MIN_CARACTERES_DOCUMENTO = 700
+
+
+def _guardrail_documento(saida):  # sem anotação de retorno: o validador do CrewAI a compara com tipos reais
+    """
+    Rejeita a saída de uma tarefa de documento quando ela é uma desculpa em vez de entrega: curta demais ou
+    dizendo que não conseguiu acessar insumos. Os insumos estão sempre no contexto; a tarefa é refeita.
+    """
+    texto = (getattr(saida, "raw", None) or str(saida) or "").strip()
+    baixo = texto.lower()
+    if len(texto) < _MIN_CARACTERES_DOCUMENTO:
+        return False, (
+            "Saída curta demais para um documento. Entregue o documento completo usando os insumos que estão no "
+            "CONTEXTO desta tarefa; não procure arquivos nem peça acesso."
+        )
+    for frase in _FRASES_DE_FALHA:
+        if frase in baixo[:600]:
+            return False, (
+                "A saída diz que não foi possível acessar documentos. Isso não procede: todos os insumos estão no "
+                "CONTEXTO desta tarefa. Refaça entregando o documento completo; se faltar um dado, marque [VALIDAR]."
+            )
+    return True, saida
 
 
 def _aplicar_pasta_de_saida(tasks: list[Task]) -> str | None:
@@ -120,6 +163,8 @@ def _aplicar_pasta_de_saida(tasks: list[Task]) -> str | None:
             t.output_file = str(pasta / Path(t.output_file).name) if pasta else None
         if (t.name or "").startswith("aplicacao_g") and "MODO DO PORTÃO:" not in t.description:
             t.description += _MODO_COM_HUMANO if HUMAN_GATES else _MODO_SEM_HUMANO
+        if "REGRA DE INSUMOS:" not in t.description and not t.name.startswith("portao_g"):
+            t.description += _REGRA_DE_INSUMOS
         if t.human_input and not HUMAN_GATES:
             t.human_input = False
             t.description += (
@@ -297,22 +342,23 @@ class MarketingOpsCrew:
 
     @task
     def pesquisa_mercado(self) -> Task:
-        return Task(config=self.tasks_config["pesquisa_mercado"])
+        return Task(guardrail=_guardrail_documento, guardrail_max_retries=2, config=self.tasks_config["pesquisa_mercado"])
 
     @task
     def mapa_seo(self) -> Task:
-        return Task(config=self.tasks_config["mapa_seo"], context=[self.pesquisa_mercado()])
+        return Task(guardrail=_guardrail_documento, guardrail_max_retries=2, config=self.tasks_config["mapa_seo"], context=[self.pesquisa_mercado()])
 
     @task
     def brief_estrategico(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["brief_estrategico"],
             context=[self.pesquisa_mercado(), self.mapa_seo()],
         )
 
     @task
     def revisao_g1(self) -> Task:
-        return Task(config=self.tasks_config["revisao_g1"], context=[self.brief_estrategico()])
+        return Task(guardrail=_guardrail_documento, guardrail_max_retries=2, config=self.tasks_config["revisao_g1"], context=[self.brief_estrategico()])
 
     @task
     def portao_g1(self) -> Task:
@@ -324,6 +370,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g1(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g1"],
             context=[self.brief_estrategico(), self.revisao_g1(), self.portao_g1()],
         )
@@ -333,6 +380,7 @@ class MarketingOpsCrew:
     @task
     def producao_conteudo(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["producao_conteudo"],
             context=[self.aplicacao_g1(), self.mapa_seo()],
         )
@@ -340,6 +388,7 @@ class MarketingOpsCrew:
     @task
     def calendario_social(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["calendario_social"],
             context=[self.aplicacao_g1(), self.producao_conteudo(), self.pesquisa_mercado()],
         )
@@ -347,6 +396,7 @@ class MarketingOpsCrew:
     @task
     def fluxos_email(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["fluxos_email"],
             context=[self.aplicacao_g1(), self.producao_conteudo()],
         )
@@ -354,6 +404,7 @@ class MarketingOpsCrew:
     @task
     def plano_midia_paga(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["plano_midia_paga"],
             context=[self.aplicacao_g1(), self.mapa_seo(), self.pesquisa_mercado(), self.fluxos_email()],
         )
@@ -361,6 +412,7 @@ class MarketingOpsCrew:
     @task
     def direcao_arte(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["direcao_arte"],
             context=[
                 self.aplicacao_g1(),
@@ -374,6 +426,7 @@ class MarketingOpsCrew:
     @task
     def revisao_g2(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["revisao_g2"],
             context=[
                 self.producao_conteudo(),
@@ -401,6 +454,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g2(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g2"],
             context=[
                 self.portao_g2(),
@@ -418,6 +472,7 @@ class MarketingOpsCrew:
     @task
     def plano_medicao(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["plano_medicao"],
             context=[self.aplicacao_g1(), self.calendario_social(), self.fluxos_email(), self.plano_midia_paga()],
         )
@@ -425,6 +480,7 @@ class MarketingOpsCrew:
     @task
     def pacote_publicacao(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["pacote_publicacao"],
             context=[
                 self.aplicacao_g2(),
@@ -440,6 +496,7 @@ class MarketingOpsCrew:
     @task
     def revisao_g3(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["revisao_g3"],
             context=[self.pacote_publicacao(), self.plano_medicao(), self.aplicacao_g2()],
         )
@@ -454,6 +511,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g3(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g3"],
             context=[
                 self.portao_g3(),
@@ -466,6 +524,7 @@ class MarketingOpsCrew:
     @task
     def execucao_publicacao(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["execucao_publicacao"],
             context=[self.aplicacao_g3(), self.pacote_publicacao()],
         )
@@ -473,6 +532,7 @@ class MarketingOpsCrew:
     @task
     def sumario_executivo(self) -> Task:
         return Task(
+            guardrail=_guardrail_documento, guardrail_max_retries=2,
             config=self.tasks_config["sumario_executivo"],
             context=[
                 self.aplicacao_g1(),
