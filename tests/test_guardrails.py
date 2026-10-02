@@ -10,6 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica",
 }
 
 
@@ -85,3 +86,40 @@ def test_calendario_reemitido_incompleto_e_completo():
     assert G._guardrail_aplicacao_g2(types.SimpleNamespace(raw=completo))[0] is True
     sem_calendario = "### Parte A\n" + ("a" * 800) + "\n#### Peça Reemitida: Conteúdo Editorial\ntexto simples\n"
     assert G._guardrail_aplicacao_g2(types.SimpleNamespace(raw=sem_calendario))[0] is True
+
+
+def _rubrica(linhas, extra=""):
+    return types.SimpleNamespace(raw="# Rubrica\n" + ("x" * 900) + "\n" + "\n".join(linhas) + "\n" + extra)
+
+
+_OK = [
+    "RESUMO | CONTEÚDO | G1=OK G2=OK G3=OK G4=NA G5=OK | NOTA=92/100 | VEREDITO=APROVAR | REVISÃO 1 DE 2",
+    "RESUMO | CALENDÁRIO | G1=OK G2=OK G3=OK G4=NA G5=OK | NOTA=84/100 | VEREDITO=APROVAR COM AJUSTES MENORES | REVISÃO 1 DE 2",
+    "RESUMO | E-MAIL | G1=OK G2=OK G3=OK G4=OK G5=OK | NOTA=70/100 | VEREDITO=DEVOLVER | REVISÃO 1 DE 2",
+    "RESUMO | MÍDIA | G1=FALHA G2=OK G3=OK G4=OK G5=OK | NOTA=55/100 | VEREDITO=REFAZER | REVISÃO 1 DE 2",
+]
+
+
+def test_rubrica_valida_e_regras_de_nota():
+    G._INPUTS_ATUAIS.clear()
+    assert G._guardrail_rubrica(_rubrica(_OK))[0] is True
+    assert G._guardrail_rubrica(_rubrica(_OK[:3]))[0] is False                                    # falta a peça MÍDIA
+    gate_falha_nota_alta = _OK[:3] + [_OK[3].replace("NOTA=55", "NOTA=75").replace("REFAZER", "DEVOLVER")]
+    assert G._guardrail_rubrica(_rubrica(gate_falha_nota_alta))[0] is False                       # gate em FALHA exige nota <= 59
+    faixa_errada = [_OK[0].replace("APROVAR |", "DEVOLVER |")] + _OK[1:]
+    assert G._guardrail_rubrica(_rubrica(faixa_errada))[0] is False                               # 92 não é DEVOLVER
+    sem_gate = [_OK[0].replace("G5=OK", "")] + _OK[1:]
+    assert G._guardrail_rubrica(_rubrica(sem_gate))[0] is False                                   # faltam gates
+
+
+def test_rubrica_exige_aval_medico_em_saude():
+    G._INPUTS_ATUAIS.clear()
+    G._INPUTS_ATUAIS["segmento"] = "Saúde: hospital privado"
+    assert G._guardrail_rubrica(_rubrica(_OK))[0] is False
+    assert G._guardrail_rubrica(_rubrica(_OK, "AVAL MÉDICO PENDENTE: todas as peças"))[0] is True
+    G._INPUTS_ATUAIS.clear()
+
+
+def test_linhas_resumo_para_copia_literal():
+    r = _rubrica(["**" + _OK[0] + "**"] + _OK[1:])
+    assert len(G._linhas_resumo_rubrica(r.raw)) == 4

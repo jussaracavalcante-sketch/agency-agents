@@ -117,3 +117,9 @@ texto. As travas em código existem para barrar o que o Guardião (LLM) deixa pa
 
 Limite: cada trava aceita a saída depois de duas rejeições (para não derrubar a execução), então ela reduz mas não
 elimina o risco; o G2 e o G3 humanos continuam sendo a barreira final.
+
+
+## Rubrica do revisor de qualidade (fase 1 da integração do squad)
+Acrescentados o agente `revisor_qualidade` (13º) e a tarefa `rubrica_qa` (22ª do pipeline), antes da revisão do G2, com guardrail
+de formato e coerência (gates, nota, veredito, selo AVAL MÉDICO em saúde) e cópia literal do quadro de notas no pedido do G2.
+Ainda não validada em execução. Se o próximo piloto falhar duas vezes, vale a regra de rollback (base `8fa07e3`).

@@ -100,3 +100,10 @@ Guardião e o número de `[VALIDAR]` com a execução anterior.
   teste de regressão.
 - Versionar a crew (`v1.0`, `v1.1`…) no README e no sumário executivo de cada campanha.
 - Registrar decisões arquiteturais (modelo, processo, ferramentas) em `docs/decisoes/` (ADR).
+
+
+## Rubrica de qualidade das peças (revisor de qualidade)
+A tarefa `rubrica_qa` roda antes da revisão do Guardião no G2. Avalia conteúdo, calendário, e-mail e mídia com 5 gates
+eliminatórios (CFM/CDC, LGPD, fato sem fonte, limite técnico, grafia da marca) e 7 critérios que somam 100 pontos. Gate em FALHA
+limita a nota a 59. Saúde exige o checklist CFM A–F e o selo AVAL MÉDICO PENDENTE. O pedido do G2 copia o quadro de notas
+literalmente e o Guardião trata a falha de gate como piso. Detalhes em `agents/13-revisor-qualidade.md`.

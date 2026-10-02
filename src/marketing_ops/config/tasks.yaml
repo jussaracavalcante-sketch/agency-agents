@@ -211,6 +211,44 @@ direcao_arte:
   agent: diretor_arte
   output_file: output/10_direcao_arte.md
 
+rubrica_qa:
+  description: >
+    RUBRICA DE QUALIDADE das peças de produção de {cliente} (segmento: {segmento}). Avalie exatamente quatro peças que
+    estão no CONTEXTO: CONTEÚDO (conteúdo web), CALENDÁRIO (calendário social), E-MAIL (fluxos de e-mail) e MÍDIA (anúncios
+    e copies do plano de mídia). A direção de arte não entra. Não reescreva nada.
+    GATES ELIMINATÓRIOS (qualquer FALHA limita a nota a 59 e força devolução): G1 compliance CFM/CDC (superlativo, promessa,
+    medo, depoimento em saúde; oferta incompleta ou enganosa em varejo); G2 dado pessoal LGPD (paciente identificável, dado
+    sensível, personalização por condição de saúde); G3 fato falso ou sem fonte (dado que não está no briefing, no guia do
+    cliente ou em fonte citada, e sem [VALIDAR]); G4 limite técnico (RSA título 30, descrição 90, caminho 15; Meta texto 125,
+    título 40, descrição 30; meta title 60; meta description 155; assunto de e-mail 50; use NA quando a peça não tem o
+    elemento); G5 grafia da marca ou termo proibido (use a ferramenta de base de conhecimento do cliente).
+    CRITÉRIOS PONDERADOS (100 pontos, com um "porque" de pelo menos uma frase em cada): aderência à marca 20; compliance e
+    precisão 20; clareza e estrutura 15; aderência ao briefing 15; canal e formato 10; SEO 10 (se não se aplica, redistribua
+    entre canal e formato e CTA e declare); CTA 10.
+    VEREDITO: 90 a 100 APROVAR; 80 a 89 APROVAR COM AJUSTES MENORES; 60 a 79 DEVOLVER; abaixo de 60 REFAZER. Com qualquer gate
+    em FALHA a nota é no máximo 59 e o veredito é DEVOLVER ou REFAZER.
+    REGRA DE EVIDÊNCIA: cada apontamento cita entre aspas o trecho literal da peça, a regra violada e uma correção de exemplo.
+    Sem trecho literal não há apontamento. Varra cada peça procurando superlativos ('o melhor', 'de ponta', 'líder',
+    'referência'), garantias ('garante', 'garantindo'), promessas clínicas, depoimentos, números sem fonte, link ou texto de
+    exemplo, canal ou serviço fora do briefing. [VALIDAR] marcado não reprova; dado sem fonte sem marcador reprova em G3.
+    CONSISTÊNCIA ENTRE CANAIS: orçamento, datas, preços, serviços e grafia da marca devem ser idênticos em todas as peças;
+    divergência é ajuste obrigatório.
+    SAÚDE: se o segmento é saúde (hospital, clínica, farmácia, médico), aplique também o checklist CFM 2.336/2023 em cada
+    peça: A sem superlativo ou comparação; B sem promessa de resultado; C sem apelo ao medo; D sem depoimento, antes e depois ou
+    paciente identificável; E identificação do estabelecimento, CRM e diretor técnico-médico; F "especialista" só com RQE.
+    Toda peça de saúde recebe a marca AVAL MÉDICO PENDENTE, e o portão humano não substitui o aval médico.
+    CICLOS: informe "REVISÃO 1 DE 2"; a segunda reprovação da mesma peça escala ao humano.
+    FORMATO OBRIGATÓRIO: para cada peça, um bloco "### Peça: <NOME>" com a tabela dos 5 gates, os critérios com pontos e
+    justificativa, os apontamentos com trecho literal e, ao final do bloco, UMA linha neste formato exato, sem quebra:
+    RESUMO | <CONTEÚDO, CALENDÁRIO, E-MAIL ou MÍDIA> | G1=OK G2=OK G3=OK G4=NA G5=OK | NOTA=NN/100 | VEREDITO=<APROVAR, APROVAR COM AJUSTES MENORES, DEVOLVER ou REFAZER> | REVISÃO 1 DE 2
+    (cada gate recebe OK, FALHA ou NA). Termine com "## Quadro de notas", repetindo as quatro linhas RESUMO, e, em saúde,
+    a linha "AVAL MÉDICO PENDENTE: todas as peças".
+  expected_output: >
+    Documento Markdown com um bloco por peça (gates, critérios com pontos, apontamentos com trecho literal), a linha RESUMO
+    de cada peça no formato exato e o quadro de notas final.
+  agent: revisor_qualidade
+  output_file: output/10b_rubrica_qa.md
+
 revisao_g2:
   description: >
     Revise TODAS as entregas de produção (conteúdo, calendário social, fluxos de e-mail, plano
@@ -220,6 +258,8 @@ revisao_g2:
     IMPORTANTE: todas as entregas a revisar já estão no CONTEXTO desta tarefa (saídas das tarefas
     anteriores). NÃO tente abrir arquivos nem caminhos de output; trabalhe com o texto do contexto.
     RESULTADO POR ENTREGA = o PIOR resultado entre as dimensões avaliadas nela; uma dimensão Reprovada torna a entrega Reprovada.
+    A RUBRICA DE QUALIDADE (tarefa anterior, revisor de qualidade) está no CONTEXTO: trate a falha de qualquer gate dela como piso. Peça com G1, G3 ou G5
+    em FALHA nunca pode sair Aprovada por você; cite a nota e o veredito da rubrica no quadro-resumo e aponte divergência com a sua revisão.
     Confira também cada peça contra o brief final aprovado: serviço, procedimento, tecnologia ou promessa clínica que não conste do
     briefing original nem do brief aprovado, e claim de saúde sem fonte (ex.: recuperação mais rápida, menos invasivo, resultado garantido),
     tornam a peça Reprovada nas dimensões veracidade e setor regulado.
@@ -255,7 +295,8 @@ portao_g2:
     FORMATO OBRIGATÓRIO DA SAÍDA, em todas as passadas (inclusive retrabalho): (1) "Histórico de feedbacks humanos" com cada rodada
     transcrita literalmente; (2) "Parecer do Guardião (cópia literal)": copie o texto integral do parecer da tarefa de revisão, sem
     resumir, reordenar, renomear o resultado (Reprovado continua Reprovado) nem acrescentar "revisado" ou "com ajustes"; só o Guardião
-    altera o próprio parecer; (3) resumo e riscos, usando apenas o que consta nas entregas; (4) pedido de decisão. Se o feedback humano
+    altera o próprio parecer; (2b) "Quadro da rubrica de qualidade (cópia literal)": copie, sem alterar, as quatro linhas que começam com RESUMO | da rubrica de qualidade (nota e veredito por peça);
+    (3) resumo e riscos, usando apenas o que consta nas entregas; (4) pedido de decisão. Se o feedback humano
     pedir correções, registre-as como pendentes para a tarefa de aplicação: este portão não as executa nem afirma que foram cumpridas.
     HISTÓRICO DE FEEDBACKS: transcreva apenas mensagens que o humano de fato enviou nesta conversa. Se nenhuma mensagem
     humana anterior existir, escreva exatamente "Nenhum feedback humano recebido". É proibido redigir, supor ou reconstruir

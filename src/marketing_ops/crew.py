@@ -1,7 +1,7 @@
 """
 crew.py — Equipe de Operação de Marketing (CrewAI)
 
-Define os 12 agentes e as 21 tarefas do pipeline de campanha (a 22ª, relatório de
+Define os 13 agentes e as 22 tarefas do pipeline de campanha (a 23ª, relatório de
 performance, roda em uma crew separada pós-campanha). Os textos de role/goal/backstory e
 description/expected_output vivem em config/agents.yaml e config/tasks.yaml; este arquivo
 só liga agentes, tarefas, ferramentas, dependências (context) e processo.
@@ -195,7 +195,7 @@ def _linhas_significativas(texto):
     return [n for n in (_normalizar(l) for l in (texto or "").splitlines()) if len(n) > 25]
 
 
-def _guardrail_portao_factory(revisao_task):
+def _guardrail_portao_factory(revisao_task, rubrica_task=None):
     """
     Portão humano: o pedido deve copiar o parecer do Guardião (mesmo resultado, pelo menos 70% das linhas) e ter as
     seções obrigatórias. Rejeita paráfrase e a troca de "Reprovado" por outro resultado.
@@ -232,6 +232,14 @@ def _guardrail_portao_factory(revisao_task):
                         "O parecer do Guardião foi parafraseado ou resumido. Copie o texto do parecer integralmente, "
                         "sem reescrever, na seção 'Parecer do Guardião (cópia literal)'."
                     )
+        rubrica = getattr(getattr(rubrica_task, "output", None), "raw", None) if rubrica_task is not None else None
+        if rubrica:
+            linhas = [_normalizar(l) for l in _linhas_resumo_rubrica(rubrica)]
+            if linhas and not all(l in norm for l in linhas):
+                return False, (
+                    "Falta o quadro da rubrica de qualidade. Na seção 'Quadro da rubrica de qualidade (cópia literal)' copie, sem "
+                    "alterar, as quatro linhas que começam com RESUMO | da tarefa de rubrica."
+                )
         return True, saida
 
     return guardrail
@@ -463,6 +471,71 @@ def _guardrail_brief(saida):
     return True, saida
 
 
+_PECAS_RUBRICA = ("CONTEUDO", "CALENDARIO", "EMAIL", "MIDIA")
+_RESUMO_RUBRICA = re.compile(
+    r"^[\s*`>-]*RESUMO\s*\|\s*(?P<peca>[^|]+?)\s*\|\s*(?P<gates>[^|]+?)\s*\|\s*NOTA\s*=\s*(?P<nota>\d{1,3})\s*/\s*100\s*\|\s*"
+    r"VEREDITO\s*=\s*(?P<ver>APROVAR COM AJUSTES MENORES|APROVAR|DEVOLVER|REFAZER)\s*\|\s*REVIS[ÃA]O\s+(?P<ciclo>[12])\s+DE\s+2[\s*`]*$",
+    re.I | re.M,
+)
+_SEGMENTO_SAUDE = re.compile(r"sa[úu]de|hospital|cl[íi]nica|m[ée]dic|farm[áa]c|drogaria|odont", re.I)
+
+
+def _sem_acento(texto):
+    import unicodedata
+
+    return "".join(c for c in unicodedata.normalize("NFD", texto) if unicodedata.category(c) != "Mn").upper()
+
+
+def _linhas_resumo_rubrica(texto):
+    """Linhas RESUMO | ... da rubrica de qualidade, na forma como foram emitidas."""
+    return [m.group(0).strip(" *`>-\t") for m in _RESUMO_RUBRICA.finditer(texto or "")]
+
+
+def _guardrail_rubrica(saida):
+    """
+    Rubrica de qualidade: quatro peças, cada uma com a linha RESUMO (5 gates, nota, veredito, ciclo) coerente com as regras:
+    gate em FALHA limita a nota a 59 e exige DEVOLVER ou REFAZER; sem falha, o veredito segue a faixa da nota.
+    """
+    base = _guardrail_documento(saida)
+    if base[0] is False:
+        return base
+    texto = getattr(saida, "raw", None) or str(saida) or ""
+    achados = {}
+    for m in _RESUMO_RUBRICA.finditer(texto):
+        peca = _sem_acento(m.group("peca")).replace("-", "").replace(" ", "")
+        achados[peca] = m
+    faltam = [p for p in _PECAS_RUBRICA if p not in achados]
+    if faltam:
+        return False, (
+            "Faltam linhas RESUMO para as peças: " + ", ".join(faltam) + ". Use exatamente: RESUMO | <CONTEÚDO, CALENDÁRIO, E-MAIL "
+            "ou MÍDIA> | G1=OK G2=OK G3=OK G4=NA G5=OK | NOTA=NN/100 | VEREDITO=<APROVAR, APROVAR COM AJUSTES MENORES, DEVOLVER "
+            "ou REFAZER> | REVISÃO 1 DE 2, uma linha por peça."
+        )
+    for peca in _PECAS_RUBRICA:
+        m = achados[peca]
+        gates = dict(re.findall(r"G([1-5])\s*=\s*(OK|FALHA|NA)", m.group("gates"), re.I))
+        if sorted(gates) != ["1", "2", "3", "4", "5"]:
+            return False, f"A linha RESUMO de {peca} precisa dos 5 gates (G1 a G5), cada um OK, FALHA ou NA."
+        nota = int(m.group("nota"))
+        ver = m.group("ver").upper()
+        falhou = any(v.upper() == "FALHA" for v in gates.values())
+        if nota > 100:
+            return False, f"A nota de {peca} ({nota}) passa de 100."
+        if falhou:
+            if nota > 59 or ver not in ("DEVOLVER", "REFAZER"):
+                return False, (
+                    f"{peca} tem gate em FALHA: a nota fica em no máximo 59 e o veredito é DEVOLVER ou REFAZER "
+                    f"(recebeu NOTA={nota}, VEREDITO={ver})."
+                )
+        else:
+            esperado = "APROVAR" if nota >= 90 else "APROVAR COM AJUSTES MENORES" if nota >= 80 else "DEVOLVER" if nota >= 60 else "REFAZER"
+            if ver != esperado:
+                return False, f"{peca}: a nota {nota} corresponde ao veredito {esperado}, não {ver}."
+    if _SEGMENTO_SAUDE.search(str(_INPUTS_ATUAIS.get("segmento", ""))) and "aval m" not in _normalizar(texto):
+        return False, "O segmento é saúde: inclua a marca AVAL MÉDICO PENDENTE em todas as peças e no quadro de notas."
+    return True, saida
+
+
 def _g_doc():
     return _com_limite_de_rejeicoes(_guardrail_documento)
 
@@ -656,6 +729,14 @@ class MarketingOpsCrew:
         )
 
     @agent
+    def revisor_qualidade(self) -> Agent:
+        return Agent(
+            config=self.agents_config["revisor_qualidade"],
+            llm=MODEL,
+            tools=_tools(brand_book, read_file),
+        )
+
+    @agent
     def coordenador_publicacao(self) -> Agent:
         return Agent(
             config=self.agents_config["coordenador_publicacao"],
@@ -750,11 +831,26 @@ class MarketingOpsCrew:
         )
 
     @task
+    def rubrica_qa(self) -> Task:
+        return Task(
+            guardrail=_com_limite_de_rejeicoes(_guardrail_rubrica), guardrail_max_retries=2,
+            config=self.tasks_config["rubrica_qa"],
+            context=[
+                self.aplicacao_g1(),
+                self.producao_conteudo(),
+                self.calendario_social(),
+                self.fluxos_email(),
+                self.plano_midia_paga(),
+            ],
+        )
+
+    @task
     def revisao_g2(self) -> Task:
         return Task(
             guardrail=_g_doc(), guardrail_max_retries=2,
             config=self.tasks_config["revisao_g2"],
             context=[
+                self.rubrica_qa(),
                 self.producao_conteudo(),
                 self.calendario_social(),
                 self.fluxos_email(),
@@ -766,10 +862,11 @@ class MarketingOpsCrew:
     @task
     def portao_g2(self) -> Task:
         return Task(
-            guardrail=_guardrail_portao_factory(self.revisao_g2()), guardrail_max_retries=2,
+            guardrail=_guardrail_portao_factory(self.revisao_g2(), self.rubrica_qa()), guardrail_max_retries=2,
             config=self.tasks_config["portao_g2"],
             context=[
                 self.revisao_g2(),
+                self.rubrica_qa(),
                 self.producao_conteudo(),
                 self.calendario_social(),
                 self.fluxos_email(),
@@ -786,6 +883,7 @@ class MarketingOpsCrew:
             context=[
                 self.portao_g2(),
                 self.revisao_g2(),
+                self.rubrica_qa(),
                 self.producao_conteudo(),
                 self.calendario_social(),
                 self.fluxos_email(),
