@@ -8,7 +8,7 @@ Interface para a equipe validar os portões G1, G2 e G3 do fluxo de marketing no
 |---|---|
 | `/` | Fila de portões pendentes e execuções recentes. |
 | `/execucao/[id]` | Pedido do portão, entregas geradas (uma a uma, com o agente responsável) e histórico de decisões. |
-| `/agentes` | Equipe de 12 agentes: papel, objetivo, ferramentas, tarefas e atividade (entregas e última execução). |
+| `/agentes` | Equipe de 13 agentes: papel, objetivo, ferramentas, tarefas e atividade (entregas e última execução). |
 | `/disparar` | Formulário do briefing (17 campos) com revisão e confirmação de custo. Só aprovador. |
 | Decisão | Aprovar, Devolver com ajustes (instruções obrigatórias) ou Reprovar. Só o papel **aprovador** decide. |
 
