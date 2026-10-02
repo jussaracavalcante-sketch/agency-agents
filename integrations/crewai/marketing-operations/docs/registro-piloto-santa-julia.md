@@ -55,3 +55,29 @@ orçamento do plano de mídia bloqueado.
 Erro anterior no mesmo dia: guardrail do portão derrubou uma execução ao reexecutar a tarefa no resume
 (`guardrail validation after 2 retries`). Corrigido com limite de rejeições; execução concluída zera a contagem da regra
 de rollback.
+
+---
+
+# Validação final de 02/10 (build `1768574`): fluxo funcional
+
+Execução `f1c67ab2` encadeada até `b2a90978`: **21 de 21 tarefas, SUCCESS**. Quinta rodada seguida concluída
+(contador da regra de rollback: 0 de 2). G1, G2 e G3 respondidos com "Aprovado." como teste; publicação real desligada.
+
+| Verificação | Resultado |
+|---|---|
+| Pausa e retomada nos 3 portões, um resume por portão | OK |
+| Depoimento, testemunho, caso de sucesso, paciente real nas peças | Nenhuma ocorrência |
+| Líder, referência, premiado, "o melhor hospital" nas peças | Nenhuma ocorrência (só no registro de remoção) |
+| Garantia de segurança, precisão ou resultado | Nenhuma ocorrência |
+| Cirurgia robótica | Só no mapa SEO, como tendência setorial; fora do brief e das peças do cliente |
+| Datas completas inventadas fora do calendário | Nenhuma ("a definir") |
+| Calendário editorial | 24 posts, 01/11 a 20/12, as 8 semanas, em formato compacto |
+| G3 com Guardião reprovado | "BLOQUEADO: NENHUM CANAL AUTORIZADO", orçamento R$ 0 |
+| Publicação | "NÃO EXECUTADO", roteiro com datas "a definir" |
+
+Salvaguardas ativas: guardrails em código (cópia literal do parecer, claims proibidos, calendário completo, serviços
+fora do briefing), cada um com limite de duas rejeições para não derrubar a execução.
+
+Limites que permanecem: a lista de termos de serviços é fixa; o Guardião (LLM) ainda não pega tudo, por isso o código
+é a barreira confiável; o texto de aprovação ("Aprovado.") não carrega instruções, que só chegam à aplicação pelo
+histórico de devoluções; a publicação real segue desligada até haver um G3 aprovado por pessoa.
