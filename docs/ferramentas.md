@@ -60,3 +60,12 @@
 Se o ambiente oferecer servidores MCP (Semrush, Google Ads, Notion, Gmail), eles podem
 substituir as ferramentas customizadas via o adaptador MCP do CrewAI (`crewai-tools[mcp]`).
 Mantenha a mesma política: leitura liberada, escrita só pós-G3.
+
+
+## Carga automática da base de conhecimento do cliente
+
+Além da ferramenta `brand_book_lookup`, a crew carrega o guia do cliente no código, antes de qualquer tarefa
+(`before_kickoff` em `crew.py`, função `_injetar_contexto_cliente`). O texto de `knowledge/<cliente>/` é
+exposto como `contexto_cliente` e anexado a todas as tarefas, exceto aos portões humanos. Se o cliente não
+tem guia, ou o input `cliente` não foi informado, o contexto avisa e as decisões de marca viram [VALIDAR].
+O limite é de 8.000 caracteres por tarefa.
