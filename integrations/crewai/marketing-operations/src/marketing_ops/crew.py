@@ -100,7 +100,10 @@ def _garantir_output_dir() -> None:
 _REGRA_DE_INSUMOS = (
     "\n\nREGRA DE INSUMOS: as saídas das tarefas anteriores e os dados do briefing já estão no seu CONTEXTO. "
     "Não tente abrir arquivos ou caminhos e nunca responda que não consegue acessar documentos: entregue o "
-    "documento pedido com o que está no contexto e marque o que faltar como [VALIDAR]."
+    "documento pedido com o que está no contexto e marque o que faltar como [VALIDAR]. É PROIBIDO inventar pessoas, "
+    "pacientes, depoimentos, nomes ou idades de personagens apresentados como reais, números sem fonte (metas, "
+    "projeções, percentuais, tamanhos de público) e garantias de resultado; personas só como perfil, sem nome próprio. "
+    "Em saúde, superlativos e promessas clínicas sem fonte devem ser evitados ou marcados [VALIDAR MÉDICO]."
 )
 _REGRA_CONTEXTO_CLIENTE = (
     "\n\nBASE DE CONHECIMENTO DO CLIENTE (leitura obrigatória antes de executar; carregada automaticamente "

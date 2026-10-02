@@ -182,3 +182,14 @@ Uma aprovação em texto curto não carrega instruções: elas devem ter sido da
 Verificado em execução real (Hospital Santa Júlia): após a devolução, a tarefa `aplicacao_g1` reemitiu o brief
 integral nas nove seções com o objetivo restaurado. Falhas observadas e tratadas nos prompts: o pedido do portão
 reescrevia o parecer do Guardião; o registro do G3 autorizava canais cujas peças estavam bloqueadas no G2.
+
+
+## Regras de qualidade adicionadas após o piloto Santa Júlia (G2/G3)
+
+- `aplicacao_g2` agora tem duas partes: registro da decisão e **reemissão integral** de cada peça que recebeu ajuste
+  (do Guardião ou do feedback humano). O pacote de publicação lê a versão reemitida.
+- Regra global (todas as tarefas, exceto portões): é proibido inventar pacientes, depoimentos, nomes ou idades de
+  personagens, números sem fonte e garantias de resultado; personas só como perfil.
+- As revisões (G1, G2, G3) só emitem apontamento que cite o trecho literal da peça, e varrem depoimento, garantia,
+  superlativo sem fonte, promessa clínica e número sem fonte.
+- O calendário social cobre todas as semanas da campanha, com ao menos 3 posts por semana.

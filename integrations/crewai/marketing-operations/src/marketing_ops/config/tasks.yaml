@@ -77,6 +77,11 @@ revisao_g1:
     Reprovado (devolver ao autor), nunca Aprovado com ajustes. Reprove também, citando o trecho, qualquer meta, baseline,
     objetivo secundário, serviço, produto, canal ou fonte que não conste do briefing, do guia de marca ou dos dados
     fornecidos (por exemplo, um baseline de contatos atribuído a "relatórios internos" que ninguém forneceu).
+    REGRA DE EVIDÊNCIA: cada apontamento deve citar entre aspas o trecho literal da peça que o motiva; se você não
+    consegue citar o trecho, o apontamento não existe e não pode ser emitido. Varra cada peça procurando: depoimento,
+    paciente, personagem ou persona tratada como pessoa real; garantia de resultado; superlativos ('referência', 'líder',
+    'de ponta', 'à frente') sem fonte; promessa clínica; números sem fonte (projeções, percentuais, tamanhos de base).
+    Qualquer um desses itens torna a dimensão veracidade ou setor regulado Reprovada para a peça.
   expected_output: >
     Parecer Markdown com resultado, checklist por dimensão (status, apontamento, regra,
     correção sugerida) e riscos residuais.
@@ -149,7 +154,9 @@ calendario_social:
     Monte o calendário editorial de {duracao_semanas} semanas para {plataformas_sociais},
     derivado do brief estratégico e do conteúdo-base. Para cada post: data, plataforma,
     formato, pilar, objetivo, KPI, hook, copy, CTA, hashtags, asset necessário. Adapte a
-    mensagem por plataforma (não replique). Inclua guia de engajamento (respostas-padrão,
+    mensagem por plataforma (não replique). O calendário deve cobrir TODAS as {duracao_semanas} semanas, com ao menos
+    3 posts por semana somando as plataformas; o objetivo de cada post deve vir do objetivo do briefing ({objetivo}),
+    sem metas numéricas novas. Inclua guia de engajamento (respostas-padrão,
     comunidades, UGC) e indique posts candidatos a impulsionamento.
   expected_output: >
     (1) Tabela do calendário editorial em Markdown (colunas padronizadas); (2) copies completas
@@ -212,6 +219,11 @@ revisao_g2:
     Confira também cada peça contra o brief final aprovado: serviço, procedimento, tecnologia ou promessa clínica que não conste do
     briefing original nem do brief aprovado, e claim de saúde sem fonte (ex.: recuperação mais rápida, menos invasivo, resultado garantido),
     tornam a peça Reprovada nas dimensões veracidade e setor regulado.
+    REGRA DE EVIDÊNCIA: cada apontamento deve citar entre aspas o trecho literal da peça que o motiva; se você não
+    consegue citar o trecho, o apontamento não existe e não pode ser emitido. Varra cada peça procurando: depoimento,
+    paciente, personagem ou persona tratada como pessoa real; garantia de resultado; superlativos ('referência', 'líder',
+    'de ponta', 'à frente') sem fonte; promessa clínica; números sem fonte (projeções, percentuais, tamanhos de base).
+    Qualquer um desses itens torna a dimensão veracidade ou setor regulado Reprovada para a peça.
   expected_output: >
     Documento Markdown com um parecer por entrega (template de checklist) e um quadro-resumo
     final: entrega × resultado × nº de ajustes.
@@ -245,16 +257,18 @@ portao_g2:
 
 aplicacao_g2:
   description: >
-    APLICAÇÃO DA DECISÃO G2. Consolide a decisão sobre as cinco entregas de produção (conteúdo, calendário
-    social, fluxos de e-mail, plano de mídia e direção de arte). Para CADA entrega registre: a decisão
-    (liberada, liberada com ajustes ou reprovada); os ajustes obrigatórios com a redação exata a alterar
-    (por exemplo, trocar o título X por Y, remover a promessa Z); a origem do ajuste (Guardião ou feedback
-    humano); e se o ajuste é pontual (aplicável no pacote de publicação) ou exige recriação pelo agente
-    responsável. Você não escreve nem reescreve peças. Ao final liste as entregas liberadas para o pacote
-    e as bloqueadas.
+    APLICAÇÃO DA DECISÃO G2. Parte A, REGISTRO: para CADA uma das cinco entregas de produção (conteúdo, calendário
+    social, fluxos de e-mail, plano de mídia e direção de arte) registre a decisão (liberada, liberada com ajustes ou
+    reprovada), os ajustes obrigatórios com a redação exata a alterar, a origem (Guardião ou feedback humano) e as listas
+    de entregas liberadas e bloqueadas. Parte B, REEMISSÃO: para cada entrega que recebeu qualquer ajuste (do Guardião
+    ou do feedback humano transcrito no pedido do portão G2), reemita a peça INTEGRAL já corrigida, aplicando todos os
+    ajustes, sob o título "Peça reemitida: <nome da entrega>". Mantenha o texto aprovado das partes sem ajuste; não
+    acrescente conteúdo novo além do necessário e não invente dados. Ajuste que depende de informação ausente vira
+    [VALIDAR] na peça. Entrega sem ajuste não precisa ser reemitida. Ao final liste, por entrega, "versão reemitida" ou
+    "versão original". Esta tarefa não inventa aprovador, data, decisão ou feedback.
   expected_output: >
-    Registro de decisão G2 em Markdown: tabela entrega x decisão x ajustes obrigatórios (texto exato) x
-    origem x tipo (pontual ou recriação) e as listas de entregas liberadas e bloqueadas.
+    Documento Markdown: (A) tabela entrega x decisão x ajustes (texto exato) x origem e listas de liberadas e bloqueadas;
+    (B) cada peça ajustada reemitida na íntegra; (C) lista final de versões.
   agent: gerente_operacoes
   output_file: output/12b_decisao_g2.md
 
@@ -297,6 +311,11 @@ revisao_g3:
     IMPORTANTE: todas as entregas a revisar já estão no CONTEXTO desta tarefa (saídas das tarefas
     anteriores). NÃO tente abrir arquivos nem caminhos de output; trabalhe com o texto do contexto.
     RESULTADO GERAL = o PIOR resultado entre as dimensões; uma dimensão Reprovada ou um item bloqueante em aberto torna o pacote Reprovado.
+    REGRA DE EVIDÊNCIA: cada apontamento deve citar entre aspas o trecho literal da peça que o motiva; se você não
+    consegue citar o trecho, o apontamento não existe e não pode ser emitido. Varra cada peça procurando: depoimento,
+    paciente, personagem ou persona tratada como pessoa real; garantia de resultado; superlativos ('referência', 'líder',
+    'de ponta', 'à frente') sem fonte; promessa clínica; números sem fonte (projeções, percentuais, tamanhos de base).
+    Qualquer um desses itens torna a dimensão veracidade ou setor regulado Reprovada para a peça.
   expected_output: >
     Parecer Markdown do pacote com resultado, checklist e riscos residuais.
   agent: guardiao_marca_compliance
