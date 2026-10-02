@@ -102,6 +102,33 @@ _REGRA_DE_INSUMOS = (
     "Não tente abrir arquivos ou caminhos e nunca responda que não consegue acessar documentos: entregue o "
     "documento pedido com o que está no contexto e marque o que faltar como [VALIDAR]."
 )
+_REGRA_CONTEXTO_CLIENTE = (
+    "\n\nBASE DE CONHECIMENTO DO CLIENTE (leitura obrigatória antes de executar; carregada automaticamente "
+    "pelo código a partir da pasta knowledge/ do cliente {cliente}): toda decisão de marca, tom de voz, "
+    "termos, paleta e restrições deve vir daqui. O que não estiver aqui deve ser marcado [VALIDAR]; nunca "
+    "invente atributos da marca.\n{contexto_cliente}"
+)
+_LIMITE_CONTEXTO_CLIENTE = 8000
+
+
+def _injetar_contexto_cliente(inputs):
+    """
+    before_kickoff: carrega a base de conhecimento do cliente informado em inputs['cliente'] e a expõe como
+    inputs['contexto_cliente'], usada por todas as tarefas. Determinístico: não depende de o agente decidir
+    consultar a ferramenta.
+    """
+    inputs = dict(inputs or {})
+    if inputs.get("contexto_cliente"):
+        return inputs
+    cliente = str(inputs.get("cliente") or "").strip()
+    if not cliente:
+        inputs["contexto_cliente"] = "[SEM CLIENTE INFORMADO] Marque decisões de marca como [VALIDAR]."
+    else:
+        texto = BrandBookTool()._run(cliente)
+        inputs["contexto_cliente"] = texto[:_LIMITE_CONTEXTO_CLIENTE]
+    return inputs
+
+
 _MODO_COM_HUMANO = (
     "\n\nMODO DO PORTÃO: HUMANO ATIVO. Esta tarefa só executa depois que um aprovador humano liberou o "
     "portão correspondente. Trate a decisão como APROVADA, aplicando os ajustes e o feedback humano "
@@ -165,6 +192,8 @@ def _aplicar_pasta_de_saida(tasks: list[Task]) -> str | None:
             t.description += _MODO_COM_HUMANO if HUMAN_GATES else _MODO_SEM_HUMANO
         if "REGRA DE INSUMOS:" not in t.description and not t.name.startswith("portao_g"):
             t.description += _REGRA_DE_INSUMOS
+        if "BASE DE CONHECIMENTO DO CLIENTE" not in t.description and not t.name.startswith("portao_g"):
+            t.description += _REGRA_CONTEXTO_CLIENTE
         if t.human_input and not HUMAN_GATES:
             t.human_input = False
             t.description += (
@@ -560,5 +589,6 @@ class MarketingOpsCrew:
             max_rpm=MAX_RPM,
             verbose=True,
             output_log_file=log_file,
+            before_kickoff_callbacks=[_injetar_contexto_cliente],
             chat_llm=MODEL,  # habilita a aba Chat da plataforma (orquestra inputs e dispara a crew)
         )

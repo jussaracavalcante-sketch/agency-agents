@@ -24,6 +24,7 @@ from marketing_ops.crew import (
     MarketingOpsCrew,
     _aplicar_pasta_de_saida,
     _garantir_output_dir,
+    _injetar_contexto_cliente,
     analytics_tool,
     read_file,
 )
@@ -48,6 +49,7 @@ def build_hierarchical_crew() -> Crew:
         max_rpm=MAX_RPM,
         verbose=True,
         output_log_file=log_file,
+        before_kickoff_callbacks=[_injetar_contexto_cliente],
         chat_llm=MODEL,
     )
 
