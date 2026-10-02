@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import AoVivo from "./AoVivo";
 
 const ITENS = [
   { href: "/", rot: "Visão geral", ic: "⌂" },
@@ -31,7 +32,7 @@ export default function Shell({ nome, papel, children }: { nome: string; papel: 
       <div>
         <div className="top">
           <div className="crumb">Vanguarda Martech › <b>{seg ? MIGALHA[seg] ?? seg : "Visão geral"}</b></div>
-          <span className="chipv">Equipe de marketing</span>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}><AoVivo /><span className="chipv">Equipe de marketing</span></div>
         </div>
         <div className="content">{children}</div>
       </div>
