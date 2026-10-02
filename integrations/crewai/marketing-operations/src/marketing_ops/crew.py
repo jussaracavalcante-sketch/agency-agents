@@ -101,7 +101,7 @@ def _garantir_output_dir() -> None:
 _REGRA_DE_INSUMOS = (
     "\n\nREGRA DE INSUMOS: as saídas das tarefas anteriores e os dados do briefing já estão no seu CONTEXTO. "
     "Não tente abrir arquivos ou caminhos e nunca responda que não consegue acessar documentos: entregue o "
-    "documento pedido com o que está no contexto e marque o que faltar como [VALIDAR]. É PROIBIDO usar conhecimento próprio sobre o cliente: serviços, especialidades, procedimentos e tecnologias só podem ser citados se constarem do briefing ou da base de conhecimento do cliente; caso contrário, não cite ou marque [VALIDAR]. É PROIBIDO inventar pessoas, "
+    "documento pedido com o que está no contexto e marque o que faltar como [VALIDAR]. É PROIBIDO usar conhecimento próprio sobre o cliente: serviços, especialidades, procedimentos e tecnologias do CLIENTE só podem ser citados se constarem do briefing ou da base de conhecimento dele; caso contrário, não cite ou marque [VALIDAR]. Tendências do mercado (por exemplo, cirurgia robótica na saúde) podem ser citadas na pesquisa de mercado e no mapa de palavras-chave, sempre rotuladas como "tendência setorial", sem atribuí-las ao cliente. É PROIBIDO inventar pessoas, "
     "pacientes, depoimentos, nomes ou idades de personagens apresentados como reais, números sem fonte (metas, "
     "projeções, percentuais, tamanhos de público) e garantias de resultado; personas só como perfil, sem nome próprio. "
     "Em saúde, superlativos e promessas clínicas sem fonte devem ser evitados ou marcados [VALIDAR MÉDICO]."
@@ -514,11 +514,11 @@ class MarketingOpsCrew:
 
     @task
     def pesquisa_mercado(self) -> Task:
-        return Task(guardrail=_g_prod(), guardrail_max_retries=2, config=self.tasks_config["pesquisa_mercado"])
+        return Task(guardrail=_g_doc(), guardrail_max_retries=2, config=self.tasks_config["pesquisa_mercado"])
 
     @task
     def mapa_seo(self) -> Task:
-        return Task(guardrail=_g_prod(), guardrail_max_retries=2, config=self.tasks_config["mapa_seo"], context=[self.pesquisa_mercado()])
+        return Task(guardrail=_g_doc(), guardrail_max_retries=2, config=self.tasks_config["mapa_seo"], context=[self.pesquisa_mercado()])
 
     @task
     def brief_estrategico(self) -> Task:
