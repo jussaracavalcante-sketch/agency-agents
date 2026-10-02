@@ -26,10 +26,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ erro: `Você não é aprovador do portão ${exec.portao ?? ""}` }, { status: 403 });
   }
 
-  // Evita duplo clique: já existe decisão para este portão?
+  // Evita duplo clique: já existe decisão para ESTE pedido? Uma devolução reabre o portão com o mesmo taskId,
+  // por isso só conta decisão posterior ao pedido pendente (não qualquer decisão antiga do mesmo taskId).
   const db = admin();
-  const { data: jaDecidido } = await db.from("portal_decisoes").select("id").eq("task_id", taskId).limit(1);
-  if (jaDecidido?.length) return NextResponse.json({ erro: "Este portão já recebeu uma decisão" }, { status: 409 });
+  const { data: jaDecidido } = await db
+    .from("portal_decisoes")
+    .select("id")
+    .eq("task_id", taskId)
+    .gt("criado_em", exec.pendente.recebido_em)
+    .limit(1);
+  if (jaDecidido?.length) return NextResponse.json({ erro: "Este pedido já recebeu uma decisão" }, { status: 409 });
 
   const registro = {
     execucao_id: execucaoId, task_id: taskId, portao: exec.portao, decisao, instrucoes: instrucoes ?? null,
