@@ -254,7 +254,7 @@ def _guardrail_aplicacao_g2(saida):
         return base
     texto = (getattr(saida, "raw", None) or str(saida) or "")
     claims = _claims_proibidos(texto)
-    if claims:
+    if claims or _placeholders(texto):
         return _guardrail_sem_claims(saida)
     if _CLAIMS_NOVOS.search(texto):
         return False, (
@@ -303,7 +303,7 @@ def _guardrail_producao(saida):
         return base
     texto = (getattr(saida, "raw", None) or str(saida) or "")
     claims = _claims_proibidos(texto)
-    if claims:
+    if claims or _placeholders(texto):
         return _guardrail_sem_claims(saida)
     permitido = _TEXTO_PERMITIDO["texto"]
     if not permitido:  # execução retomada sem inputs disponíveis: não há como conferir
@@ -321,10 +321,23 @@ def _guardrail_producao(saida):
 _CLAIMS_PROIBIDOS = re.compile(
     r"depoimento|testemunho|hist[óo]rias? de (pacientes?|recupera[çc][ãa]o|sucesso)|casos? de sucesso|"
     r"paciente real|pacientes? satisfeit|\blidera\b|\bl[íi]der(es)?\b|refer[êe]ncia em|\bpremiad[oa]s?\b|"
-    r"o melhor hospital|n[º°o] ?1\b|\bmelhor do (estado|brasil|norte)\b",
+    r"o melhor hospital|n[º°o] ?1\b|\bmelhor do (estado|brasil|norte)\b|"
+    r"\b(o|a|os|as|ao|do|pelo) melhor(es)?\b|\bmelhor (atendimento|cuidado|experi[êe]ncia|hospital|cl[íi]nica|estrutura)\b|"
+    r"tecnologia de ponta|tecnologias? de ponta|equipamentos? de [úu]ltima gera[çc][ãa]o|[úu]ltima gera[çc][ãa]o|estado da arte|"
+    r"diagn[óo]sticos? precis\w+|tratamentos? eficaz\w*|confian[çc]a em cada diagn[óo]stico|seguran[çc]a em cada tratamento|"
+    r"garant\w+[^.\n]{0,60}(precis[ãa]o|seguran[çc]a|excel[êe]ncia|qualidade|efici[êe]ncia|resultados?|cura|"
+    r"recupera[çc][ãa]o|lgpd|conformidade|ader[êe]ncia|atendimento|cuidado|diagn[óo]stico|tratamento)",
     re.I,
 )
 _LINHA_NEUTRA = re.compile(r"\[VALIDAR|\bsem (usar )?depoimento|proibid|n[ãa]o (use|usar|incluir|propor|citar)|evitar", re.I)
+
+
+_PLACEHOLDERS = re.compile(r"example\.(com|org|net)|exemplo\.com(\.br)?|lorem ipsum|seu-?site\.com|\[(inserir|link|url)[^\]]*\]", re.I)
+
+
+def _placeholders(texto):
+    """Link ou texto de exemplo que iria para publicação como se fosse real."""
+    return sorted({m.group(0).lower() for m in _PLACEHOLDERS.finditer(texto or "")})
 
 
 def _claims_proibidos(texto):
@@ -340,12 +353,21 @@ def _guardrail_sem_claims(saida):
     base = _guardrail_documento(saida)
     if base[0] is False:
         return base
-    achados = _claims_proibidos(getattr(saida, "raw", None) or str(saida) or "")
+    texto = getattr(saida, "raw", None) or str(saida) or ""
+    achados = _claims_proibidos(texto)
     if achados:
         return False, (
             "A saída propõe itens que não existem nos insumos: " + ", ".join(achados) + ". Não há depoimentos, testemunhos, "
-            "histórias ou casos de pacientes, nem prova de liderança ou premiação. Remova esses trechos (ou troque por "
-            "conteúdo informativo sem prova social) e reemita o documento completo."
+            "histórias ou casos de pacientes, nem prova de liderança ou premiação. Superlativos (\"o melhor\", \"tecnologia de "
+            "ponta\", \"última geração\"), garantias (\"garante precisão/excelência/LGPD\") e promessas clínicas (\"diagnósticos "
+            "precisos\", \"tratamentos eficazes\") exigem fonte: remova ou marque [VALIDAR MÉDICO] na mesma linha. Reemita o "
+            "documento completo."
+        )
+    ph = _placeholders(texto)
+    if ph:
+        return False, (
+            "A saída contém link ou texto de exemplo (" + ", ".join(ph) + "). Peça publicável não pode ter placeholder: use "
+            "[VALIDAR: link] no lugar e reemita o documento completo."
         )
     return True, saida
 
@@ -379,6 +401,37 @@ def _guardrail_calendario(saida):
         f"O calendário cobre {len(blocos) or 'menos de ' + str(semanas)} semana(s) pelas datas, mas a campanha tem {semanas}. "
         f"Entregue posts distribuídos por todas as {semanas} semanas, com ao menos 3 por semana, datando cada um."
     )
+
+
+def _guardrail_brief(saida):
+    """O brief usa o objetivo do briefing literalmente e não cria baselines que ninguém informou."""
+    base = _guardrail_producao(saida)
+    if base[0] is False:
+        return base
+    texto = getattr(saida, "raw", None) or str(saida) or ""
+    objetivo = _normalizar(str(_INPUTS_ATUAIS.get("objetivo", "")))
+    if objetivo and objetivo not in _normalizar(texto):
+        return False, (
+            "O brief não reproduz o objetivo do briefing. Copie o objetivo literalmente, sem trocar a meta, o prazo ou o "
+            f"baseline: \"{_INPUTS_ATUAIS.get('objetivo')}\". Não substitua por outro objetivo (percentuais, ocupação, etc.)."
+        )
+    permitido = _normalizar(_TEXTO_PERMITIDO["texto"])
+    if permitido:
+        inventados = []
+        for linha in texto.splitlines():
+            if "baseline" not in linha.lower() or "[validar" in linha.lower():
+                continue
+            for n in re.findall(r"\d[\d.,]*", linha):
+                n = n.strip(".,")
+                if n and not re.search(rf"(?<![\d.,]){re.escape(n)}(?![\d])", permitido):
+                    inventados.append(n)
+        if inventados:
+            return False, (
+                "O brief traz baseline com números que não constam do briefing nem da base do cliente: "
+                + ", ".join(sorted(set(inventados))) + ". Use só o baseline informado; para o restante escreva "
+                "\"[VALIDAR: baseline não informado]\" e não cite fontes (\"registros internos\", CRM, Analytics) que o briefing não cita."
+            )
+    return True, saida
 
 
 def _g_doc():
@@ -594,7 +647,7 @@ class MarketingOpsCrew:
     @task
     def brief_estrategico(self) -> Task:
         return Task(
-            guardrail=_g_prod(), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_brief), guardrail_max_retries=2,
             config=self.tasks_config["brief_estrategico"],
             context=[self.pesquisa_mercado(), self.mapa_seo()],
         )
