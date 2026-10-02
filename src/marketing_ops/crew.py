@@ -221,6 +221,10 @@ WRITE_TOOLS_ENABLED = os.getenv("CREW_ENABLE_WRITE_TOOLS", "false").lower() == "
 # essa configuração a execução trava ou é descartada, por isso o padrão aqui é desligado:
 # os portões viram tarefas normais que produzem o pedido de aprovação como documento.
 HUMAN_GATES = os.getenv("CREW_HUMAN_GATES", "false").lower() == "true"
+# A memória do CrewAI persiste entre execuções da mesma automação. Num pipeline factual isso é perigoso: fatos
+# inventados numa rodada (serviços, baselines, fontes) voltam nas seguintes como "memórias internas" e são
+# tratados como verdade (observado). Por isso fica desligada por padrão.
+MEMORY_ENABLED = os.getenv("CREW_MEMORY", "false").lower() == "true"
 
 # Ferramentas compartilhadas (instanciadas uma vez). Pesquisa web só com SERPER_API_KEY:
 # sem a chave, os agentes trabalham com o briefing, o conhecimento carregado e o scraping
@@ -552,7 +556,7 @@ class MarketingOpsCrew:
             agents=self.agents,
             tasks=self.tasks,
             process=Process.sequential,
-            memory=True,  # memória curta/longa entre tarefas (ver docs/governanca-qualidade.md)
+            memory=MEMORY_ENABLED,  # desligada por padrão: ver CREW_MEMORY
             max_rpm=MAX_RPM,
             verbose=True,
             output_log_file=log_file,

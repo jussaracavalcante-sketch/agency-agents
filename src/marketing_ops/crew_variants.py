@@ -19,6 +19,7 @@ from crewai import Agent, Crew, Process, Task
 
 from marketing_ops.crew import (
     MAX_RPM,
+    MEMORY_ENABLED,
     MODEL,
     MarketingOpsCrew,
     _aplicar_pasta_de_saida,
@@ -43,7 +44,7 @@ def build_hierarchical_crew() -> Crew:
         tasks=tasks,
         process=Process.hierarchical,
         manager_agent=manager,
-        memory=True,
+        memory=MEMORY_ENABLED,
         max_rpm=MAX_RPM,
         verbose=True,
         output_log_file=log_file,
