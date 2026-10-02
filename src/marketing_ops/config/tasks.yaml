@@ -381,8 +381,8 @@ aplicacao_g3:
     REGRA DE CANAIS: um canal só pode constar como autorizado se TODAS as suas peças pertencem a entregas liberadas em
     aplicacao_g2 e não há item bloqueante do Guardião em aberto para ele. Peça de entrega bloqueada, ou checklist de
     conformidade pendente, coloca o canal em Canais bloqueados. Orçamento autorizado só existe para canais autorizados:
-    se nenhum canal estiver autorizado, o orçamento autorizado é R$ 0 e o status é APROVADO COM RESTRIÇÕES: NENHUM CANAL
-    AUTORIZADO. Valores marcados [VALIDAR] no briefing continuam [VALIDAR] no registro.
+    se nenhum canal estiver autorizado, o orçamento autorizado é R$ 0 e o status é BLOQUEADO: NENHUM CANAL AUTORIZADO (nunca
+    escreva APROVADO nem APROVADO COM RESTRIÇÕES nesse caso, mesmo que o humano tenha respondido Aprovado.). Valores marcados [VALIDAR] no briefing continuam [VALIDAR] no registro.
   expected_output: >
     Registro de decisão G3 em Markdown: status, canais autorizados e bloqueados, orçamento autorizado,
     restrições e condições.
@@ -391,8 +391,8 @@ aplicacao_g3:
 
 execucao_publicacao:
   description: >
-    Só execute se o STATUS registrado em aplicacao_g3 for APROVADO ou APROVADO COM RESTRIÇÕES, e apenas nos
-    canais autorizados e dentro do orçamento autorizado. Se o status for PENDENTE ou REPROVADO, a saída é
+    Só execute se o STATUS registrado em aplicacao_g3 for APROVADO ou APROVADO COM RESTRIÇÕES com ao menos um canal autorizado, e apenas nos
+    canais autorizados e dentro do orçamento autorizado. Se o status for BLOQUEADO, PENDENTE ou REPROVADO, a saída começa com o título "NÃO EXECUTADO" e é
     "NÃO EXECUTADO" com o motivo e nenhum log de publicação. Nunca registre como publicado algo que uma
     ferramenta não executou: sem ferramenta de escrita ativa, gere o roteiro operacional e marque cada
     item como "a executar por humano", com data, hora, canal e peça previstas, sem inventar links
