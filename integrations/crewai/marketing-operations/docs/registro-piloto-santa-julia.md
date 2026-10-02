@@ -81,3 +81,37 @@ fora do briefing), cada um com limite de duas rejeições para não derrubar a e
 Limites que permanecem: a lista de termos de serviços é fixa; o Guardião (LLM) ainda não pega tudo, por isso o código
 é a barreira confiável; o texto de aprovação ("Aprovado.") não carrega instruções, que só chegam à aplicação pelo
 histórico de devoluções; a publicação real segue desligada até haver um G3 aprovado por pessoa.
+
+
+---
+
+# Primeiro piloto pelo portal (02/10, execução `621ded65`)
+
+Disparado pelo portal às 22:26 UTC, build `1768574`. G1 e G2 aprovados com "Aprovado." (sem instruções); G3 pendente na
+data do registro. Publicação real desligada.
+
+| Verificação | Resultado |
+|---|---|
+| Disparo, portões e retomadas encadeadas pelo portal | OK; cliente e decisões registrados no banco |
+| Brief usou o objetivo do briefing | **Falhou**: trocou por "+20% de agendamentos" |
+| Baselines | **Falharam**: "100 consultas mensais" e "70% de ocupação" ("registros internos") não constam dos insumos |
+| Peças com superlativos e garantias | **Falharam**: "o melhor atendimento", "tecnologia de ponta", "última geração", "garante precisão", "garante aderência à LGPD", "diagnósticos precisos e tratamentos eficazes" |
+| Placeholder | **Falhou**: link `https://example.com/cta-button` na peça reemitida |
+| Calendário reemitido | Só 2 linhas (não cobriu as 8 semanas) |
+| G3 | Guardião reprovou o pacote; nada autorizado para publicação |
+
+Causa comum: "Aprovado." não carrega instruções; as reprovações do Guardião só viram correção se o humano devolver com
+texto. As travas em código existem para barrar o que o Guardião (LLM) deixa passar.
+
+## Travas acrescentadas depois desta rodada
+- Claims: "o/a/ao melhor", "melhor atendimento/cuidado/experiência", "tecnologia de ponta", "última geração", "estado da
+  arte", "diagnósticos precisos", "tratamentos eficazes", "confiança em cada diagnóstico", "segurança em cada tratamento" e
+  `garante/garantindo ... precisão|segurança|excelência|qualidade|resultado|LGPD|conformidade|aderência...`.
+  Linha com [VALIDAR] ou aviso de proibição continua passando.
+- Placeholders (`example.com`, `exemplo.com`, `lorem ipsum`, `[inserir ...]`) barrados nas peças de produção e na
+  reemissão do G2.
+- Brief: precisa reproduzir o objetivo do briefing literalmente e não pode trazer baseline com números fora dos insumos.
+- Testes em `tests/test_guardrails.py`.
+
+Limite: cada trava aceita a saída depois de duas rejeições (para não derrubar a execução), então ela reduz mas não
+elimina o risco; o G2 e o G3 humanos continuam sendo a barreira final.
