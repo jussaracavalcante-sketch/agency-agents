@@ -40,3 +40,15 @@ create table if not exists public.portal_disparos (
 );
 create index if not exists portal_disparos_criado on public.portal_disparos (criado_em desc);
 alter table public.portal_disparos enable row level security;
+
+-- Tempo real: membros do portal (com perfil) leem as tabelas via Realtime só para saber que algo mudou;
+-- as telas então recarregam os dados pelo servidor. Quem não tem perfil não recebe nada.
+create or replace function public.portal_membro() returns boolean language sql stable security definer set search_path = '' as $$
+  select exists (select 1 from public.portal_perfis where user_id = auth.uid());
+$$;
+revoke all on function public.portal_membro() from public, anon;
+grant execute on function public.portal_membro() to authenticated;
+create policy portal_ao_vivo on public.crewai_webhook_events for select to authenticated using (public.portal_membro());
+create policy portal_ao_vivo on public.portal_decisoes for select to authenticated using (public.portal_membro());
+create policy portal_ao_vivo on public.portal_disparos for select to authenticated using (public.portal_membro());
+alter publication supabase_realtime add table public.crewai_webhook_events, public.portal_decisoes, public.portal_disparos;
