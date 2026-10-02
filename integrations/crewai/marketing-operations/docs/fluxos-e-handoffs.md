@@ -193,3 +193,17 @@ reescrevia o parecer do Guardião; o registro do G3 autorizava canais cujas peç
 - As revisões (G1, G2, G3) só emitem apontamento que cite o trecho literal da peça, e varrem depoimento, garantia,
   superlativo sem fonte, promessa clínica e número sem fonte.
 - O calendário social cobre todas as semanas da campanha, com ao menos 3 posts por semana.
+
+
+## Salvaguardas adicionadas após o piloto de 02/10 (G3)
+
+- **Portões (G1/G2/G3):** guardrail em código rejeita o pedido se faltar seção obrigatória, se o resultado do Guardião
+  mudar ou se menos de 70% das linhas do parecer forem copiadas. Prompt proíbe reconstruir feedback humano.
+  Limite conhecido: o código não consegue provar que o histórico de feedbacks é só o que o humano escreveu; a fonte
+  confiável das decisões humanas é o registro do portal (Supabase), não o texto do pedido.
+- **`aplicacao_g2`:** guardrail rejeita saída que afirme que depoimento/testemunho é real, colhido com consentimento ou
+  autorizado. Ajuste de veracidade só remove ou marca [VALIDAR]; peças reemitidas no formato integral.
+- **`pacote_publicacao`:** plano de e-mail, plano de mídia, conceito criativo e conteúdo longo não viram post; só entram no
+  cronograma posts do calendário liberado, envios de e-mail e o artigo no canal Site/Blog. Datas só do calendário.
+- **`revisao_g2`:** varredura do plano de mídia: serviço fora do briefing, plataforma fora das informadas, projeção sem
+  fonte, soma de mídia diferente do orçamento e superlativo reprovam a peça.

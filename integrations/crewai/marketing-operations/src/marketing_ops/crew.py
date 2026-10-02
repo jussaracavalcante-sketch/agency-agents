@@ -16,6 +16,7 @@ plataforma CrewAI encontre uma única classe @CrewBase neste arquivo.
 from __future__ import annotations
 
 import os
+import re
 import tempfile
 from pathlib import Path
 
@@ -179,6 +180,66 @@ def _guardrail_documento(saida):  # sem anotação de retorno: o validador do Cr
                 "A saída diz que não foi possível acessar documentos. Isso não procede: todos os insumos estão no "
                 "CONTEXTO desta tarefa. Refaça entregando o documento completo; se faltar um dado, marque [VALIDAR]."
             )
+    return True, saida
+
+
+def _normalizar(texto):
+    return re.sub(r"[\s*_#>|`\-]+", " ", texto or "").strip().lower()
+
+
+def _linhas_significativas(texto):
+    return [n for n in (_normalizar(l) for l in (texto or "").splitlines()) if len(n) > 25]
+
+
+def _guardrail_portao_factory(revisao_task):
+    """
+    Portão humano: o pedido deve copiar o parecer do Guardião (mesmo resultado, pelo menos 70% das linhas) e ter as
+    seções obrigatórias. Rejeita paráfrase e a troca de "Reprovado" por outro resultado.
+    """
+
+    def guardrail(saida):  # sem anotação de retorno (ver _guardrail_documento)
+        texto = (getattr(saida, "raw", None) or str(saida) or "")
+        norm = _normalizar(texto)
+        for secao in ("histórico de feedbacks", "parecer do guardião", "pedido de decisão"):
+            if secao not in norm and secao.replace("pedido de decisão", "decis") not in norm:
+                return False, f"Falta a seção obrigatória '{secao}'. Siga o FORMATO OBRIGATÓRIO."
+        parecer = getattr(getattr(revisao_task, "output", None), "raw", None)
+        if parecer:
+            m = re.search(r"resultado[^a-zà-ú]{0,12}[^\n]{0,10}?(reprovado|aprovado com ajustes|aprovado)", _normalizar(parecer))
+            if m and m.group(1) not in norm:
+                return False, f"O resultado do Guardião é '{m.group(1)}' e precisa aparecer inalterado no pedido."
+            linhas = _linhas_significativas(parecer)
+            if linhas:
+                achadas = sum(1 for l in linhas if l in norm)
+                if achadas / len(linhas) < 0.7:
+                    return False, (
+                        "O parecer do Guardião foi parafraseado ou resumido. Copie o texto do parecer integralmente, "
+                        "sem reescrever, na seção 'Parecer do Guardião (cópia literal)'."
+                    )
+        return True, saida
+
+    return guardrail
+
+
+_AFIRMACOES_FALSAS = re.compile(
+    r"(foram|s[ãa]o|est[ãa]o|contam com|possuem|t[êe]m)\s+[^.\n]{0,60}"
+    r"(colhid\w+ com consentimento|reais que consentiram|autoriza[çc][ãa]o para divulga)",
+    re.I,
+)
+
+
+def _guardrail_aplicacao_g2(saida):
+    """Ajuste de veracidade só remove ou marca [VALIDAR]: nunca afirma que depoimento é real ou autorizado."""
+    base = _guardrail_documento(saida)
+    if base[0] is False:
+        return base
+    texto = (getattr(saida, "raw", None) or str(saida) or "")
+    if _AFIRMACOES_FALSAS.search(texto):
+        return False, (
+            "A saída afirma que depoimentos/testemunhos são reais, colhidos com consentimento ou autorizados. Isso não "
+            "pode ser afirmado: não há depoimento real nem consentimento. Remova os depoimentos e testemunhos das peças "
+            "ou marque [VALIDAR]; nunca declare autorização."
+        )
     return True, saida
 
 
@@ -399,6 +460,7 @@ class MarketingOpsCrew:
     @task
     def portao_g1(self) -> Task:
         return Task(
+            guardrail=_guardrail_portao_factory(self.revisao_g1()), guardrail_max_retries=2,
             config=self.tasks_config["portao_g1"],
             context=[self.brief_estrategico(), self.revisao_g1()],
         )
@@ -476,6 +538,7 @@ class MarketingOpsCrew:
     @task
     def portao_g2(self) -> Task:
         return Task(
+            guardrail=_guardrail_portao_factory(self.revisao_g2()), guardrail_max_retries=2,
             config=self.tasks_config["portao_g2"],
             context=[
                 self.revisao_g2(),
@@ -490,7 +553,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g2(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_guardrail_aplicacao_g2, guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g2"],
             context=[
                 self.portao_g2(),
@@ -540,6 +603,7 @@ class MarketingOpsCrew:
     @task
     def portao_g3(self) -> Task:
         return Task(
+            guardrail=_guardrail_portao_factory(self.revisao_g3()), guardrail_max_retries=2,
             config=self.tasks_config["portao_g3"],
             context=[self.pacote_publicacao(), self.revisao_g3(), self.plano_midia_paga()],
         )
