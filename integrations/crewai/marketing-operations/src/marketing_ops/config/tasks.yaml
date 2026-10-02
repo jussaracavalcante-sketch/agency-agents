@@ -94,6 +94,9 @@ portao_g1:
     e depois reapresente o pedido. Nunca invente aprovador, data ou decisão.
     Reproduza o parecer do Guardião literalmente, como foi emitido: você não pode alterá-lo nem afirmar que ajustes
     foram cumpridos ou que o Guardião revisou de novo, porque isso só acontece na tarefa de revisão.
+    A SAÍDA FINAL deste portão é a única que a tarefa seguinte lê. Ela deve SEMPRE trazer no topo o histórico completo
+    dos feedbacks humanos recebidos, de todas as rodadas, em transcrição literal, seguido da decisão final, mesmo quando
+    a última mensagem do humano for apenas "Aprovado.". Nunca descarte o feedback de uma rodada anterior.
   expected_output: >
     Pedido de aprovação G1 em Markdown: resumo de 10 linhas, parecer do Guardião, riscos, ajustes
     exigidos pelo Guardião e, quando houver, o feedback humano transcrito literalmente.
@@ -217,6 +220,9 @@ portao_g2:
     saída com o registro literal do feedback recebido. Nunca invente aprovador, data ou decisão.
     Reproduza o parecer do Guardião literalmente, como foi emitido: você não pode alterá-lo nem afirmar que ajustes
     foram cumpridos ou que o Guardião revisou de novo, porque isso só acontece na tarefa de revisão.
+    A SAÍDA FINAL deste portão é a única que a tarefa seguinte lê. Ela deve SEMPRE trazer no topo o histórico completo
+    dos feedbacks humanos recebidos, de todas as rodadas, em transcrição literal, seguido da decisão final, mesmo quando
+    a última mensagem do humano for apenas "Aprovado.". Nunca descarte o feedback de uma rodada anterior.
   expected_output: >
     Pedido de aprovação G2 em Markdown: quadro de pareceres por entrega, ajustes pendentes, amostras e,
     quando houver, o feedback humano transcrito literalmente.
@@ -293,6 +299,9 @@ portao_g3:
     Nunca invente aprovador, data ou decisão.
     Reproduza o parecer do Guardião literalmente, como foi emitido: você não pode alterá-lo nem afirmar que ajustes
     foram cumpridos ou que o Guardião revisou de novo, porque isso só acontece na tarefa de revisão.
+    A SAÍDA FINAL deste portão é a única que a tarefa seguinte lê. Ela deve SEMPRE trazer no topo o histórico completo
+    dos feedbacks humanos recebidos, de todas as rodadas, em transcrição literal, seguido da decisão final, mesmo quando
+    a última mensagem do humano for apenas "Aprovado.". Nunca descarte o feedback de uma rodada anterior.
   expected_output: >
     Pedido de aprovação G3 em Markdown: cronograma, orçamento a ativar, parecer final, status do
     rastreamento e, quando houver, o feedback humano transcrito literalmente.

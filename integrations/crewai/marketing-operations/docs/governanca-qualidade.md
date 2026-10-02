@@ -47,7 +47,7 @@
 
 | Mecanismo CrewAI | Uso nesta crew | Cuidados |
 |------------------|----------------|----------|
-| `memory=True` (curto prazo) | Compartilhar contexto entre tarefas da mesma execução | Sem dados pessoais |
+| `memory` (`CREW_MEMORY`, padrão desligada) | Compartilhar contexto entre tarefas e execuções | **Risco comprovado**: a memória persiste entre execuções da automação e fatos inventados numa rodada (serviços, baselines, fontes) voltam nas seguintes como "memórias internas". Mantenha desligada em pipelines factuais e limpe a aba Memory da plataforma após testes |
 | Memória de longo prazo | Aprendizados de campanhas anteriores (o que foi aprovado/reprovado) | Revisar periodicamente; apagar por cliente ao encerrar contrato |
 | `knowledge` | Brand book, ofertas, histórico, restrições por cliente | Versionar em `knowledge/<cliente>/`; um cliente nunca acessa o de outro |
 
