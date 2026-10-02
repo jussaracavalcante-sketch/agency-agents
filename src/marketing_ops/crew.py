@@ -197,7 +197,19 @@ def _guardrail_portao_factory(revisao_task):
     seções obrigatórias. Rejeita paráfrase e a troca de "Reprovado" por outro resultado.
     """
 
+    tentativas = {"n": 0}
+
     def guardrail(saida):  # sem anotação de retorno (ver _guardrail_documento)
+        veredito = _checar_portao(saida)
+        if veredito[0] is False:
+            # Após duas rejeições a saída é aceita: o CrewAI derruba a execução inteira quando o guardrail esgota as
+            # tentativas, e a plataforma não recupera uma execução pausada que falhou (observado em 02/10).
+            tentativas["n"] += 1
+            if tentativas["n"] > 2:
+                return True, saida
+        return veredito
+
+    def _checar_portao(saida):
         texto = (getattr(saida, "raw", None) or str(saida) or "")
         norm = _normalizar(texto)
         for secao in ("histórico de feedbacks", "parecer do guardião", "pedido de decisão"):
