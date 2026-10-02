@@ -240,12 +240,20 @@ _AFIRMACOES_FALSAS = re.compile(
 )
 
 
+_CLAIMS_NOVOS = re.compile(r"garant\w+\s+(a\s+|o\s+)?(seguran[çc]a|precis[ãa]o|resultado|cura|recupera[çc][ãa]o)", re.I)
+
+
 def _guardrail_aplicacao_g2(saida):
     """Ajuste de veracidade só remove ou marca [VALIDAR]: nunca afirma que depoimento é real ou autorizado."""
     base = _guardrail_documento(saida)
     if base[0] is False:
         return base
     texto = (getattr(saida, "raw", None) or str(saida) or "")
+    if _CLAIMS_NOVOS.search(texto):
+        return False, (
+            "A saída introduz garantia de segurança, precisão, resultado ou recuperação sem fonte. Remova a afirmação "
+            "ou marque [VALIDAR MÉDICO]; a reemissão não pode acrescentar promessas."
+        )
     if _AFIRMACOES_FALSAS.search(texto):
         return False, (
             "A saída afirma que depoimentos/testemunhos são reais, colhidos com consentimento ou autorizados. Isso não "
@@ -253,6 +261,21 @@ def _guardrail_aplicacao_g2(saida):
             "ou marque [VALIDAR]; nunca declare autorização."
         )
     return True, saida
+
+
+def _com_limite_de_rejeicoes(guardrail, maximo=2):
+    """Aceita a saída depois de `maximo` rejeições: guardrail esgotado derruba a execução inteira na plataforma."""
+    estado = {"n": 0}
+
+    def envelope(saida):  # sem anotação de retorno (ver _guardrail_documento)
+        veredito = guardrail(saida)
+        if veredito[0] is False:
+            estado["n"] += 1
+            if estado["n"] > maximo:
+                return True, saida
+        return veredito
+
+    return envelope
 
 
 def _aplicar_pasta_de_saida(tasks: list[Task]) -> str | None:
@@ -565,7 +588,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g2(self) -> Task:
         return Task(
-            guardrail=_guardrail_aplicacao_g2, guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g2), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g2"],
             context=[
                 self.portao_g2(),

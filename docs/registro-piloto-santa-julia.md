@@ -29,3 +29,29 @@ Data: 2026-10-02. Build: `f3fd887` + correção dos gates (`1004293`). Execuçã
 3. Revisão do G2: conferir datas, canais, orçamento e fontes contra o brief aprovado.
 4. Brief e peças: respeitar o período e os canais do brief.
 5. Antes de publicar qualquer peça de saúde: validação médica e do responsável técnico.
+
+
+---
+
+# Rodada de validação de 02/10 (build `a57e0ae`): primeiro piloto com portões humanos concluído
+
+Execução `98264951` encadeada até `242f9767`: **21 de 21 tarefas, estado SUCCESS**, com G1, G2 e G3 respondidos
+("Aprovado." como teste; publicação real desligada). Um único resume por portão.
+
+| Verificação | Resultado |
+|---|---|
+| Pausa e retomada nos 3 portões | OK, sem erro de plataforma |
+| Histórico de feedbacks nos pedidos | OK ("Nenhum feedback humano recebido"; sem feedback fabricado) |
+| Guardião reprova com citação literal | OK (calendário e plano de mídia reprovados no G2) |
+| `aplicacao_g2` reemite peças liberadas e bloqueia as reprovadas | OK (conteúdo web e e-mail reemitidos; calendário e mídia bloqueados) |
+| `aplicacao_g3` com Guardião reprovado | OK (nenhum canal autorizado, orçamento R$ 0) |
+| `execucao_publicacao` | OK ("NÃO EXECUTADO"; nenhuma publicação) |
+
+Falhas de conteúdo observadas nessa rodada (corrigidas no build seguinte): canal "Instagram" para o artigo e datas
+inventadas no roteiro; reemissão do conteúdo web acrescentou "garantindo segurança e precisão diagnóstica";
+sumário descrevia e-mail como "pronto para envio" e G3 como "aprovado com restrições severas"; pedido do G3 listava
+orçamento do plano de mídia bloqueado.
+
+Erro anterior no mesmo dia: guardrail do portão derrubou uma execução ao reexecutar a tarefa no resume
+(`guardrail validation after 2 retries`). Corrigido com limite de rejeições; execução concluída zera a contagem da regra
+de rollback.

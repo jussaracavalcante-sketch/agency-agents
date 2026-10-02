@@ -277,7 +277,9 @@ aplicacao_g2:
     acrescente conteúdo novo além do necessário e não invente dados. Ajuste que depende de informação ausente vira
     [VALIDAR] na peça. Ajuste de veracidade (depoimento, testemunho, caso de paciente, claim) só pode REMOVER o trecho ou
     marcá-lo [VALIDAR]: é proibido declarar que algo é real, autorizado, consentido ou validado. Reemita cada peça no mesmo
-    formato e extensão da original (não apenas o trecho alterado), sem notas que afirmem conformidade. Entrega sem ajuste não precisa ser reemitida. Ao final liste, por entrega, "versão reemitida" ou
+    formato e extensão da original (não apenas o trecho alterado), sem notas que afirmem conformidade. Ao reemitir, NÃO acrescente nenhuma afirmação nova: é proibido
+    introduzir 'garantimos', 'garantindo', 'segurança', 'precisão' ou 'tecnologia de ponta' sem fonte; ajuste só remove, suaviza
+    com [VALIDAR] ou mantém o texto original. Entrega sem ajuste não precisa ser reemitida. Ao final liste, por entrega, "versão reemitida" ou
     "versão original". Esta tarefa não inventa aprovador, data, decisão ou feedback.
   expected_output: >
     Documento Markdown: (A) tabela entrega x decisão x ajustes (texto exato) x origem e listas de liberadas e bloqueadas;
@@ -313,7 +315,7 @@ pacote_publicacao:
     Conteúdo Longo não viram post de rede social. O cronograma só lista (a) posts do calendário editorial liberado, com as
     datas e plataformas do próprio calendário, e (b) envios de e-mail do plano de e-mail, no canal E-mail, e (c) o artigo
     no canal Site/Blog. Documentos internos entram só no índice, com a observação \"documento interno, não publicável\".
-    Não invente datas: se a peça não tiver data, escreva \"a definir\".
+    Não invente datas: se a peça não tiver data, escreva \"a definir\". Data e hora também ficam \"a definir\" quando a peça liberada não traz data própria (por exemplo, e-mail e artigo sem data no plano).
   expected_output: >
     Documento Markdown com Índice do pacote, Cronograma de publicação (tabela) e Checklist
     pré-publicação por canal com status.
@@ -359,6 +361,9 @@ portao_g3:
     HISTÓRICO DE FEEDBACKS: transcreva apenas mensagens que o humano de fato enviou nesta conversa. Se nenhuma mensagem
     humana anterior existir, escreva exatamente "Nenhum feedback humano recebido". É proibido redigir, supor ou reconstruir
     feedback a partir do parecer do Guardião ou de pendências; isso é falsificação de decisão humana.
+    ESCOPO DO PEDIDO G3: peça autorização apenas para o que está no pacote de publicação (entregas liberadas em G2).
+    Orçamento de mídia a ativar só se houver plano de mídia liberado; se o plano estiver bloqueado, escreva "nenhum:
+    plano de mídia bloqueado" e não liste valores de canais.
   expected_output: >
     Pedido de aprovação G3 em Markdown: cronograma, orçamento a ativar, parecer final, status do
     rastreamento e, quando houver, o feedback humano transcrito literalmente.
@@ -391,7 +396,9 @@ execucao_publicacao:
     "NÃO EXECUTADO" com o motivo e nenhum log de publicação. Nunca registre como publicado algo que uma
     ferramenta não executou: sem ferramenta de escrita ativa, gere o roteiro operacional e marque cada
     item como "a executar por humano", com data, hora, canal e peça previstas, sem inventar links
-    publicados.
+    publicados. Use como canal exatamente o do cronograma do pacote_publicacao (artigo = Site/Blog, e-mail = E-mail; nunca
+    Instagram para o artigo). Data e hora só se constarem no pacote com origem numa peça liberada; caso contrário escreva
+    "a definir". É proibido sugerir datas.
   expected_output: >
     Log de publicação em Markdown (tabela) e, quando aplicável, roteiro operacional por canal.
   agent: coordenador_publicacao
@@ -402,8 +409,11 @@ sumario_executivo:
     Consolide a campanha "{briefing_titulo}" em um sumário executivo de uma página: objetivo e
     KPI norteador, o que foi entregue por canal, decisões dos portões (registros das tarefas aplicacao_g1, aplicacao_g2 e aplicacao_g3), riscos abertos, itens
     [VALIDAR]/[AVAL ESPECIALISTA] pendentes, plano de medição e próximos passos (relatório de
-    48h, semanal e final pelo Analista de Dados). Inclua os KPIs operacionais da crew observados
-    nesta execução (número de iterações, retrabalhos, reprovações).
+    48h, semanal e final pelo Analista de Dados). Para cada portão copie o status exatamente como está no registro da tarefa aplicacao_gN (inclusive canais
+    autorizados, bloqueados e orçamento autorizado no G3), sem reinterpretar nem suavizar: peça bloqueada ou canal sem
+    autorização não pode ser descrita como pronta, aprovada ou liberada. Os KPIs operacionais da crew (número de
+    iterações, retrabalhos, reprovações) só podem usar o que consta nos registros; sem registro, escreva \"não medido\".
+    Em responsável e data de próximos passos escreva \"a definir\" quando não houver nome ou data nos registros.
   expected_output: >
     Documento Markdown "Sumário Executivo" de uma página com as seções listadas e um quadro de
     próximos passos com responsável e data.
