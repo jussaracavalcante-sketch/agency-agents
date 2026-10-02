@@ -1,0 +1,83 @@
+# Registro do piloto: Hospital Santa Júlia (execução com portões humanos)
+
+Data: 2026-10-02. Build: `f3fd887` + correção dos gates (`1004293`). Execução original `18392b0c`, encadeada por resumes até `d8754cb5`.
+
+## Decisões humanas registradas
+
+| Portão | Decisão | Observação |
+|---|---|---|
+| G1 | Devolvido com feedback (5 ajustes) e depois aprovado | O brief reemitido cumpriu 4 dos 5 ajustes. Tom e termos da marca não ficaram como [VALIDAR]. |
+| G2 | Devolvido com feedback (6 ajustes) e depois aprovado | A `aplicacao_g2` só emitiu o registro de decisão e não reemitiu nenhuma peça. O calendário foi liberado com datas fora do período. |
+| G3 | **Reprovado** (parecer do Guardião: Reprovado) | Nenhum resume foi enviado: a plataforma trata qualquer texto diferente de "Aprovado." como retrabalho. A execução fica pausada e nada é publicado. |
+
+## O que o piloto validou
+- Execução ponta a ponta até o G3, com 21 tarefas e webhooks capturados no Supabase.
+- Pausa humana real nos três portões e resume com feedback e com "Aprovado.".
+- O parecer do Guardião passou a ser reproduzido literalmente no pedido dos portões.
+- A regra da pior dimensão no parecer funciona.
+
+## O que o piloto reprovou
+- O pedido do G3 fabricou um feedback humano que ninguém escreveu.
+- A `aplicacao_g2` não reemite as peças ajustadas. O fluxo não tem tarefa de retrabalho após o G2.
+- As peças reintroduziram datas, canais, orçamento e fontes fora do brief aprovado, e a revisão do G2 não barrou.
+- Aprovação sem instruções não carrega correções: elas só chegam à tarefa de aplicação pelo histórico de feedback do portão.
+- Um resume encadeado falhou na plataforma (`NoneType` em `crew_reload`), sem causa confirmada.
+
+## Correções necessárias antes de novo piloto
+1. Histórico de feedbacks dos portões: só o que o humano escreveu; sem feedback, "nenhum".
+2. `aplicacao_g2`: reemitir integralmente cada peça que recebeu ajuste.
+3. Revisão do G2: conferir datas, canais, orçamento e fontes contra o brief aprovado.
+4. Brief e peças: respeitar o período e os canais do brief.
+5. Antes de publicar qualquer peça de saúde: validação médica e do responsável técnico.
+
+
+---
+
+# Rodada de validação de 02/10 (build `a57e0ae`): primeiro piloto com portões humanos concluído
+
+Execução `98264951` encadeada até `242f9767`: **21 de 21 tarefas, estado SUCCESS**, com G1, G2 e G3 respondidos
+("Aprovado." como teste; publicação real desligada). Um único resume por portão.
+
+| Verificação | Resultado |
+|---|---|
+| Pausa e retomada nos 3 portões | OK, sem erro de plataforma |
+| Histórico de feedbacks nos pedidos | OK ("Nenhum feedback humano recebido"; sem feedback fabricado) |
+| Guardião reprova com citação literal | OK (calendário e plano de mídia reprovados no G2) |
+| `aplicacao_g2` reemite peças liberadas e bloqueia as reprovadas | OK (conteúdo web e e-mail reemitidos; calendário e mídia bloqueados) |
+| `aplicacao_g3` com Guardião reprovado | OK (nenhum canal autorizado, orçamento R$ 0) |
+| `execucao_publicacao` | OK ("NÃO EXECUTADO"; nenhuma publicação) |
+
+Falhas de conteúdo observadas nessa rodada (corrigidas no build seguinte): canal "Instagram" para o artigo e datas
+inventadas no roteiro; reemissão do conteúdo web acrescentou "garantindo segurança e precisão diagnóstica";
+sumário descrevia e-mail como "pronto para envio" e G3 como "aprovado com restrições severas"; pedido do G3 listava
+orçamento do plano de mídia bloqueado.
+
+Erro anterior no mesmo dia: guardrail do portão derrubou uma execução ao reexecutar a tarefa no resume
+(`guardrail validation after 2 retries`). Corrigido com limite de rejeições; execução concluída zera a contagem da regra
+de rollback.
+
+---
+
+# Validação final de 02/10 (build `1768574`): fluxo funcional
+
+Execução `f1c67ab2` encadeada até `b2a90978`: **21 de 21 tarefas, SUCCESS**. Quinta rodada seguida concluída
+(contador da regra de rollback: 0 de 2). G1, G2 e G3 respondidos com "Aprovado." como teste; publicação real desligada.
+
+| Verificação | Resultado |
+|---|---|
+| Pausa e retomada nos 3 portões, um resume por portão | OK |
+| Depoimento, testemunho, caso de sucesso, paciente real nas peças | Nenhuma ocorrência |
+| Líder, referência, premiado, "o melhor hospital" nas peças | Nenhuma ocorrência (só no registro de remoção) |
+| Garantia de segurança, precisão ou resultado | Nenhuma ocorrência |
+| Cirurgia robótica | Só no mapa SEO, como tendência setorial; fora do brief e das peças do cliente |
+| Datas completas inventadas fora do calendário | Nenhuma ("a definir") |
+| Calendário editorial | 24 posts, 01/11 a 20/12, as 8 semanas, em formato compacto |
+| G3 com Guardião reprovado | "BLOQUEADO: NENHUM CANAL AUTORIZADO", orçamento R$ 0 |
+| Publicação | "NÃO EXECUTADO", roteiro com datas "a definir" |
+
+Salvaguardas ativas: guardrails em código (cópia literal do parecer, claims proibidos, calendário completo, serviços
+fora do briefing), cada um com limite de duas rejeições para não derrubar a execução.
+
+Limites que permanecem: a lista de termos de serviços é fixa; o Guardião (LLM) ainda não pega tudo, por isso o código
+é a barreira confiável; o texto de aprovação ("Aprovado.") não carrega instruções, que só chegam à aplicação pelo
+histórico de devoluções; a publicação real segue desligada até haver um G3 aprovado por pessoa.

@@ -1560,7 +1560,7 @@ linkify = [
 
 [[package]]
 name = "marketing-ops"
-version = "1.0.0"
+version = "1.0.6"
 source = { editable = "." }
 dependencies = [
     { name = "crewai", extra = ["anthropic", "tools"] },

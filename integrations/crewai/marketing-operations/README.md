@@ -95,6 +95,10 @@ Briefing ──► [03 Pesquisa] ──► [04 SEO] ──► [02 Estratégia] �
                                               [10 Relatório de performance] ──► [01 Consolidação]
 ```
 
+Cada portão (G1, G2, G3) é composto por duas tarefas: o **pedido** de aprovação, onde a execução pausa, e a
+**aplicação da decisão**, que reemite o documento para as tarefas seguintes (ver `docs/fluxos-e-handoffs.md` §8).
+A crew tem 21 tarefas no pipeline mais o relatório pós-campanha.
+
 Detalhes de cada tarefa, dependências (`context`) e templates de handoff em
 [`docs/fluxos-e-handoffs.md`](docs/fluxos-e-handoffs.md).
 
@@ -216,6 +220,7 @@ marketing-operations/
 ├── README.md                      ← este documento (visão executiva)
 ├── agents/                        ← fichas detalhadas dos 12 agentes
 ├── pyproject.toml / uv.lock       ← padrão CrewAI (crewai run / deploy na plataforma)
+├── knowledge/                     ← guias de identidade visual por cliente (brand_book_lookup)
 ├── docs/
 │   ├── fluxos-e-handoffs.md       ← sequência de tarefas, portões, templates de handoff
 │   ├── ferramentas.md             ← ferramentas nativas e customizadas por agente

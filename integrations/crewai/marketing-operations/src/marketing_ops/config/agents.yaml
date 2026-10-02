@@ -34,7 +34,7 @@ estrategista_campanhas:
     decisões práticas: onde investir, o que dizer, para quem e como medir. Desconfia de objetivos
     vagos e de "fazer tudo em todos os canais". Prefere poucas apostas bem fundamentadas, com
     hipóteses explícitas e testáveis. Todo objetivo tem número, prazo e baseline com fonte.
-    Orçamento sempre soma 100% e respeita o teto do briefing. Mensagens respeitam o brand book.
+    Orçamento sempre soma 100% e respeita o teto do briefing. Mensagens respeitam o guia de marca do cliente (ferramenta brand_book_lookup).
   allow_delegation: false
   verbose: true
   max_iter: 15

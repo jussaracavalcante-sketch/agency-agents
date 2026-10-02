@@ -73,3 +73,9 @@ crewai run                      # executa a crew com o briefing de exemplo
 
 Veja o [README da equipe de Operação de Marketing](marketing-operations/README.md)
 para a visão executiva, matriz RACI, KPIs, riscos e roadmap de implantação.
+
+
+## Portal de aprovação
+
+`integrations/crewai/portal-aprovacao/` é um app Next.js para a equipe validar os portões G1, G2 e G3 (publicável na Vercel).
+Fica fora de `marketing-operations/` de propósito, para não entrar no deploy do CrewAI. Veja o README da pasta.

@@ -40,6 +40,7 @@
 
 | Classe | Nome exposto | Contrato | Integração-alvo (F4) |
 |--------|--------------|----------|----------------------|
+| `BrandBookTool` | `brand_book_lookup` | `cliente, secao? → guia de identidade visual do cliente (knowledge/<slug>/*.md)` | Google Drive (guias extraídos; atualização manual ou por script) |
 | `SeoKeywordTool` | `seo_keyword_research` | `termo, pais → volume, dificuldade, intenção` | Semrush API (`phrase_this`, `phrase_related`) |
 | `CrmReadTool` | `crm_read` | `consulta → segmentos, fluxos, métricas agregadas` | RD Station / HubSpot API (somente GET) |
 | `PaidMediaReadTool` | `paid_media_read` | `plataforma, consulta → benchmarks, histórico, termos de busca` | Google Ads (GAQL), Meta Marketing API |
@@ -59,3 +60,12 @@
 Se o ambiente oferecer servidores MCP (Semrush, Google Ads, Notion, Gmail), eles podem
 substituir as ferramentas customizadas via o adaptador MCP do CrewAI (`crewai-tools[mcp]`).
 Mantenha a mesma política: leitura liberada, escrita só pós-G3.
+
+
+## Carga automática da base de conhecimento do cliente
+
+Além da ferramenta `brand_book_lookup`, a crew carrega o guia do cliente no código, antes de qualquer tarefa
+(`before_kickoff` em `crew.py`, função `_injetar_contexto_cliente`). O texto de `knowledge/<cliente>/` é
+exposto como `contexto_cliente` e anexado a todas as tarefas, exceto aos portões humanos. Se o cliente não
+tem guia, ou o input `cliente` não foi informado, o contexto avisa e as decisões de marca viram [VALIDAR].
+O limite é de 8.000 caracteres por tarefa.

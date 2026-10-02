@@ -44,9 +44,15 @@ brief_estrategico:
     baseline e fonte, KPI norteador, personas (dores, gatilhos, objeções, canais), proposta de
     valor, matriz de mensagens (persona × etapa do funil), mix de canais com papel no funil e KPI
     próprio, alocação do orçamento total de {orcamento_total} (soma 100%, cenários conservador e
-    otimista), hipóteses a testar e riscos. Respeite o brand book fornecido no contexto de
-    conhecimento. Prazo da campanha: {prazo}.
+    otimista), hipóteses a testar e riscos. Consulte o guia de marca do cliente com a ferramenta brand_book_lookup antes de definir
+    mensagens e tom; respeite-o. Prazo da campanha: {prazo}.
     Este documento será lido por um(a) diretor(a) em 5 minutos: seja objetivo.
+    NÃO invente serviços, produtos, personas com nome próprio ou canais que não constem do briefing, do guia de marca
+    ou do conhecimento do cliente (por exemplo, telemedicina, quando o briefing não a menciona); o que for proposta
+    sem base deve vir marcado [VALIDAR]. Em Fontes, cite apenas ferramentas e tabelas realmente disponíveis:
+    nunca cite Google Analytics se não houver integração, nem relatórios que ninguém forneceu. O orçamento de mídia
+    ({orcamento_midia}) é um subconjunto do orçamento total ({orcamento_total}): a tabela de orçamento deve separar mídia
+    paga de produção e conteúdo.
   expected_output: >
     Documento Markdown "Brief Estratégico" com as 9 seções do template (Contexto, Objetivos
     SMART, Público e personas, Proposta de valor e matriz de mensagens, Mix de canais, Orçamento,
@@ -57,10 +63,25 @@ brief_estrategico:
 revisao_g1:
   description: >
     Revise o brief estratégico quanto a: coerência com o briefing, objetivos mensuráveis com
-    baseline, aderência ao brand book (tom, termos proibidos, claims permitidos), riscos
+    baseline, aderência ao guia de marca do cliente (consulte com brand_book_lookup: DNA, tom, paleta, termos), riscos
     regulatórios das mensagens propostas (CONAR/CDC, setor regulado) e itens [VALIDAR] não
     resolvidos. Emita parecer: Aprovado, Aprovado com ajustes (lista) ou Reprovado (motivo e
     regra). Não reescreva o brief.
+    IMPORTANTE: todas as entregas a revisar já estão no CONTEXTO desta tarefa (saídas das tarefas
+    anteriores). NÃO tente abrir arquivos nem caminhos de output; trabalhe com o texto do contexto.
+    CHECAGEM OBRIGATÓRIA DO OBJETIVO: compare literalmente o objetivo do brief com o objetivo do briefing
+    ({objetivo}). Se o brief trocar, suavizar ou acrescentar metas que não estão no briefing (por exemplo, percentuais
+    sem baseline), a dimensão Coerência com o briefing é REPROVADA, com a correção exata. Verifique também se alguma
+    fonte citada não existe entre as ferramentas disponíveis ({ferramenta_analytics}).
+    RESULTADO GERAL = o PIOR resultado entre as dimensões: se qualquer dimensão estiver Reprovada, o resultado geral é
+    Reprovado (devolver ao autor), nunca Aprovado com ajustes. Reprove também, citando o trecho, qualquer meta, baseline,
+    objetivo secundário, serviço, produto, canal ou fonte que não conste do briefing, do guia de marca ou dos dados
+    fornecidos (por exemplo, um baseline de contatos atribuído a "relatórios internos" que ninguém forneceu).
+    REGRA DE EVIDÊNCIA: cada apontamento deve citar entre aspas o trecho literal da peça que o motiva; se você não
+    consegue citar o trecho, o apontamento não existe e não pode ser emitido. Varra cada peça procurando: depoimento,
+    paciente, personagem ou persona tratada como pessoa real; garantia de resultado; superlativos ('referência', 'líder',
+    'de ponta', 'à frente') sem fonte; promessa clínica; números sem fonte (projeções, percentuais, tamanhos de base).
+    Qualquer um desses itens torna a dimensão veracidade ou setor regulado Reprovada para a peça.
   expected_output: >
     Parecer Markdown com resultado, checklist por dimensão (status, apontamento, regra,
     correção sugerida) e riscos residuais.
@@ -69,16 +90,52 @@ revisao_g1:
 
 portao_g1:
   description: >
-    PORTÃO G1 — Aprovação humana da estratégia. Apresente ao aprovador um resumo de 10 linhas
-    do brief estratégico, o resultado do parecer de revisão e os riscos principais. Peça a
-    decisão: aprovar, aprovar com ajustes ou reprovar. Se houver ajustes, liste-os e incorpore
-    ao brief antes de seguir. Registre a decisão (data, aprovador, observações).
+    PORTÃO G1 — Aprovação humana da estratégia. Esta tarefa SÓ consolida o pedido de aprovação:
+    apresente ao aprovador um resumo de 10 linhas do brief estratégico, o resultado do parecer de
+    revisão (incluindo os ajustes exigidos pelo Guardião) e os riscos principais, e peça a decisão:
+    aprovar, aprovar com ajustes ou reprovar. NÃO reescreva o brief aqui; a aplicação da decisão é
+    feita na tarefa seguinte (aplicacao_g1). Se esta tarefa for refeita após feedback humano, comece a
+    saída com o registro literal do feedback recebido (data, decisão e ajustes pedidos, em transcrição)
+    e depois reapresente o pedido. Nunca invente aprovador, data ou decisão.
+    Reproduza o parecer do Guardião literalmente, como foi emitido: você não pode alterá-lo nem afirmar que ajustes
+    foram cumpridos ou que o Guardião revisou de novo, porque isso só acontece na tarefa de revisão.
+    A SAÍDA FINAL deste portão é a única que a tarefa seguinte lê. Ela deve SEMPRE trazer no topo o histórico completo
+    dos feedbacks humanos recebidos, de todas as rodadas, em transcrição literal, seguido da decisão final, mesmo quando
+    a última mensagem do humano for apenas "Aprovado.". Nunca descarte o feedback de uma rodada anterior.
+    FORMATO OBRIGATÓRIO DA SAÍDA, em todas as passadas (inclusive retrabalho): (1) "Histórico de feedbacks humanos" com cada rodada
+    transcrita literalmente; (2) "Parecer do Guardião (cópia literal)": copie o texto integral do parecer da tarefa de revisão, sem
+    resumir, reordenar, renomear o resultado (Reprovado continua Reprovado) nem acrescentar "revisado" ou "com ajustes"; só o Guardião
+    altera o próprio parecer; (3) resumo e riscos, usando apenas o que consta nas entregas; (4) pedido de decisão. Se o feedback humano
+    pedir correções, registre-as como pendentes para a tarefa de aplicação: este portão não as executa nem afirma que foram cumpridas.
+    HISTÓRICO DE FEEDBACKS: transcreva apenas mensagens que o humano de fato enviou nesta conversa. Se nenhuma mensagem
+    humana anterior existir, escreva exatamente "Nenhum feedback humano recebido". É proibido redigir, supor ou reconstruir
+    feedback a partir do parecer do Guardião ou de pendências; isso é falsificação de decisão humana.
   expected_output: >
-    Registro de decisão G1 em Markdown: resumo apresentado, decisão, ajustes solicitados,
-    brief estratégico final (versão aprovada).
+    Pedido de aprovação G1 em Markdown: resumo de 10 linhas, parecer do Guardião, riscos, ajustes
+    exigidos pelo Guardião e, quando houver, o feedback humano transcrito literalmente.
   agent: gerente_operacoes
   human_input: true
-  output_file: output/05_decisao_g1.md
+  output_file: output/05_pedido_g1.md
+
+aplicacao_g1:
+  description: >
+    APLICAÇÃO DA DECISÃO G1. Reemita o BRIEF ESTRATÉGICO COMPLETO E FINAL de "{briefing_titulo}", com as
+    9 seções do template (Contexto e desafio; Objetivos SMART e KPI norteador; Público e personas;
+    Proposta de valor e matriz de mensagens persona x etapa do funil; Mix de canais e papel no funil;
+    Orçamento em tabela com canal, percentual, valor, justificativa e KPI; Hipóteses e plano de teste;
+    Riscos e premissas; Fontes), aplicando: (a) os ajustes exigidos pelo Guardião no parecer revisao_g1;
+    (b) o feedback e os ajustes humanos transcritos no pedido do portão G1, quando houver; (c) o objetivo
+    e os dados do briefing original ({objetivo}; orçamento total {orcamento_total}; mídia
+    {orcamento_midia}; prazo {prazo}). Na seção Fontes cite apenas tabelas/ferramentas realmente consultadas, sem inventar ano, versão ou documento; não introduza KPI sem baseline disponível (marque [VALIDAR]). Nunca troque o objetivo do briefing por metas inventadas e use
+    como fonte de dados apenas o que está disponível ({ferramenta_analytics}). Comece a saída com o bloco
+    "Registro de decisão G1" (status, ajustes aplicados, ajustes não aplicados e por quê) e depois traga
+    o documento INTEGRAL, nunca um resumo das mudanças, porque as tarefas seguintes dependem do texto
+    completo.
+  expected_output: >
+    Documento Markdown: bloco "Registro de decisão G1" seguido do Brief Estratégico final, integral,
+    com as 9 seções.
+  agent: estrategista_campanhas
+  output_file: output/05b_brief_final_g1.md
 
 # ───────────────────────── FASE 2 · PRODUÇÃO ─────────────────────────
 
@@ -86,7 +143,7 @@ producao_conteudo:
   description: >
     Escreva o(s) conteúdo(s) longo(s) definidos no brief estratégico aprovado (por exemplo,
     artigo pilar e landing page), seguindo integralmente os requisitos on-page do mapa de SEO e
-    o brand book. Inclua o cabeçalho de metadados (titulo, title_seo, meta_description, slug,
+    o guia de marca do cliente (consulte-o com a ferramenta brand_book_lookup). Inclua o cabeçalho de metadados (titulo, title_seo, meta_description, slug,
     kw_principal, persona, etapa_funil, cta_principal, notas_visuais, fontes), 3 variações de
     título e 2 de CTA. Nenhum dado sem fonte. Marque [AVAL ESPECIALISTA] onde couber.
   expected_output: >
@@ -97,15 +154,18 @@ producao_conteudo:
 
 calendario_social:
   description: >
-    Monte o calendário editorial de {duracao_semanas} semanas para {plataformas_sociais},
-    derivado do brief estratégico e do conteúdo-base. Para cada post: data, plataforma,
-    formato, pilar, objetivo, KPI, hook, copy, CTA, hashtags, asset necessário. Adapte a
-    mensagem por plataforma (não replique). Inclua guia de engajamento (respostas-padrão,
-    comunidades, UGC) e indique posts candidatos a impulsionamento.
+    Monte o calendário editorial de {duracao_semanas} semanas para {plataformas_sociais}, derivado do brief
+    estratégico e do conteúdo-base. FORMATO COMPACTO OBRIGATÓRIO (a resposta precisa caber inteira): uma única tabela
+    Markdown com as colunas Semana | Data | Plataforma | Formato | Pilar | Hook e copy (até 25 palavras) | CTA, com ao
+    menos 3 posts por semana em TODAS as {duracao_semanas} semanas (semanas 1 a {duracao_semanas}, sem pular nenhuma),
+    cada post datado. Adapte a mensagem por plataforma (não replique). O objetivo de cada post vem do objetivo do
+    briefing ({objetivo}), sem metas numéricas novas, e por isso não ganha coluna própria. Depois da tabela, em listas
+    curtas: hashtags por plataforma, guia de engajamento (respostas-padrão, comunidades), posts candidatos a
+    impulsionamento e lista consolidada de assets para o Diretor de Arte (formato, dimensões, quantidade). Não escreva
+    texto de introdução nem comentários sobre o que você vai fazer: entregue direto o documento.
   expected_output: >
-    (1) Tabela do calendário editorial em Markdown (colunas padronizadas); (2) copies completas
-    por plataforma; (3) guia de engajamento; (4) lista de assets para o Diretor de Arte com
-    dimensões e quantidade.
+    Documento Markdown: (1) tabela compacta cobrindo todas as semanas; (2) hashtags por plataforma; (3) guia de
+    engajamento; (4) posts para impulsionamento; (5) lista consolidada de assets com dimensões e quantidade.
   agent: estrategista_social
   output_file: output/07_calendario_social.md
 
@@ -157,6 +217,22 @@ revisao_g2:
     de mídia, direção de arte) quanto a marca, qualidade editorial, veracidade e fontes, LGPD,
     CONAR/CDC, políticas de plataforma e setor regulado. Emita um parecer por entrega com
     resultado, apontamentos (regra + correção) e riscos residuais. Não reescreva as peças.
+    IMPORTANTE: todas as entregas a revisar já estão no CONTEXTO desta tarefa (saídas das tarefas
+    anteriores). NÃO tente abrir arquivos nem caminhos de output; trabalhe com o texto do contexto.
+    RESULTADO POR ENTREGA = o PIOR resultado entre as dimensões avaliadas nela; uma dimensão Reprovada torna a entrega Reprovada.
+    Confira também cada peça contra o brief final aprovado: serviço, procedimento, tecnologia ou promessa clínica que não conste do
+    briefing original nem do brief aprovado, e claim de saúde sem fonte (ex.: recuperação mais rápida, menos invasivo, resultado garantido),
+    tornam a peça Reprovada nas dimensões veracidade e setor regulado.
+    REGRA DE EVIDÊNCIA: cada apontamento deve citar entre aspas o trecho literal da peça que o motiva; se você não
+    consegue citar o trecho, o apontamento não existe e não pode ser emitido. Varra cada peça procurando: depoimento,
+    paciente, personagem ou persona tratada como pessoa real; garantia de resultado; superlativos ('referência', 'líder',
+    'de ponta', 'à frente') sem fonte; promessa clínica; números sem fonte (projeções, percentuais, tamanhos de base).
+    Qualquer um desses itens torna a dimensão veracidade ou setor regulado Reprovada para a peça.
+    VARREDURA DO PLANO DE MÍDIA E DAS PEÇAS: reprovam a peça (a) serviço, especialidade ou campanha que não conste do briefing
+    original nem do brief aprovado (por exemplo cardiologia, ortopedia, telemedicina); (b) plataformas e canais fora de
+    {plataformas_sociais} e do mix do brief aprovado; (c) projeções de CTR, CVR, CPL, CPC ou contatos sem fonte nos dados
+    disponíveis; (d) soma de valores de mídia diferente de {orcamento_midia}; (e) superlativos como 'referência', 'líder', 'de renome'.
+    Cite o trecho literal de cada ocorrência.
   expected_output: >
     Documento Markdown com um parecer por entrega (template de checklist) e um quadro-resumo
     final: entrega × resultado × nº de ajustes.
@@ -165,16 +241,52 @@ revisao_g2:
 
 portao_g2:
   description: >
-    PORTÃO G2 — Aprovação humana dos criativos e planos. Apresente ao aprovador o quadro-resumo
-    dos pareceres, os ajustes pendentes e amostras (1 título, 1 post, 1 e-mail, 1 anúncio).
-    Peça a decisão por entrega. Coordene a incorporação dos ajustes com os agentes responsáveis
-    e registre a decisão (data, aprovador, observações).
+    PORTÃO G2 — Aprovação humana dos criativos e planos. Esta tarefa SÓ consolida o pedido: apresente o
+    quadro-resumo dos pareceres do Guardião por entrega (resultado e número de ajustes), os ajustes
+    pendentes e amostras reais extraídas das entregas (1 título, 1 post, 1 e-mail, 1 anúncio). Peça a
+    decisão por entrega: aprovar, ajustar ou reprovar. NÃO reescreva peças aqui; a aplicação da decisão é
+    feita na tarefa seguinte (aplicacao_g2). Se esta tarefa for refeita após feedback humano, comece a
+    saída com o registro literal do feedback recebido. Nunca invente aprovador, data ou decisão.
+    Reproduza o parecer do Guardião literalmente, como foi emitido: você não pode alterá-lo nem afirmar que ajustes
+    foram cumpridos ou que o Guardião revisou de novo, porque isso só acontece na tarefa de revisão.
+    A SAÍDA FINAL deste portão é a única que a tarefa seguinte lê. Ela deve SEMPRE trazer no topo o histórico completo
+    dos feedbacks humanos recebidos, de todas as rodadas, em transcrição literal, seguido da decisão final, mesmo quando
+    a última mensagem do humano for apenas "Aprovado.". Nunca descarte o feedback de uma rodada anterior.
+    FORMATO OBRIGATÓRIO DA SAÍDA, em todas as passadas (inclusive retrabalho): (1) "Histórico de feedbacks humanos" com cada rodada
+    transcrita literalmente; (2) "Parecer do Guardião (cópia literal)": copie o texto integral do parecer da tarefa de revisão, sem
+    resumir, reordenar, renomear o resultado (Reprovado continua Reprovado) nem acrescentar "revisado" ou "com ajustes"; só o Guardião
+    altera o próprio parecer; (3) resumo e riscos, usando apenas o que consta nas entregas; (4) pedido de decisão. Se o feedback humano
+    pedir correções, registre-as como pendentes para a tarefa de aplicação: este portão não as executa nem afirma que foram cumpridas.
+    HISTÓRICO DE FEEDBACKS: transcreva apenas mensagens que o humano de fato enviou nesta conversa. Se nenhuma mensagem
+    humana anterior existir, escreva exatamente "Nenhum feedback humano recebido". É proibido redigir, supor ou reconstruir
+    feedback a partir do parecer do Guardião ou de pendências; isso é falsificação de decisão humana.
   expected_output: >
-    Registro de decisão G2 em Markdown: quadro de decisões por entrega, ajustes aplicados e
-    lista de entregas liberadas para publicação.
+    Pedido de aprovação G2 em Markdown: quadro de pareceres por entrega, ajustes pendentes, amostras e,
+    quando houver, o feedback humano transcrito literalmente.
   agent: gerente_operacoes
   human_input: true
-  output_file: output/12_decisao_g2.md
+  output_file: output/12_pedido_g2.md
+
+aplicacao_g2:
+  description: >
+    APLICAÇÃO DA DECISÃO G2. Parte A, REGISTRO: para CADA uma das cinco entregas de produção (conteúdo, calendário
+    social, fluxos de e-mail, plano de mídia e direção de arte) registre a decisão (liberada, liberada com ajustes ou
+    reprovada), os ajustes obrigatórios com a redação exata a alterar, a origem (Guardião ou feedback humano) e as listas
+    de entregas liberadas e bloqueadas. Parte B, REEMISSÃO: para cada entrega que recebeu qualquer ajuste (do Guardião
+    ou do feedback humano transcrito no pedido do portão G2), reemita a peça INTEGRAL já corrigida, aplicando todos os
+    ajustes, sob o título "Peça reemitida: <nome da entrega>". Mantenha o texto aprovado das partes sem ajuste; não
+    acrescente conteúdo novo além do necessário e não invente dados. Ajuste que depende de informação ausente vira
+    [VALIDAR] na peça. Ajuste de veracidade (depoimento, testemunho, caso de paciente, claim) só pode REMOVER o trecho ou
+    marcá-lo [VALIDAR]: é proibido declarar que algo é real, autorizado, consentido ou validado. Reemita cada peça no mesmo
+    formato e extensão da original (não apenas o trecho alterado), sem notas que afirmem conformidade. Ao reemitir, NÃO acrescente nenhuma afirmação nova: é proibido
+    introduzir 'garantimos', 'garantindo', 'segurança', 'precisão' ou 'tecnologia de ponta' sem fonte; ajuste só remove, suaviza
+    com [VALIDAR] ou mantém o texto original. Entrega sem ajuste não precisa ser reemitida. Ao final liste, por entrega, "versão reemitida" ou
+    "versão original". Esta tarefa não inventa aprovador, data, decisão ou feedback.
+  expected_output: >
+    Documento Markdown: (A) tabela entrega x decisão x ajustes (texto exato) x origem e listas de liberadas e bloqueadas;
+    (B) cada peça ajustada reemitida na íntegra; (C) lista final de versões.
+  agent: gerente_operacoes
+  output_file: output/12b_decisao_g2.md
 
 # ───────────────────────── FASE 3 · MEDIÇÃO E PUBLICAÇÃO ─────────────────────────
 
@@ -198,6 +310,13 @@ pacote_publicacao:
     cronograma de publicação por canal (data, hora, fuso {fuso_horario}, peça, link, UTM,
     responsável, status) e checklist pré-publicação por canal, conferindo UTMs contra o
     dicionário. NÃO publique nem agende nada nesta tarefa.
+    O cronograma deve conter APENAS peças das entregas liberadas em aplicacao_g2; peça de entrega bloqueada não pode
+    aparecer. Em Responsável escreva "a definir" e em Link escreva "a definir após a publicação": nunca invente nomes
+    de pessoas, links ou canais sem entrega correspondente. Um plano ou um documento interno não é uma peça de canal: Plano de E-mail, Plano de Mídia, Conceito Criativo e
+    Conteúdo Longo não viram post de rede social. O cronograma só lista (a) posts do calendário editorial liberado, com as
+    datas e plataformas do próprio calendário, e (b) envios de e-mail do plano de e-mail, no canal E-mail, e (c) o artigo
+    no canal Site/Blog. Documentos internos entram só no índice, com a observação \"documento interno, não publicável\".
+    Não invente datas: se a peça não tiver data, escreva \"a definir\". Data e hora também ficam \"a definir\" quando a peça liberada não traz data própria (por exemplo, e-mail e artigo sem data no plano).
   expected_output: >
     Documento Markdown com Índice do pacote, Cronograma de publicação (tabela) e Checklist
     pré-publicação por canal com status.
@@ -209,6 +328,14 @@ revisao_g3:
     Revise o pacote de publicação e o plano de medição: versões corretas, ajustes de G2
     aplicados, UTMs conformes, horários com fuso, base legal dos públicos e segmentos, ausência
     de itens [VALIDAR] ou [AVAL ESPECIALISTA] pendentes. Emita parecer final.
+    IMPORTANTE: todas as entregas a revisar já estão no CONTEXTO desta tarefa (saídas das tarefas
+    anteriores). NÃO tente abrir arquivos nem caminhos de output; trabalhe com o texto do contexto.
+    RESULTADO GERAL = o PIOR resultado entre as dimensões; uma dimensão Reprovada ou um item bloqueante em aberto torna o pacote Reprovado.
+    REGRA DE EVIDÊNCIA: cada apontamento deve citar entre aspas o trecho literal da peça que o motiva; se você não
+    consegue citar o trecho, o apontamento não existe e não pode ser emitido. Varra cada peça procurando: depoimento,
+    paciente, personagem ou persona tratada como pessoa real; garantia de resultado; superlativos ('referência', 'líder',
+    'de ponta', 'à frente') sem fonte; promessa clínica; números sem fonte (projeções, percentuais, tamanhos de base).
+    Qualquer um desses itens torna a dimensão veracidade ou setor regulado Reprovada para a peça.
   expected_output: >
     Parecer Markdown do pacote com resultado, checklist e riscos residuais.
   agent: guardiao_marca_compliance
@@ -216,24 +343,63 @@ revisao_g3:
 
 portao_g3:
   description: >
-    PORTÃO G3 — Aprovação humana de publicação e investimento. Apresente ao aprovador o
-    cronograma de publicação, o orçamento de mídia a ser ativado, o resultado do parecer final e
-    o status do checklist de rastreamento. Peça autorização explícita para publicar/agendar e
-    ativar campanhas. Registre a decisão (data, aprovador, canais autorizados, orçamento
-    autorizado).
+    PORTÃO G3 — Aprovação humana de publicação e investimento. Esta tarefa SÓ consolida o pedido:
+    apresente o cronograma de publicação, o orçamento de mídia a ser ativado, o resultado do parecer final
+    do Guardião e o status do checklist de rastreamento, e peça autorização explícita para publicar,
+    agendar e ativar campanhas. A aplicação da decisão é feita na tarefa seguinte (aplicacao_g3). Se esta
+    tarefa for refeita após feedback humano, comece a saída com o registro literal do feedback recebido.
+    Nunca invente aprovador, data ou decisão.
+    Reproduza o parecer do Guardião literalmente, como foi emitido: você não pode alterá-lo nem afirmar que ajustes
+    foram cumpridos ou que o Guardião revisou de novo, porque isso só acontece na tarefa de revisão.
+    A SAÍDA FINAL deste portão é a única que a tarefa seguinte lê. Ela deve SEMPRE trazer no topo o histórico completo
+    dos feedbacks humanos recebidos, de todas as rodadas, em transcrição literal, seguido da decisão final, mesmo quando
+    a última mensagem do humano for apenas "Aprovado.". Nunca descarte o feedback de uma rodada anterior.
+    FORMATO OBRIGATÓRIO DA SAÍDA, em todas as passadas (inclusive retrabalho): (1) "Histórico de feedbacks humanos" com cada rodada
+    transcrita literalmente; (2) "Parecer do Guardião (cópia literal)": copie o texto integral do parecer da tarefa de revisão, sem
+    resumir, reordenar, renomear o resultado (Reprovado continua Reprovado) nem acrescentar "revisado" ou "com ajustes"; só o Guardião
+    altera o próprio parecer; (3) resumo e riscos, usando apenas o que consta nas entregas; (4) pedido de decisão. Se o feedback humano
+    pedir correções, registre-as como pendentes para a tarefa de aplicação: este portão não as executa nem afirma que foram cumpridas.
+    HISTÓRICO DE FEEDBACKS: transcreva apenas mensagens que o humano de fato enviou nesta conversa. Se nenhuma mensagem
+    humana anterior existir, escreva exatamente "Nenhum feedback humano recebido". É proibido redigir, supor ou reconstruir
+    feedback a partir do parecer do Guardião ou de pendências; isso é falsificação de decisão humana.
+    ESCOPO DO PEDIDO G3: peça autorização apenas para o que está no pacote de publicação (entregas liberadas em G2).
+    Orçamento de mídia a ativar só se houver plano de mídia liberado; se o plano estiver bloqueado, escreva "nenhum:
+    plano de mídia bloqueado" e não liste valores de canais.
   expected_output: >
-    Registro de decisão G3 em Markdown com canais e orçamento autorizados e eventuais
-    restrições.
+    Pedido de aprovação G3 em Markdown: cronograma, orçamento a ativar, parecer final, status do
+    rastreamento e, quando houver, o feedback humano transcrito literalmente.
   agent: gerente_operacoes
   human_input: true
-  output_file: output/16_decisao_g3.md
+  output_file: output/16_pedido_g3.md
+
+aplicacao_g3:
+  description: >
+    APLICAÇÃO DA DECISÃO G3. Registre a decisão final de publicação: STATUS (APROVADO, APROVADO COM
+    RESTRIÇÕES, REPROVADO ou PENDENTE DE APROVAÇÃO HUMANA), canais autorizados, orçamento autorizado,
+    restrições e condições para publicar. Cruze com o parecer final do Guardião: todo item bloqueante
+    não resolvido impede o canal afetado, então liste os canais bloqueados e o que falta para liberá-los.
+    O status NÃO pode ser APROVADO sem restrições se houver item bloqueante em aberto.
+    REGRA DE CANAIS: um canal só pode constar como autorizado se TODAS as suas peças pertencem a entregas liberadas em
+    aplicacao_g2 e não há item bloqueante do Guardião em aberto para ele. Peça de entrega bloqueada, ou checklist de
+    conformidade pendente, coloca o canal em Canais bloqueados. Orçamento autorizado só existe para canais autorizados:
+    se nenhum canal estiver autorizado, o orçamento autorizado é R$ 0 e o status é BLOQUEADO: NENHUM CANAL AUTORIZADO (nunca
+    escreva APROVADO nem APROVADO COM RESTRIÇÕES nesse caso, mesmo que o humano tenha respondido Aprovado.). Valores marcados [VALIDAR] no briefing continuam [VALIDAR] no registro.
+  expected_output: >
+    Registro de decisão G3 em Markdown: status, canais autorizados e bloqueados, orçamento autorizado,
+    restrições e condições.
+  agent: gerente_operacoes
+  output_file: output/16b_decisao_g3.md
 
 execucao_publicacao:
   description: >
-    Com a decisão G3 registrada, execute ou gere as instruções passo a passo de publicação e
-    agendamento por canal, estritamente dentro dos canais e do orçamento autorizados. Registre o
-    log de publicação (data/hora real, canal, peça, link publicado, responsável). Se alguma
-    ferramenta de escrita não estiver disponível, produza o roteiro operacional para o humano.
+    Só execute se o STATUS registrado em aplicacao_g3 for APROVADO ou APROVADO COM RESTRIÇÕES com ao menos um canal autorizado, e apenas nos
+    canais autorizados e dentro do orçamento autorizado. Se o status for BLOQUEADO, PENDENTE ou REPROVADO, a saída começa com o título "NÃO EXECUTADO" e é
+    "NÃO EXECUTADO" com o motivo e nenhum log de publicação. Nunca registre como publicado algo que uma
+    ferramenta não executou: sem ferramenta de escrita ativa, gere o roteiro operacional e marque cada
+    item como "a executar por humano", com data, hora, canal e peça previstas, sem inventar links
+    publicados. Use como canal exatamente o do cronograma do pacote_publicacao (artigo = Site/Blog, e-mail = E-mail; nunca
+    Instagram para o artigo). Data e hora só se constarem no pacote com origem numa peça liberada; caso contrário escreva
+    "a definir". É proibido sugerir datas.
   expected_output: >
     Log de publicação em Markdown (tabela) e, quando aplicável, roteiro operacional por canal.
   agent: coordenador_publicacao
@@ -242,10 +408,13 @@ execucao_publicacao:
 sumario_executivo:
   description: >
     Consolide a campanha "{briefing_titulo}" em um sumário executivo de uma página: objetivo e
-    KPI norteador, o que foi entregue por canal, decisões dos portões, riscos abertos, itens
+    KPI norteador, o que foi entregue por canal, decisões dos portões (registros das tarefas aplicacao_g1, aplicacao_g2 e aplicacao_g3), riscos abertos, itens
     [VALIDAR]/[AVAL ESPECIALISTA] pendentes, plano de medição e próximos passos (relatório de
-    48h, semanal e final pelo Analista de Dados). Inclua os KPIs operacionais da crew observados
-    nesta execução (número de iterações, retrabalhos, reprovações).
+    48h, semanal e final pelo Analista de Dados). Para cada portão copie o status exatamente como está no registro da tarefa aplicacao_gN (inclusive canais
+    autorizados, bloqueados e orçamento autorizado no G3), sem reinterpretar nem suavizar: peça bloqueada ou canal sem
+    autorização não pode ser descrita como pronta, aprovada ou liberada. Os KPIs operacionais da crew (número de
+    iterações, retrabalhos, reprovações) só podem usar o que consta nos registros; sem registro, escreva \"não medido\".
+    Em responsável e data de próximos passos escreva \"a definir\" quando não houver nome ou data nos registros.
   expected_output: >
     Documento Markdown "Sumário Executivo" de uma página com as seções listadas e um quadro de
     próximos passos com responsável e data.
