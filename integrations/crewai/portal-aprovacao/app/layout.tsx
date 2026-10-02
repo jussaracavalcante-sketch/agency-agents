@@ -1,28 +1,15 @@
 import "./globals.css";
-import Link from "next/link";
+import Shell from "@/components/Shell";
 import { usuarioAtual } from "@/lib/supabase";
 
-export const metadata = { title: "Portal de Aprovação · Marketing Ops" };
+export const metadata = { title: "Marketing Ops · Vanguarda Martech" };
 export const dynamic = "force-dynamic";
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const u = await usuarioAtual();
   return (
     <html lang="pt-BR">
-      <body>
-        <header>
-          <Link href="/"><strong>Portal de Aprovação</strong></Link>
-          {u && (
-            <nav style={{ display: "flex", gap: 16 }}>
-              <Link href="/">Fila</Link>
-              <Link href="/agentes">Agentes</Link>
-              {u.papel === "aprovador" && <Link href="/disparar">Disparar campanha</Link>}
-            </nav>
-          )}
-          <span className="mut">{u ? `${u.nome} · ${u.papel}` : "não autenticado"}</span>
-        </header>
-        <main>{children}</main>
-      </body>
+      <body>{u ? <Shell nome={u.nome} papel={u.papel}>{children}</Shell> : <main style={{ maxWidth: 480, margin: "0 auto", padding: "0 16px" }}>{children}</main>}</body>
     </html>
   );
 }

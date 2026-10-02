@@ -1,8 +1,7 @@
 import { notFound, redirect } from "next/navigation";
-import { usuarioAtual, admin, podeDecidir } from "@/lib/supabase";
+import { usuarioAtual } from "@/lib/supabase";
 import { obterExecucao } from "@/lib/execucoes";
-import Decisao from "./Decisao";
-import { TAREFAS, TOTAL_TAREFAS, rotuloTarefa } from "@/lib/agentes";
+import PainelAprovacoes from "@/components/PainelAprovacoes";
 
 export const dynamic = "force-dynamic";
 
@@ -11,45 +10,6 @@ export default async function Revisao({ params }: { params: { id: string } }) {
   if (!u) redirect("/login");
   const exec = await obterExecucao(params.id);
   if (!exec) notFound();
-  const { data: decisoes } = await admin().from("portal_decisoes").select("*").eq("execucao_id", exec.chave).order("criado_em");
-  const tarefas = exec.eventos.filter((e) => e.tipo === "task");
-  return (
-    <>
-      <h2>Execução {exec.chave.slice(0, 8)} {exec.pendente && <span className="tag pend">portão {exec.portao} pendente</span>}</h2>
-      <div className="grid">
-        <div>
-          {exec.pendente && (
-            <div className="card">
-              <strong>Pedido de aprovação ({exec.portao})</strong>
-              <pre className="doc">{exec.pendente.output}</pre>
-            </div>
-          )}
-          <h3>Entregas geradas ({new Set(tarefas.map((e) => e.task_name)).size} de {TOTAL_TAREFAS})</h3>
-          {tarefas.slice().reverse().map((e) => (
-            <details key={e.id} className="card">
-              <summary>
-                {TAREFAS[e.task_name || ""]?.ordem ? `${TAREFAS[e.task_name!].ordem}. ` : ""}{rotuloTarefa(e.task_name || "")}
-                <span className="mut" style={{ fontWeight: 400 }}> · {TAREFAS[e.task_name || ""]?.papel ?? "agente"} · {new Date(e.recebido_em).toLocaleTimeString("pt-BR", { timeZone: "America/Manaus" })}</span>
-              </summary>
-              <pre className="doc">{e.output}</pre>
-            </details>
-          ))}
-        </div>
-        <div>
-          {exec.pendente && <Decisao execucaoId={exec.chave} portao={exec.portao} podeDecidir={podeDecidir(u, exec.portao)} />}
-          <div className="card">
-            <strong>Histórico de decisões</strong>
-            {!decisoes?.length && <p className="mut">Nenhuma decisão registrada.</p>}
-            {decisoes?.map((d) => (
-              <p key={d.id} className="mut">
-                {new Date(d.criado_em).toLocaleString("pt-BR", { timeZone: "America/Manaus" })} · {d.portao} · <strong>{d.decisao}</strong> por {d.humano_nome}
-                {d.instrucoes ? <><br />“{d.instrucoes}”</> : null}
-                {!d.enviado_ao_crewai && d.decisao !== "reprovar" ? <><br /><span style={{ color: "var(--err)" }}>não enviada à plataforma</span></> : null}
-              </p>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  );
+  const aba = exec.pendente ? "aguardando" : exec.concluida ? "concluidas" : "andamento";
+  return <PainelAprovacoes u={u} selecionada={exec.chave} aba={aba} />;
 }

@@ -15,7 +15,7 @@ export default function Login() {
   }
   return (
     <form onSubmit={entrar} className="card" style={{ maxWidth: 400, margin: "60px auto" }}>
-      <h2 style={{ marginTop: 0 }}>Entrar</h2>
+      <h2 style={{ marginTop: 0 }}>Entrar no Marketing Ops</h2>
       <p className="mut">Acesso restrito à equipe. Informe seu e-mail corporativo e use o link que chegar na caixa de entrada.</p>
       <label>E-mail<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
       <p><button className="p" type="submit" disabled={busy}>Receber link de acesso</button></p>
