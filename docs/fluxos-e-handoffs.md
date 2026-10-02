@@ -132,9 +132,20 @@ Com a flag ligada, o fluxo é:
     "humanFeedback": "Aprovado. Ajustar X.", "isApprove": true,
     "taskWebhookUrl": "...", "crewWebhookUrl": "...", "humanInputWebhook": {...}}
    ```
-   Os campos são **camelCase** (a API rejeita `execution_id`). O `taskId` é o UUID enviado no
-   webhook de aprovação, não o nome da tarefa. A resposta traz um novo `kickoff_id` para
-   acompanhar a continuação. Validado em 2026-10-01 com a execução e73d4895 → bff9e967.
+   Contrato validado na plataforma (2026-10-02), que **difere da documentação oficial**:
+
+   - O validador só conhece `executionId`, `taskId` e `humanFeedback` (camelCase) mais as três URLs de
+     webhook. **`isApprove` não existe**: é aceito e ignorado, junto com qualquer campo desconhecido.
+   - A decisão é carregada só pelo texto de `humanFeedback`. Um texto curto e inequívoco, como
+     `"Aprovado."`, libera o portão e a execução avança. Qualquer texto com instruções, mesmo começando por
+     "aprovado", é lido como pedido de refação: a plataforma reexecuta o portão com o feedback e pausa de novo
+     no mesmo ponto. Texto vazio e campo omitido também refazem o portão.
+   - Use sempre o `executionId` **original** (o da execução disparada no kickoff). Ids de continuações
+     devolvem "NoneType não é subscritável" ou ficam silenciosos.
+   - O `taskId` é o UUID enviado no webhook de aprovação, não o nome da tarefa, e muda a cada portão.
+   - A API devolve um `kickoff_id` novo em qualquer chamada, até com ids falsos; só o evento seguinte no
+     receptor confirma que a retomada valeu.
+   - Para pedir ajuste, envie o feedback com instruções (refação); para aprovar, envie `"Aprovado."`.
    `is_approve: false` faz a tarefa ser refeita com o feedback como contexto; `true` segue para
    a próxima tarefa. Os webhooks precisam ser repetidos na retomada (não são herdados).
 4. **Registro.** O receptor grava o evento (`tipo = human_input`) e a resposta fica no trace da
@@ -164,6 +175,10 @@ O texto das tarefas de aplicação recebe, em tempo de montagem, o **modo do por
   são aplicados, o documento sai marcado como "VERSÃO NÃO APROVADA POR HUMANO" e o `execucao_publicacao`
   responde "NÃO EXECUTADO".
 
-Limitação conhecida: numa **aprovação** (positiva), a plataforma segue adiante e o texto do feedback pode não
-chegar ao contexto; para que uma instrução humana altere o documento, use a **devolução** (`isApprove: false`)
-com o feedback, que é transcrito no pedido refeito e lido pela tarefa de aplicação.
+Fluxo recomendado: para alterar o documento, **devolva** com o feedback em texto (o pedido é refeito com o
+feedback transcrito no topo e a tarefa de aplicação o lê); depois, para liberar o portão, envie `"Aprovado."`.
+Uma aprovação em texto curto não carrega instruções: elas devem ter sido dadas na devolução anterior.
+
+Verificado em execução real (Hospital Santa Júlia): após a devolução, a tarefa `aplicacao_g1` reemitiu o brief
+integral nas nove seções com o objetivo restaurado. Falhas observadas e tratadas nos prompts: o pedido do portão
+reescrevia o parecer do Guardião; o registro do G3 autorizava canais cujas peças estavam bloqueadas no G2.
