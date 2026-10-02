@@ -32,3 +32,26 @@ export function validar(b: Record<string, unknown>): string | null {
   if ((b.objetivo as string).trim().length < 30) return "Objetivo muito curto: escreva o objetivo literal, com meta e baseline";
   return null;
 }
+
+/** Briefing validado no piloto do Hospital Santa Júlia. Itens sem dado confirmado seguem como [VALIDAR]. */
+export const PILOTO_SANTA_JULIA = {
+  slug: "hospital_santa_julia",
+  valores: {
+    briefing_titulo: "Campanha de captação de pacientes Hospital Santa Júlia Q4 2026",
+    segmento: "Saúde: hospital privado de alta complexidade (setor regulado: CFM, ANVISA, CONAR)",
+    regiao: "Manaus e Região Metropolitana",
+    publico_alvo: "Adultos 30-60 anos, classes A/B, decisores de saúde da família, beneficiários de planos de saúde e pacientes particulares que buscam especialistas e exames",
+    objetivo: "Gerar 400 contatos qualificados (agendamentos e orçamentos) em 8 semanas (baseline: 863 conversões RD em 90 dias, 343 vindas de mídia paga)",
+    orcamento_total: "R$ 25.000 [VALIDAR]",
+    orcamento_midia: "R$ 15.000 [VALIDAR] (run-rate Google Ads: R$ 11.654 em 90 dias; sem Meta Ads na Nekt)",
+    prazo: "8 semanas",
+    duracao_semanas: "8",
+    plataformas_sociais: "Instagram, Facebook, LinkedIn",
+    ferramenta_crm: "RD Station",
+    ferramenta_analytics: "Nekt Refined (rfn_midia__desempenho_diario + rfn_marketing__conversao); GA4 + GTM fora da Nekt",
+    site_url: "nenhum informado (confirmar o site institucional com o atendimento) [VALIDAR]",
+    fuso_horario: "America/Manaus",
+    caminho_dados: "vanguardamartech_refined.rfn_midia__desempenho_diario filtrado por cliente = 'HOSPITAL SANTA JULIA' + rfn_marketing__conversao filtrado por cliente = 'HOSPITAL SANTA JULIA'",
+    periodo_relatorio: "últimos 90 dias (até 2026-09-30)",
+  } as Record<string, string>,
+};
