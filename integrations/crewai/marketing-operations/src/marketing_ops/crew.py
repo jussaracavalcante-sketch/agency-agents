@@ -1,7 +1,7 @@
 """
 crew.py — Equipe de Operação de Marketing (CrewAI)
 
-Define os 12 agentes e as 18 tarefas do pipeline de campanha (a 19ª, relatório de
+Define os 12 agentes e as 21 tarefas do pipeline de campanha (a 22ª, relatório de
 performance, roda em uma crew separada pós-campanha). Os textos de role/goal/backstory e
 description/expected_output vivem em config/agents.yaml e config/tasks.yaml; este arquivo
 só liga agentes, tarefas, ferramentas, dependências (context) e processo.
@@ -97,6 +97,18 @@ def _garantir_output_dir() -> None:
     _resolver_output_dir()
 
 
+_MODO_COM_HUMANO = (
+    "\n\nMODO DO PORTÃO: HUMANO ATIVO. Esta tarefa só executa depois que um aprovador humano liberou o "
+    "portão correspondente. Trate a decisão como APROVADA, aplicando os ajustes e o feedback humano "
+    "transcritos no pedido do portão e os ajustes obrigatórios do Guardião."
+)
+_MODO_SEM_HUMANO = (
+    "\n\nMODO DO PORTÃO: SEM APROVADOR HUMANO NESTA EXECUÇÃO. A decisão é PENDENTE DE APROVAÇÃO HUMANA. "
+    "Aplique apenas os ajustes obrigatórios apontados pelo Guardião, marque o documento como VERSÃO NÃO "
+    "APROVADA POR HUMANO e não registre aprovação, aprovador ou data de decisão."
+)
+
+
 def _aplicar_pasta_de_saida(tasks: list[Task]) -> str | None:
     """
     Reescreve os output_file das tarefas para caminhos absolutos dentro da pasta gravável,
@@ -106,6 +118,8 @@ def _aplicar_pasta_de_saida(tasks: list[Task]) -> str | None:
     for t in tasks:
         if t.output_file:
             t.output_file = str(pasta / Path(t.output_file).name) if pasta else None
+        if (t.name or "").startswith("aplicacao_g") and "MODO DO PORTÃO:" not in t.description:
+            t.description += _MODO_COM_HUMANO if HUMAN_GATES else _MODO_SEM_HUMANO
         if t.human_input and not HUMAN_GATES:
             t.human_input = False
             t.description += (
@@ -307,34 +321,41 @@ class MarketingOpsCrew:
             context=[self.brief_estrategico(), self.revisao_g1()],
         )
 
+    @task
+    def aplicacao_g1(self) -> Task:
+        return Task(
+            config=self.tasks_config["aplicacao_g1"],
+            context=[self.brief_estrategico(), self.revisao_g1(), self.portao_g1()],
+        )
+
     # ───────────────────────── Tarefas · Fase 2 ─────────────────────────
 
     @task
     def producao_conteudo(self) -> Task:
         return Task(
             config=self.tasks_config["producao_conteudo"],
-            context=[self.portao_g1(), self.mapa_seo()],
+            context=[self.aplicacao_g1(), self.mapa_seo()],
         )
 
     @task
     def calendario_social(self) -> Task:
         return Task(
             config=self.tasks_config["calendario_social"],
-            context=[self.portao_g1(), self.producao_conteudo(), self.pesquisa_mercado()],
+            context=[self.aplicacao_g1(), self.producao_conteudo(), self.pesquisa_mercado()],
         )
 
     @task
     def fluxos_email(self) -> Task:
         return Task(
             config=self.tasks_config["fluxos_email"],
-            context=[self.portao_g1(), self.producao_conteudo()],
+            context=[self.aplicacao_g1(), self.producao_conteudo()],
         )
 
     @task
     def plano_midia_paga(self) -> Task:
         return Task(
             config=self.tasks_config["plano_midia_paga"],
-            context=[self.portao_g1(), self.mapa_seo(), self.pesquisa_mercado(), self.fluxos_email()],
+            context=[self.aplicacao_g1(), self.mapa_seo(), self.pesquisa_mercado(), self.fluxos_email()],
         )
 
     @task
@@ -342,7 +363,7 @@ class MarketingOpsCrew:
         return Task(
             config=self.tasks_config["direcao_arte"],
             context=[
-                self.portao_g1(),
+                self.aplicacao_g1(),
                 self.producao_conteudo(),
                 self.calendario_social(),
                 self.fluxos_email(),
@@ -365,7 +386,32 @@ class MarketingOpsCrew:
 
     @task
     def portao_g2(self) -> Task:
-        return Task(config=self.tasks_config["portao_g2"], context=[self.revisao_g2()])
+        return Task(
+            config=self.tasks_config["portao_g2"],
+            context=[
+                self.revisao_g2(),
+                self.producao_conteudo(),
+                self.calendario_social(),
+                self.fluxos_email(),
+                self.plano_midia_paga(),
+                self.direcao_arte(),
+            ],
+        )
+
+    @task
+    def aplicacao_g2(self) -> Task:
+        return Task(
+            config=self.tasks_config["aplicacao_g2"],
+            context=[
+                self.portao_g2(),
+                self.revisao_g2(),
+                self.producao_conteudo(),
+                self.calendario_social(),
+                self.fluxos_email(),
+                self.plano_midia_paga(),
+                self.direcao_arte(),
+            ],
+        )
 
     # ───────────────────────── Tarefas · Fase 3 ─────────────────────────
 
@@ -373,21 +419,29 @@ class MarketingOpsCrew:
     def plano_medicao(self) -> Task:
         return Task(
             config=self.tasks_config["plano_medicao"],
-            context=[self.portao_g1(), self.calendario_social(), self.fluxos_email(), self.plano_midia_paga()],
+            context=[self.aplicacao_g1(), self.calendario_social(), self.fluxos_email(), self.plano_midia_paga()],
         )
 
     @task
     def pacote_publicacao(self) -> Task:
         return Task(
             config=self.tasks_config["pacote_publicacao"],
-            context=[self.portao_g2(), self.plano_medicao(), self.direcao_arte()],
+            context=[
+                self.aplicacao_g2(),
+                self.plano_medicao(),
+                self.direcao_arte(),
+                self.producao_conteudo(),
+                self.calendario_social(),
+                self.fluxos_email(),
+                self.plano_midia_paga(),
+            ],
         )
 
     @task
     def revisao_g3(self) -> Task:
         return Task(
             config=self.tasks_config["revisao_g3"],
-            context=[self.pacote_publicacao(), self.plano_medicao(), self.portao_g2()],
+            context=[self.pacote_publicacao(), self.plano_medicao(), self.aplicacao_g2()],
         )
 
     @task
@@ -398,10 +452,22 @@ class MarketingOpsCrew:
         )
 
     @task
+    def aplicacao_g3(self) -> Task:
+        return Task(
+            config=self.tasks_config["aplicacao_g3"],
+            context=[
+                self.portao_g3(),
+                self.pacote_publicacao(),
+                self.revisao_g3(),
+                self.plano_midia_paga(),
+            ],
+        )
+
+    @task
     def execucao_publicacao(self) -> Task:
         return Task(
             config=self.tasks_config["execucao_publicacao"],
-            context=[self.portao_g3(), self.pacote_publicacao()],
+            context=[self.aplicacao_g3(), self.pacote_publicacao()],
         )
 
     @task
@@ -409,9 +475,9 @@ class MarketingOpsCrew:
         return Task(
             config=self.tasks_config["sumario_executivo"],
             context=[
-                self.portao_g1(),
-                self.portao_g2(),
-                self.portao_g3(),
+                self.aplicacao_g1(),
+                self.aplicacao_g2(),
+                self.aplicacao_g3(),
                 self.execucao_publicacao(),
                 self.plano_medicao(),
             ],
