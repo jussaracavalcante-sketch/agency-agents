@@ -73,6 +73,10 @@ revisao_g1:
     ({objetivo}). Se o brief trocar, suavizar ou acrescentar metas que não estão no briefing (por exemplo, percentuais
     sem baseline), a dimensão Coerência com o briefing é REPROVADA, com a correção exata. Verifique também se alguma
     fonte citada não existe entre as ferramentas disponíveis ({ferramenta_analytics}).
+    RESULTADO GERAL = o PIOR resultado entre as dimensões: se qualquer dimensão estiver Reprovada, o resultado geral é
+    Reprovado (devolver ao autor), nunca Aprovado com ajustes. Reprove também, citando o trecho, qualquer meta, baseline,
+    objetivo secundário, serviço, produto, canal ou fonte que não conste do briefing, do guia de marca ou dos dados
+    fornecidos (por exemplo, um baseline de contatos atribuído a "relatórios internos" que ninguém forneceu).
   expected_output: >
     Parecer Markdown com resultado, checklist por dimensão (status, apontamento, regra,
     correção sugerida) e riscos residuais.
@@ -196,6 +200,7 @@ revisao_g2:
     resultado, apontamentos (regra + correção) e riscos residuais. Não reescreva as peças.
     IMPORTANTE: todas as entregas a revisar já estão no CONTEXTO desta tarefa (saídas das tarefas
     anteriores). NÃO tente abrir arquivos nem caminhos de output; trabalhe com o texto do contexto.
+    RESULTADO POR ENTREGA = o PIOR resultado entre as dimensões avaliadas nela; uma dimensão Reprovada torna a entrega Reprovada.
   expected_output: >
     Documento Markdown com um parecer por entrega (template de checklist) e um quadro-resumo
     final: entrega × resultado × nº de ajustes.
@@ -272,6 +277,7 @@ revisao_g3:
     de itens [VALIDAR] ou [AVAL ESPECIALISTA] pendentes. Emita parecer final.
     IMPORTANTE: todas as entregas a revisar já estão no CONTEXTO desta tarefa (saídas das tarefas
     anteriores). NÃO tente abrir arquivos nem caminhos de output; trabalhe com o texto do contexto.
+    RESULTADO GERAL = o PIOR resultado entre as dimensões; uma dimensão Reprovada ou um item bloqueante em aberto torna o pacote Reprovado.
   expected_output: >
     Parecer Markdown do pacote com resultado, checklist e riscos residuais.
   agent: guardiao_marca_compliance
