@@ -7,7 +7,9 @@ Interface para a equipe validar os portões G1, G2 e G3 do fluxo de marketing no
 | Tela | Função |
 |---|---|
 | `/` | Fila de portões pendentes e execuções recentes. |
-| `/execucao/[id]` | Pedido do portão, entregas geradas (uma a uma) e histórico de decisões. |
+| `/execucao/[id]` | Pedido do portão, entregas geradas (uma a uma, com o agente responsável) e histórico de decisões. |
+| `/agentes` | Equipe de 12 agentes: papel, objetivo, ferramentas, tarefas e atividade (entregas e última execução). |
+| `/disparar` | Formulário do briefing (17 campos) com revisão e confirmação de custo. Só aprovador. |
 | Decisão | Aprovar, Devolver com ajustes (instruções obrigatórias) ou Reprovar. Só o papel **aprovador** decide. |
 
 ## Regras importantes
@@ -54,3 +56,14 @@ vincula o usuário ao papel definido em `portal_convites` (e-mail, nome, cargo, 
 Para incluir alguém: `insert into portal_convites (email, nome, cargo, papel, portoes) values (...)`.
 No Supabase, em Authentication, habilitar o provedor de e-mail com link mágico e incluir a URL do portal em Redirect URLs
 (`https://<dominio>/auth/callback`).
+
+## Agentes e disparo
+- **Catálogo dos agentes:** `lib/agentes.json` é gerado por `python3 scripts/gerar_dados.py` a partir de `agents.yaml`, `tasks.yaml` e
+  `crew.py` (nada digitado à mão). Rode de novo quando a crew mudar.
+- **Clientes:** `portal_clientes` (55 guias de marca) é carregada de `knowledge/INDEX.md` pelo mesmo script (`clientes.sql`).
+  O `cliente` enviado à crew é sempre o nome oficial da tabela, nunca o texto do navegador.
+- **Disparo (`/api/disparo`):** exige aprovador e confirmação explícita de custo (~360 mil tokens por campanha). **Trava de custo:**
+  recusa se outra campanha estiver rodando (sem evento de fim, sem portão esperando humano e com evento nos últimos 15 min) ou se
+  um disparo do portal feito há menos de 10 min ainda não produziu evento. Cada disparo fica em `portal_disparos`.
+- **Retomadas:** cada retomada ganha um `kickoff_id` novo e só o evento de pausa traz o `execution_id`. O portal liga as retomadas
+  pelo `novo_kickoff_id` gravado em `portal_decisoes`. Decisões tomadas fora do portal (por API) não têm esse vínculo.

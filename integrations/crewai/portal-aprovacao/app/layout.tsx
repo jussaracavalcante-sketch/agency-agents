@@ -12,6 +12,13 @@ export default async function Layout({ children }: { children: React.ReactNode }
       <body>
         <header>
           <Link href="/"><strong>Portal de Aprovação</strong></Link>
+          {u && (
+            <nav style={{ display: "flex", gap: 16 }}>
+              <Link href="/">Fila</Link>
+              <Link href="/agentes">Agentes</Link>
+              {u.papel === "aprovador" && <Link href="/disparar">Disparar campanha</Link>}
+            </nav>
+          )}
           <span className="mut">{u ? `${u.nome} · ${u.papel}` : "não autenticado"}</span>
         </header>
         <main>{children}</main>
