@@ -261,6 +261,11 @@ def _guardrail_aplicacao_g2(saida):
             "A saída introduz garantia de segurança, precisão, resultado ou recuperação sem fonte. Remova a afirmação "
             "ou marque [VALIDAR MÉDICO]; a reemissão não pode acrescentar promessas."
         )
+    cal = _trecho_calendario_reemitido(texto)
+    if cal:
+        erro = _cobertura_calendario(cal)
+        if erro:
+            return False, "O calendário reemitido está incompleto. " + erro + " Reemita o calendário inteiro, não só as linhas ajustadas."
     if _AFIRMACOES_FALSAS.search(texto):
         return False, (
             "A saída afirma que depoimentos/testemunhos são reais, colhidos com consentimento ou autorizados. Isso não "
@@ -375,16 +380,12 @@ def _guardrail_sem_claims(saida):
 _INPUTS_ATUAIS = {}
 
 
-def _guardrail_calendario(saida):
-    """O calendário deve cobrir todas as semanas da campanha (por datas ou por marcadores 'Semana N')."""
-    base = _guardrail_producao(saida)
-    if base[0] is False:
-        return base
+def _cobertura_calendario(texto):
+    """Devolve a mensagem de erro se o calendário não cobre todas as semanas da campanha; None se cobre (ou não há como medir)."""
     try:
         semanas = int(str(_INPUTS_ATUAIS.get("duracao_semanas", "")).strip())
     except ValueError:
-        return True, saida
-    texto = getattr(saida, "raw", None) or str(saida) or ""
+        return None
     from datetime import datetime
 
     datas = []
@@ -393,14 +394,42 @@ def _guardrail_calendario(saida):
             datas.append(datetime(int(a), int(mth), int(d)))
         except ValueError:
             pass
+    for a, mth, d in re.findall(r"\b(20\d{2})-(\d{2})-(\d{2})\b", texto):
+        try:
+            datas.append(datetime(int(a), int(mth), int(d)))
+        except ValueError:
+            pass
     blocos = {(x - min(datas)).days // 7 for x in datas} if datas else set()
     marcadores = [int(n) for n in re.findall(r"semana\s+(\d{1,2})", texto, re.I)]
+    marcadores += [int(n) for n in re.findall(r"^\|\s*(\d{1,2})\s*\|", texto, re.M)]  # coluna "Semana" numérica
     if len(blocos) >= semanas - 1 or (marcadores and max(marcadores) >= semanas):
-        return True, saida
-    return False, (
+        return None
+    return (
         f"O calendário cobre {len(blocos) or 'menos de ' + str(semanas)} semana(s) pelas datas, mas a campanha tem {semanas}. "
         f"Entregue posts distribuídos por todas as {semanas} semanas, com ao menos 3 por semana, datando cada um."
     )
+
+
+def _guardrail_calendario(saida):
+    """O calendário deve cobrir todas as semanas da campanha (por datas ou por marcadores 'Semana N')."""
+    base = _guardrail_producao(saida)
+    if base[0] is False:
+        return base
+    erro = _cobertura_calendario(getattr(saida, "raw", None) or str(saida) or "")
+    return (False, erro) if erro else (True, saida)
+
+
+_CALENDARIO_REEMITIDO = re.compile(r"(pe[çc]a reemitida|reemiss[ãa]o)[^\n]*calend[áa]rio|calend[áa]rio[^\n]*reemitid", re.I)
+
+
+def _trecho_calendario_reemitido(texto):
+    """Da seção reemitida do calendário até a próxima peça reemitida ou o fim; vazio se o calendário não foi reemitido."""
+    m = _CALENDARIO_REEMITIDO.search(texto or "")
+    if not m:
+        return ""
+    resto = texto[m.start():]
+    fim = re.search(r"\n#{1,4}\s*(pe[çc]a reemitida|parte c|lista de vers)", resto[m.end() - m.start():], re.I)
+    return resto[: (m.end() - m.start()) + fim.start()] if fim else resto
 
 
 def _guardrail_brief(saida):

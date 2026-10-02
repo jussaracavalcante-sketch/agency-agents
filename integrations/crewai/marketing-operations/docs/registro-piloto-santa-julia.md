@@ -111,6 +111,8 @@ texto. As travas em código existem para barrar o que o Guardião (LLM) deixa pa
 - Placeholders (`example.com`, `exemplo.com`, `lorem ipsum`, `[inserir ...]`) barrados nas peças de produção e na
   reemissão do G2.
 - Brief: precisa reproduzir o objetivo do briefing literalmente e não pode trazer baseline com números fora dos insumos.
+- Calendário reemitido na `aplicacao_g2`: se a reemissão trouxer o calendário, ele precisa cobrir todas as semanas (datas dd/mm/aaaa ou
+  aaaa-mm-dd, "Semana N" ou coluna numérica de semana). Calendário não reemitido não é cobrado.
 - Testes em `tests/test_guardrails.py`.
 
 Limite: cada trava aceita a saída depois de duas rejeições (para não derrubar a execução), então ela reduz mas não
