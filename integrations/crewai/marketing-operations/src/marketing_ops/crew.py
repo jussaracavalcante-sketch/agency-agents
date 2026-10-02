@@ -101,7 +101,7 @@ def _garantir_output_dir() -> None:
 _REGRA_DE_INSUMOS = (
     "\n\nREGRA DE INSUMOS: as saídas das tarefas anteriores e os dados do briefing já estão no seu CONTEXTO. "
     "Não tente abrir arquivos ou caminhos e nunca responda que não consegue acessar documentos: entregue o "
-    "documento pedido com o que está no contexto e marque o que faltar como [VALIDAR]. É PROIBIDO inventar pessoas, "
+    "documento pedido com o que está no contexto e marque o que faltar como [VALIDAR]. É PROIBIDO usar conhecimento próprio sobre o cliente: serviços, especialidades, procedimentos e tecnologias só podem ser citados se constarem do briefing ou da base de conhecimento do cliente; caso contrário, não cite ou marque [VALIDAR]. É PROIBIDO inventar pessoas, "
     "pacientes, depoimentos, nomes ou idades de personagens apresentados como reais, números sem fonte (metas, "
     "projeções, percentuais, tamanhos de público) e garantias de resultado; personas só como perfil, sem nome próprio. "
     "Em saúde, superlativos e promessas clínicas sem fonte devem ser evitados ou marcados [VALIDAR MÉDICO]."
@@ -123,6 +123,7 @@ def _injetar_contexto_cliente(inputs):
     """
     inputs = dict(inputs or {})
     if inputs.get("contexto_cliente"):
+        _TEXTO_PERMITIDO["texto"] = " ".join(str(v) for v in inputs.values()).lower()
         return inputs
     cliente = str(inputs.get("cliente") or "").strip()
     if not cliente:
@@ -130,6 +131,7 @@ def _injetar_contexto_cliente(inputs):
     else:
         texto = BrandBookTool()._run(cliente)
         inputs["contexto_cliente"] = texto[:_LIMITE_CONTEXTO_CLIENTE]
+    _TEXTO_PERMITIDO["texto"] = " ".join(str(v) for v in inputs.values()).lower()
     return inputs
 
 
@@ -276,6 +278,44 @@ def _com_limite_de_rejeicoes(guardrail, maximo=2):
         return veredito
 
     return envelope
+
+
+_TEXTO_PERMITIDO = {"texto": ""}
+_TERMOS_SENSIVEIS = re.compile(
+    r"cirurgia rob[óo]tica|\brob[óo]tic[ao]s?\b|\bUTI\b|telemedicina|cardiologia|ortopedia|urologia|oncologia|"
+    r"neurologia|maternidade|pediatria|pronto[- ]socorro|hemodin[âa]mica|transplante|centro cirúrgico",
+    re.I,
+)
+
+
+def _guardrail_producao(saida):
+    """
+    Peça de produção não pode citar serviço, especialidade ou tecnologia clínica que não conste do briefing nem da base
+    de conhecimento do cliente (o modelo costuma "lembrar" serviços reais do cliente que ninguém informou).
+    """
+    base = _guardrail_documento(saida)
+    if base[0] is False:
+        return base
+    permitido = _TEXTO_PERMITIDO["texto"]
+    if not permitido:  # execução retomada sem inputs disponíveis: não há como conferir
+        return True, saida
+    texto = (getattr(saida, "raw", None) or str(saida) or "")
+    citados = {m.group(0).lower() for m in _TERMOS_SENSIVEIS.finditer(texto)}
+    achados = sorted(t for t in citados if not re.search(rf"\b{re.escape(t)}\b", permitido))
+    if achados:
+        return False, (
+            "A saída cita serviços/especialidades/tecnologias que não constam do briefing nem da base de conhecimento do "
+            f"cliente: {', '.join(achados)}. Remova-os ou troque por [VALIDAR]; não use conhecimento próprio sobre o cliente."
+        )
+    return True, saida
+
+
+def _g_doc():
+    return _com_limite_de_rejeicoes(_guardrail_documento)
+
+
+def _g_prod():
+    return _com_limite_de_rejeicoes(_guardrail_producao)
 
 
 def _aplicar_pasta_de_saida(tasks: list[Task]) -> str | None:
@@ -474,23 +514,23 @@ class MarketingOpsCrew:
 
     @task
     def pesquisa_mercado(self) -> Task:
-        return Task(guardrail=_guardrail_documento, guardrail_max_retries=2, config=self.tasks_config["pesquisa_mercado"])
+        return Task(guardrail=_g_prod(), guardrail_max_retries=2, config=self.tasks_config["pesquisa_mercado"])
 
     @task
     def mapa_seo(self) -> Task:
-        return Task(guardrail=_guardrail_documento, guardrail_max_retries=2, config=self.tasks_config["mapa_seo"], context=[self.pesquisa_mercado()])
+        return Task(guardrail=_g_prod(), guardrail_max_retries=2, config=self.tasks_config["mapa_seo"], context=[self.pesquisa_mercado()])
 
     @task
     def brief_estrategico(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_prod(), guardrail_max_retries=2,
             config=self.tasks_config["brief_estrategico"],
             context=[self.pesquisa_mercado(), self.mapa_seo()],
         )
 
     @task
     def revisao_g1(self) -> Task:
-        return Task(guardrail=_guardrail_documento, guardrail_max_retries=2, config=self.tasks_config["revisao_g1"], context=[self.brief_estrategico()])
+        return Task(guardrail=_g_doc(), guardrail_max_retries=2, config=self.tasks_config["revisao_g1"], context=[self.brief_estrategico()])
 
     @task
     def portao_g1(self) -> Task:
@@ -503,7 +543,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g1(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_doc(), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g1"],
             context=[self.brief_estrategico(), self.revisao_g1(), self.portao_g1()],
         )
@@ -513,7 +553,7 @@ class MarketingOpsCrew:
     @task
     def producao_conteudo(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_prod(), guardrail_max_retries=2,
             config=self.tasks_config["producao_conteudo"],
             context=[self.aplicacao_g1(), self.mapa_seo()],
         )
@@ -521,7 +561,7 @@ class MarketingOpsCrew:
     @task
     def calendario_social(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_prod(), guardrail_max_retries=2,
             config=self.tasks_config["calendario_social"],
             context=[self.aplicacao_g1(), self.producao_conteudo(), self.pesquisa_mercado()],
         )
@@ -529,7 +569,7 @@ class MarketingOpsCrew:
     @task
     def fluxos_email(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_prod(), guardrail_max_retries=2,
             config=self.tasks_config["fluxos_email"],
             context=[self.aplicacao_g1(), self.producao_conteudo()],
         )
@@ -537,7 +577,7 @@ class MarketingOpsCrew:
     @task
     def plano_midia_paga(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_prod(), guardrail_max_retries=2,
             config=self.tasks_config["plano_midia_paga"],
             context=[self.aplicacao_g1(), self.mapa_seo(), self.pesquisa_mercado(), self.fluxos_email()],
         )
@@ -545,7 +585,7 @@ class MarketingOpsCrew:
     @task
     def direcao_arte(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_prod(), guardrail_max_retries=2,
             config=self.tasks_config["direcao_arte"],
             context=[
                 self.aplicacao_g1(),
@@ -559,7 +599,7 @@ class MarketingOpsCrew:
     @task
     def revisao_g2(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_doc(), guardrail_max_retries=2,
             config=self.tasks_config["revisao_g2"],
             context=[
                 self.producao_conteudo(),
@@ -606,7 +646,7 @@ class MarketingOpsCrew:
     @task
     def plano_medicao(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_doc(), guardrail_max_retries=2,
             config=self.tasks_config["plano_medicao"],
             context=[self.aplicacao_g1(), self.calendario_social(), self.fluxos_email(), self.plano_midia_paga()],
         )
@@ -614,7 +654,7 @@ class MarketingOpsCrew:
     @task
     def pacote_publicacao(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_doc(), guardrail_max_retries=2,
             config=self.tasks_config["pacote_publicacao"],
             context=[
                 self.aplicacao_g2(),
@@ -630,7 +670,7 @@ class MarketingOpsCrew:
     @task
     def revisao_g3(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_doc(), guardrail_max_retries=2,
             config=self.tasks_config["revisao_g3"],
             context=[self.pacote_publicacao(), self.plano_medicao(), self.aplicacao_g2()],
         )
@@ -646,7 +686,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g3(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_doc(), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g3"],
             context=[
                 self.portao_g3(),
@@ -659,7 +699,7 @@ class MarketingOpsCrew:
     @task
     def execucao_publicacao(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_doc(), guardrail_max_retries=2,
             config=self.tasks_config["execucao_publicacao"],
             context=[self.aplicacao_g3(), self.pacote_publicacao()],
         )
@@ -667,7 +707,7 @@ class MarketingOpsCrew:
     @task
     def sumario_executivo(self) -> Task:
         return Task(
-            guardrail=_guardrail_documento, guardrail_max_retries=2,
+            guardrail=_g_doc(), guardrail_max_retries=2,
             config=self.tasks_config["sumario_executivo"],
             context=[
                 self.aplicacao_g1(),
