@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { admin, usuarioAtual } from "@/lib/supabase";
+import { admin, usuarioAtual, podeDecidir } from "@/lib/supabase";
 import { obterExecucao } from "@/lib/execucoes";
 import { retomar, textoDeDecisao } from "@/lib/crewai";
 
@@ -22,6 +22,9 @@ export async function POST(req: Request) {
   const exec = await obterExecucao(execucaoId);
   if (!exec?.pendente) return NextResponse.json({ erro: "Nenhum portão pendente nesta execução" }, { status: 409 });
   const taskId = exec.pendente.task_name!;
+  if (!podeDecidir(usuario, exec.portao)) {
+    return NextResponse.json({ erro: `Você não é aprovador do portão ${exec.portao ?? ""}` }, { status: 403 });
+  }
 
   // Evita duplo clique: já existe decisão para este portão?
   const db = admin();

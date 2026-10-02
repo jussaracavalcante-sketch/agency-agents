@@ -36,3 +36,21 @@ Interface para a equipe validar os portões G1, G2 e G3 do fluxo de marketing no
 
 ## Por que fica fora de `marketing-operations/`
 O deploy do CrewAI é publicado a partir de `marketing-operations/` (subtree). O portal fica ao lado para não entrar no build da plataforma.
+
+## Acesso por convite (link mágico)
+Não há senhas. A pessoa informa o e-mail corporativo, recebe um link do Supabase Auth e entra. No primeiro acesso, o portal
+vincula o usuário ao papel definido em `portal_convites` (e-mail, nome, cargo, papel, portões). **Quem não está em
+`portal_convites` entra no Auth, mas não vê nada.** A tabela já está carregada com a equipe atual.
+
+| Pessoa | Papel | Portões que decide |
+|---|---|---|
+| Jussara Cavalcante | aprovador | todos |
+| Mauro (estratégia) | aprovador | G1 |
+| Luana Rocha (criação) | aprovador | G2 |
+| Jéssica Nery (operações) | aprovador | G3 |
+| Gabriela Bezerra (social media) | revisor | — |
+| João Araújo (mídia paga) | revisor | — |
+
+Para incluir alguém: `insert into portal_convites (email, nome, cargo, papel, portoes) values (...)`.
+No Supabase, em Authentication, habilitar o provedor de e-mail com link mágico e incluir a URL do portal em Redirect URLs
+(`https://<dominio>/auth/callback`).

@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { usuarioAtual, admin } from "@/lib/supabase";
+import { usuarioAtual, admin, podeDecidir } from "@/lib/supabase";
 import { obterExecucao } from "@/lib/execucoes";
 import Decisao from "./Decisao";
 
@@ -32,7 +32,7 @@ export default async function Revisao({ params }: { params: { id: string } }) {
           ))}
         </div>
         <div>
-          {exec.pendente && <Decisao execucaoId={exec.chave} portao={exec.portao} podeDecidir={u.papel === "aprovador"} />}
+          {exec.pendente && <Decisao execucaoId={exec.chave} portao={exec.portao} podeDecidir={podeDecidir(u, exec.portao)} />}
           <div className="card">
             <strong>Histórico de decisões</strong>
             {!decisoes?.length && <p className="mut">Nenhuma decisão registrada.</p>}
