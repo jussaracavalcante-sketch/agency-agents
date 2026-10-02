@@ -22,9 +22,9 @@ Interface para a equipe validar os portões G1, G2 e G3 do fluxo de marketing no
 `leitor` (só vê), `revisor` (vê), `aprovador` (decide). Quem tem login mas não tem linha em `portal_perfis` não acessa nada.
 
 ## Como publicar na Vercel
-1. Aplicar `../supabase/portal.sql` no projeto Supabase (aditivo: cria `portal_perfis` e `portal_decisoes`).
+1. Aplicar `portal.sql` (nesta pasta) no projeto Supabase (aditivo: cria `portal_perfis` e `portal_decisoes`).
 2. Criar usuários em Supabase Auth e uma linha em `portal_perfis` por pessoa (nome e papel).
-3. Na Vercel: importar o repositório, **Root Directory = `integrations/crewai/marketing-operations/portal`**.
+3. Na Vercel: importar o repositório, **Root Directory = `integrations/crewai/portal-aprovacao`**.
 4. Variáveis de ambiente (ver `.env.example`): as públicas do Supabase e, **somente no servidor**,
    `SUPABASE_SERVICE_ROLE_KEY`, `CREWAI_API_URL`, `CREWAI_TOKEN`, `WEBHOOK_BASE`, `WEBHOOK_KEY`, `WEBHOOK_AUTOMACAO`.
 5. Antes: **resetar o token do CrewAI** que foi exposto durante os testes e usar o novo.
@@ -33,3 +33,6 @@ Interface para a equipe validar os portões G1, G2 e G3 do fluxo de marketing no
 - Execuções com várias retomadas são agrupadas por `payload.execution_id`; uma execução sem esse campo aparece sozinha.
 - Se a plataforma recusar o `/resume`, a decisão fica gravada como "não enviada" e o portal mostra o erro.
 - Não há notificação por e-mail ainda: a equipe precisa abrir a fila.
+
+## Por que fica fora de `marketing-operations/`
+O deploy do CrewAI é publicado a partir de `marketing-operations/` (subtree). O portal fica ao lado para não entrar no build da plataforma.
