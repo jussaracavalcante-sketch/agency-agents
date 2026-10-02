@@ -101,7 +101,7 @@ def _garantir_output_dir() -> None:
 _REGRA_DE_INSUMOS = (
     "\n\nREGRA DE INSUMOS: as saídas das tarefas anteriores e os dados do briefing já estão no seu CONTEXTO. "
     "Não tente abrir arquivos ou caminhos e nunca responda que não consegue acessar documentos: entregue o "
-    "documento pedido com o que está no contexto e marque o que faltar como [VALIDAR]. É PROIBIDO usar conhecimento próprio sobre o cliente: serviços, especialidades, procedimentos e tecnologias do CLIENTE só podem ser citados se constarem do briefing ou da base de conhecimento dele; caso contrário, não cite ou marque [VALIDAR]. Tendências do mercado (por exemplo, cirurgia robótica na saúde) podem ser citadas na pesquisa de mercado e no mapa de palavras-chave, sempre rotuladas como 'tendência setorial', sem atribuí-las ao cliente. É PROIBIDO inventar pessoas, "
+    "documento pedido com o que está no contexto e marque o que faltar como [VALIDAR]. É PROIBIDO usar conhecimento próprio sobre o cliente: serviços, especialidades, procedimentos e tecnologias do CLIENTE só podem ser citados se constarem do briefing ou da base de conhecimento dele; caso contrário, não cite ou marque [VALIDAR]. Tendências do mercado (por exemplo, cirurgia robótica na saúde) podem ser citadas na pesquisa de mercado e no mapa de palavras-chave, sempre rotuladas como 'tendência setorial', sem atribuí-las ao cliente. NÃO PROPONHA depoimentos, testemunhos, histórias ou casos de pacientes, nem afirmações de liderança, referência ou premiação: nenhum desses itens existe nos insumos. Prefira conteúdo informativo (como escolher, o que esperar, perguntas frequentes). É PROIBIDO inventar pessoas, "
     "pacientes, depoimentos, nomes ou idades de personagens apresentados como reais, números sem fonte (metas, "
     "projeções, percentuais, tamanhos de público) e garantias de resultado; personas só como perfil, sem nome próprio. "
     "Em saúde, superlativos e promessas clínicas sem fonte devem ser evitados ou marcados [VALIDAR MÉDICO]."
@@ -124,6 +124,7 @@ def _injetar_contexto_cliente(inputs):
     inputs = dict(inputs or {})
     if inputs.get("contexto_cliente"):
         _TEXTO_PERMITIDO["texto"] = " ".join(str(v) for v in inputs.values()).lower()
+        _INPUTS_ATUAIS.update(inputs)
         return inputs
     cliente = str(inputs.get("cliente") or "").strip()
     if not cliente:
@@ -132,6 +133,7 @@ def _injetar_contexto_cliente(inputs):
         texto = BrandBookTool()._run(cliente)
         inputs["contexto_cliente"] = texto[:_LIMITE_CONTEXTO_CLIENTE]
     _TEXTO_PERMITIDO["texto"] = " ".join(str(v) for v in inputs.values()).lower()
+    _INPUTS_ATUAIS.update(inputs)
     return inputs
 
 
@@ -251,6 +253,9 @@ def _guardrail_aplicacao_g2(saida):
     if base[0] is False:
         return base
     texto = (getattr(saida, "raw", None) or str(saida) or "")
+    claims = _claims_proibidos(texto)
+    if claims:
+        return _guardrail_sem_claims(saida)
     if _CLAIMS_NOVOS.search(texto):
         return False, (
             "A saída introduz garantia de segurança, precisão, resultado ou recuperação sem fonte. Remova a afirmação "
@@ -296,10 +301,13 @@ def _guardrail_producao(saida):
     base = _guardrail_documento(saida)
     if base[0] is False:
         return base
+    texto = (getattr(saida, "raw", None) or str(saida) or "")
+    claims = _claims_proibidos(texto)
+    if claims:
+        return _guardrail_sem_claims(saida)
     permitido = _TEXTO_PERMITIDO["texto"]
     if not permitido:  # execução retomada sem inputs disponíveis: não há como conferir
         return True, saida
-    texto = (getattr(saida, "raw", None) or str(saida) or "")
     citados = {m.group(0).lower() for m in _TERMOS_SENSIVEIS.finditer(texto)}
     achados = sorted(t for t in citados if not re.search(rf"\b{re.escape(t)}\b", permitido))
     if achados:
@@ -308,6 +316,69 @@ def _guardrail_producao(saida):
             f"cliente: {', '.join(achados)}. Remova-os ou troque por [VALIDAR]; não use conhecimento próprio sobre o cliente."
         )
     return True, saida
+
+
+_CLAIMS_PROIBIDOS = re.compile(
+    r"depoimento|testemunho|hist[óo]rias? de (pacientes?|recupera[çc][ãa]o|sucesso)|casos? de sucesso|"
+    r"paciente real|pacientes? satisfeit|\blidera\b|\bl[íi]der(es)?\b|refer[êe]ncia em|\bpremiad[oa]s?\b|"
+    r"o melhor hospital|n[º°o] ?1\b|\bmelhor do (estado|brasil|norte)\b",
+    re.I,
+)
+_LINHA_NEUTRA = re.compile(r"\[VALIDAR|\bsem (usar )?depoimento|proibid|n[ãa]o (use|usar|incluir|propor|citar)|evitar", re.I)
+
+
+def _claims_proibidos(texto):
+    """Linhas com depoimento/testemunho/superlativo sem [VALIDAR] nem aviso de que o item é proibido."""
+    achados = []
+    for linha in (texto or "").splitlines():
+        if _CLAIMS_PROIBIDOS.search(linha) and not _LINHA_NEUTRA.search(linha):
+            achados.append(_CLAIMS_PROIBIDOS.search(linha).group(0).lower())
+    return sorted(set(achados))
+
+
+def _guardrail_sem_claims(saida):
+    base = _guardrail_documento(saida)
+    if base[0] is False:
+        return base
+    achados = _claims_proibidos(getattr(saida, "raw", None) or str(saida) or "")
+    if achados:
+        return False, (
+            "A saída propõe itens que não existem nos insumos: " + ", ".join(achados) + ". Não há depoimentos, testemunhos, "
+            "histórias ou casos de pacientes, nem prova de liderança ou premiação. Remova esses trechos (ou troque por "
+            "conteúdo informativo sem prova social) e reemita o documento completo."
+        )
+    return True, saida
+
+
+_INPUTS_ATUAIS = {}
+
+
+def _guardrail_calendario(saida):
+    """O calendário deve cobrir todas as semanas da campanha (por datas ou por marcadores 'Semana N')."""
+    base = _guardrail_producao(saida)
+    if base[0] is False:
+        return base
+    try:
+        semanas = int(str(_INPUTS_ATUAIS.get("duracao_semanas", "")).strip())
+    except ValueError:
+        return True, saida
+    texto = getattr(saida, "raw", None) or str(saida) or ""
+    from datetime import datetime
+
+    datas = []
+    for d, mth, a in re.findall(r"\b(\d{2})/(\d{2})/(20\d{2})\b", texto):
+        try:
+            datas.append(datetime(int(a), int(mth), int(d)))
+        except ValueError:
+            pass
+    blocos = {(x - min(datas)).days // 7 for x in datas} if datas else set()
+    marcadores = [int(n) for n in re.findall(r"semana\s+(\d{1,2})", texto, re.I)]
+    if len(blocos) >= semanas - 1 or (marcadores and max(marcadores) >= semanas):
+        return True, saida
+    return False, (
+        f"O calendário cobre {len(blocos) or 'menos de ' + str(semanas)} semana(s) pelas datas, mas a campanha tem {semanas}. "
+        f"Entregue posts distribuídos por todas as {semanas} semanas, com ao menos 3 por semana, datando cada um."
+    )
 
 
 def _g_doc():
@@ -543,7 +614,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g1(self) -> Task:
         return Task(
-            guardrail=_g_doc(), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_sem_claims), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g1"],
             context=[self.brief_estrategico(), self.revisao_g1(), self.portao_g1()],
         )
@@ -561,7 +632,7 @@ class MarketingOpsCrew:
     @task
     def calendario_social(self) -> Task:
         return Task(
-            guardrail=_g_prod(), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_calendario), guardrail_max_retries=2,
             config=self.tasks_config["calendario_social"],
             context=[self.aplicacao_g1(), self.producao_conteudo(), self.pesquisa_mercado()],
         )
