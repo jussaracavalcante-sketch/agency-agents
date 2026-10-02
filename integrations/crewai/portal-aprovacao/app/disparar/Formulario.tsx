@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { CAMPOS } from "@/lib/briefing";
+import { CAMPOS, PILOTO_SANTA_JULIA } from "@/lib/briefing";
 
 type Cliente = { slug: string; nome: string; guia_completo: boolean };
 
@@ -12,6 +12,10 @@ export default function Formulario({ clientes }: { clientes: Cliente[] }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ t: string; ok: boolean } | null>(null);
   const cliente = useMemo(() => clientes.find((c) => c.slug === slug), [clientes, slug]);
+  function carregarPiloto() {
+    if (!clientes.some((c) => c.slug === PILOTO_SANTA_JULIA.slug)) { setMsg({ t: "Cliente Hospital Santa Júlia não encontrado no cadastro.", ok: false }); return; }
+    setSlug(PILOTO_SANTA_JULIA.slug); setV({ ...v, ...PILOTO_SANTA_JULIA.valores }); setMsg(null);
+  }
   const faltando = CAMPOS.filter((c) => !v[c.chave]?.trim()).map((c) => c.rotulo);
   const pronto = !!cliente && faltando.length === 0;
 
@@ -47,6 +51,11 @@ export default function Formulario({ clientes }: { clientes: Cliente[] }) {
 
   return (
     <form className="card" onSubmit={(e) => { e.preventDefault(); if (pronto) setEtapa("revisar"); }}>
+      <p className="row" style={{ justifyContent: "flex-start", marginTop: 0 }}>
+        <button type="button" className="n" onClick={carregarPiloto}>Carregar briefing do piloto Santa Júlia</button>
+        <span className="mut">Preenche cliente e campos com o briefing validado. Revise antes de disparar.</span>
+      </p>
+      {msg && !msg.ok && <p className="msg" style={{ color: "var(--err)" }}>{msg.t}</p>}
       <label>Cliente (guia de marca)
         <select value={slug} onChange={(e) => setSlug(e.target.value)} required style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid var(--bd)", background: "var(--card)", color: "var(--tx)" }}>
           <option value="">Selecione…</option>
