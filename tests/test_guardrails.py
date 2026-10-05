@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas",
 }
 
 
@@ -218,3 +218,41 @@ def test_abertura_de_conversa():
     assert G._guardrail_documento(doc("Para proceder corretamente com a aplicação da Decisão G2, precisamos garantir rigor"))[0] is False
     assert G._guardrail_documento(doc("```markdown"))[0] is True
     assert G._guardrail_documento(doc("> ⚠ ALERTA DE QUALIDADE: x"))[0] is True
+
+
+# --- melhorias 6/6 (execução c3298b2a) -----------------------------------------------------------------------------------------
+_INPUTS_STJ = {"objetivo": "Gerar 400 contatos qualificados (agendamentos e orçamentos) em 8 semanas (baseline: 863 conversões RD em 90 dias, 343 vindas de mídia paga)",
+               "orcamento_total": "R$ 25.000 [VALIDAR]", "orcamento_midia": "R$ 15.000 [VALIDAR]", "ferramenta_crm": "RD Station",
+               "ferramenta_analytics": "Nekt Refined; GA4 + GTM fora da Nekt"}
+
+
+def _brief_stj(extra="", obj=None):
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS.update(_INPUTS_STJ)
+    G._TEXTO_PERMITIDO["texto"] = " ".join(_INPUTS_STJ.values()).lower()
+    o = obj or _INPUTS_STJ["objetivo"]
+    corpo = "# Brief\n" + ("x" * 1500) + f"\n## Objetivos SMART\n> {o}\n- Baseline: 863 conversões RD\n- Fonte: Nekt e RD Station\n"
+    corpo += "## Orçamento\n- Total: R$ 25.000 [VALIDAR]\n- Mídia paga: R$ 15.000 [VALIDAR]\n" + extra
+    return types.SimpleNamespace(raw=corpo)
+
+
+def test_brief_regras_novas():
+    assert G._guardrail_brief(_brief_stj())[0] is True                                                   # objetivo em bloco de citação
+    assert "crm do hospital" in G._guardrail_brief(_brief_stj("- Fonte: CRM do Hospital Santa Júlia\n"))[1]
+    assert "40%" in G._guardrail_brief(_brief_stj("1. Google Ads resultará em aumento de 40% em contatos\n"))[1]
+    assert G._guardrail_brief(_brief_stj("1. Google Ads pode elevar contatos em 40% [VALIDAR]\n"))[0] is True
+    sem_verba = _brief_stj()
+    sem_verba.raw = sem_verba.raw.replace("R$ 15.000", "R$ 12.000")
+    assert "mídia" in G._guardrail_brief(sem_verba)[1]
+    sem_validar = _brief_stj()
+    sem_validar.raw = sem_validar.raw.replace("Total: R$ 25.000 [VALIDAR]", "Total: R$ 25.000")
+    assert "VALIDAR" in G._guardrail_brief(sem_validar)[1]
+
+
+def test_vamos_e_prefixo_de_revisao_automatica():
+    d = types.SimpleNamespace(raw="Vamos seguir a estrutura pedida e corrigir os objetivos\n# Brief\n" + "x" * 900)
+    assert G._guardrail_documento(d)[0] is False
+    g = G._com_limite_de_rejeicoes(lambda s: (False, "problema X"), maximo=1)
+    ok, msg = g(types.SimpleNamespace(raw="y", name="t"))
+    assert ok is False and msg.startswith("REVISÃO AUTOMÁTICA DE QUALIDADE (não é feedback humano") and msg.endswith("problema X")
+    ok2, saida = (g(types.SimpleNamespace(raw="y", name="t")))
+    assert ok2 is True and "Pendência: problema X" in saida and "REVISÃO AUTOMÁTICA" not in saida     # o alerta traz o motivo sem o prefixo

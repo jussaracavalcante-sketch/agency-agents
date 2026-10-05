@@ -43,8 +43,14 @@ brief_estrategico:
     briefing original, o relatório de mercado e o mapa de SEO. Defina objetivos SMART com
     baseline e fonte, KPI norteador, personas (dores, gatilhos, objeções, canais), proposta de
     valor, matriz de mensagens (persona × etapa do funil), mix de canais com papel no funil e KPI
-    próprio, alocação do orçamento total de {orcamento_total} (soma 100%, cenários conservador e
-    otimista), hipóteses a testar e riscos. Consulte o guia de marca do cliente com a ferramenta brand_book_lookup antes de definir
+    próprio, alocação do orçamento total de {orcamento_total} (cenários conservador e
+    otimista, divisão marcada [VALIDAR]), hipóteses a testar e riscos. OBJETIVO LITERAL: na seção Objetivos SMART, a primeira linha é o objetivo do briefing copiado
+    sem alterar uma palavra, dentro de um bloco de citação (linha iniciada por "> "): > {objetivo}. Não existe outro objetivo: nada de
+    objetivo específico, percentual, tráfego, visitas ou ocupação que o briefing não traga. A fonte do baseline é a ferramenta informada
+    no briefing ({ferramenta_analytics}; CRM: {ferramenta_crm}), nunca "CRM do hospital", "análise interna" ou "relatório interno".
+    DIVISÃO DO ORÇAMENTO: o briefing só informa o total ({orcamento_total}) e a mídia ({orcamento_midia}); mantenha o [VALIDAR] desses
+    valores e escreva a divisão restante (produção, conteúdo, social) marcada [VALIDAR]. Hipóteses com percentual novo vão com [VALIDAR].
+    Consulte o guia de marca do cliente com a ferramenta brand_book_lookup antes de definir
     mensagens e tom; respeite-o. Prazo da campanha: {prazo}.
     Este documento será lido por um(a) diretor(a) em 5 minutos: seja objetivo.
     NÃO invente serviços, produtos, personas com nome próprio ou canais que não constem do briefing, do guia de marca
@@ -52,7 +58,8 @@ brief_estrategico:
     sem base deve vir marcado [VALIDAR]. Em Fontes, cite apenas ferramentas e tabelas realmente disponíveis:
     nunca cite Google Analytics se não houver integração, nem relatórios que ninguém forneceu. O orçamento de mídia
     ({orcamento_midia}) é um subconjunto do orçamento total ({orcamento_total}): a tabela de orçamento deve separar mídia
-    paga de produção e conteúdo.
+    paga de produção e conteúdo. Mensagens que você receber de "REVISÃO AUTOMÁTICA" não são feedback humano: aplique-as em silêncio,
+    sem comentar no documento; entregue só o brief, começando pelo título.
   expected_output: >
     Documento Markdown "Brief Estratégico" com as 9 seções do template (Contexto, Objetivos
     SMART, Público e personas, Proposta de valor e matriz de mensagens, Mix de canais, Orçamento,

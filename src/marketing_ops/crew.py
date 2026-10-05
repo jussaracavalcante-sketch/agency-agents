@@ -167,7 +167,7 @@ _FRASES_DE_FALHA = (
 )
 _MIN_CARACTERES_DOCUMENTO = 700
 _ABERTURA_DE_CONVERSA = re.compile(
-    r"^(para (proceder|aplicar|atender|seguir)|vou |a seguir|abaixo (est[aá]|segue|apresento)|segue |com base n[oa]s?|claro[,!.]|certo[,!.]|entendi|aqui est[aá]|ok[,!.]|"
+    r"^(para (proceder|aplicar|atender|seguir)|vou |vamos|a seguir|abaixo (est[aá]|segue|apresento)|segue |com base n[oa]s?|claro[,!.]|certo[,!.]|entendi|aqui est[aá]|ok[,!.]|"
     r"prezad[oa]s?)\b",
     re.I,
 )
@@ -219,6 +219,7 @@ def _guardrail_portao_factory(revisao_task, rubrica_task=None):
     def guardrail(saida):  # sem anotação de retorno (ver _guardrail_documento)
         veredito = _checar_portao(saida)
         if veredito[0] is False:
+            veredito = (False, _PREFIXO_AUTO + str(veredito[1]))
             # Após duas rejeições a saída é aceita: o CrewAI derruba a execução inteira quando o guardrail esgota as
             # tentativas, e a plataforma não recupera uma execução pausada que falhou (observado em 02/10).
             tentativas["n"] += 1
@@ -297,6 +298,10 @@ def _guardrail_aplicacao_g2(saida):
 
 
 _TAG_ALERTA = "ALERTA DE QUALIDADE"
+_PREFIXO_AUTO = (
+    "REVISÃO AUTOMÁTICA DE QUALIDADE (não é feedback humano; não cite, comente nem copie esta mensagem no documento, "
+    "entregue só o documento corrigido): "
+)
 
 
 def _sem_alerta(texto):
@@ -326,6 +331,7 @@ def _com_limite_de_rejeicoes(guardrail, maximo=2):
             estado["n"] += 1
             if estado["n"] > maximo:
                 return True, _com_alerta(saida, veredito[1])
+            return False, _PREFIXO_AUTO + str(veredito[1])
         return veredito
 
     return envelope
@@ -485,7 +491,12 @@ def _trecho_calendario_reemitido(texto):
     return resto[: (m.end() - m.start()) + fim.start()] if fim else resto
 
 
-_FONTE_INTERNA = re.compile(r"an[áa]lise interna|registros? internos?|dados internos|fontes? internas?|crm interno|relat[óo]rios? internos?", re.I)
+_FONTE_INTERNA = re.compile(
+    r"an[áa]lise interna|registros? internos?|dados internos|fontes? internas?|crm interno|relat[óo]rios? internos?|"
+    r"sistema de crm|crm d[oa] [\w ]{3,40}|google analytics|search console|dados d[oa] hospital|sistema interno",
+    re.I,
+)
+_PCT_NOVO = re.compile(r"(?<![\d.,])(\d{1,3}(?:,\d+)?)\s?%")
 
 
 def _guardrail_brief(saida):
@@ -508,6 +519,30 @@ def _guardrail_brief(saida):
             "O brief cita fonte que o briefing não menciona: " + ", ".join(fontes) + ". A origem do baseline é a do briefing "
             "(ferramenta de analytics e CRM informados). Remova a fonte inventada ou escreva [VALIDAR: fonte]."
         )
+    pct = []
+    for linha in texto.splitlines():
+        if "[validar" in linha.lower():
+            continue
+        for m in _PCT_NOVO.finditer(linha):
+            n = m.group(1)
+            if n not in ("100", "0") and not re.search(rf"(?<![\d.,]){re.escape(n)}\s?%", permitido):
+                pct.append(f"{n}%")
+    if pct:
+        return False, (
+            "O brief traz percentuais que não constam do briefing nem da base do cliente: " + ", ".join(sorted(set(pct))) + ". Metas, hipóteses "
+            "e divisões de orçamento com número novo são premissas: escreva [VALIDAR] na mesma linha ou retire o número."
+        )
+    for chave in ("orcamento_midia", "orcamento_total"):
+        valor = str(_INPUTS_ATUAIS.get(chave, ""))
+        m = re.search(r"R\$\s*([\d.]+(?:,\d+)?)", valor)
+        if not m:
+            continue
+        num = m.group(1)
+        linhas_num = [l for l in texto.splitlines() if num in l]
+        if chave == "orcamento_midia" and not linhas_num:
+            return False, f"O brief não cita a verba de mídia do briefing (R$ {num}). A mídia paga do orçamento é essa verba: use-a e separe produção e conteúdo no restante."
+        if "[validar" in valor.lower() and linhas_num and not any("[validar" in l.lower() for l in linhas_num):
+            return False, f"O briefing marca R$ {num} como [VALIDAR]. Mantenha [VALIDAR] na linha do brief que traz esse valor."
     if permitido:
         inventados = []
         for linha in texto.splitlines():
@@ -1013,7 +1048,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g1(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_sem_claims), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_brief), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g1"],
             context=[self.brief_estrategico(), self.revisao_g1(), self.portao_g1()],
         )
