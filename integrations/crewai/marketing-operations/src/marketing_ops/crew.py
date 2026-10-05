@@ -537,7 +537,8 @@ _PLACEHOLDERS = re.compile(
     r"conforme (solicitado|pedido|orienta[çc][ãa]o)|como solicitado|a pedido d[oa]|"
     # autocertificação de conformidade e afirmação de que não há pendência
     r"seguindo rigorosamente|(foi|foram) (criad|elaborad|redigid)\w+ seguindo|em total conformidade|"
-    r"todas as (propostas|valida[çc][õo]es|corre[çc][õo]es) foram|n[ãa]o h[áa] ajustes pendentes|todos os feedbacks[^.\n]{0,40}(considerad|inclu[íi]d)",
+    r"todas as (propostas|valida[çc][õo]es|corre[çc][õo]es) foram|n[ãa]o h[áa] ajustes pendentes|todos os feedbacks[^.\n]{0,40}(considerad|inclu[íi]d)|"
+    r"todos os elementos foram|(foi|foram) (desenvolvid|produzid|constru[íi]d)\w+ em conformidade|respeitando a linguagem de",
     re.I,
 )
 
@@ -852,6 +853,61 @@ _ORGAO_REGULADOR = re.compile(r"conselho federal de medicina|\banvisa\b|\bconar\
 _PCT_NOVO = re.compile(r"(?<![\d.,])(\d{1,3}(?:,\d+)?)\s?%")
 
 
+_MARCADOR_FALSO = re.compile(r"\[\s*(confirmad|validad|aprovad|verificad|checad|ok\b)\w*\s*\]", re.I)
+_FONTE_SECAO = re.compile(r"^#{1,4}\s*(\d+\.\s*)?fontes?\b", re.I)
+_ROTULO_FONTE = frozenset("guia identidade visual briefing marca hospital base conhecimento cliente baseline fonte fontes tendências tendencias dados mercado relatório relatorio nekt".split())
+
+
+def _fontes_nao_informadas(texto):
+    """Nomes próprios na seção Fontes que o briefing e a base do cliente não citam (veículos, associações, relatórios inventados)."""
+    permitido = _normalizar(_TEXTO_PERMITIDO["texto"])
+    if not permitido:
+        return []
+    achados, dentro = [], False
+    for linha in _sem_alerta(texto or "").splitlines():
+        l = linha.strip()
+        if _FONTE_SECAO.match(l):
+            dentro = True
+            continue
+        if dentro and (l.startswith("#") or l.startswith("---") or l.startswith("```")):
+            dentro = False
+        if not dentro or "[validar" in l.lower():
+            continue
+        corpo = re.sub(r"^[-*\d.\s]+", "", l)
+        corpo = re.sub(r"^\*{0,2}[^:*]{1,40}\*{0,2}\s*:\s*", "", corpo)       # tira o rótulo ("Tendências:")
+        for nome in re.findall(r"\b[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\wÁÉÍÓÚÂÊÔÃÕÇáéíóúâêôãõç]{2,}", corpo):
+            n = _normalizar(nome)
+            if n in _ROTULO_FONTE or n in permitido or _sem_acento(nome).lower() in _ROTULO_FONTE:
+                continue
+            achados.append(nome)
+    return sorted(set(achados))
+
+
+def _sanear_brief(texto):
+    """Brief na última tentativa: marcador falso vira [VALIDAR], linha de fonte com nome inventado vira [VALIDAR: fonte] e nota de conformidade é removida."""
+    texto, trocas = _sanear_claims(texto)
+    novo = _MARCADOR_FALSO.sub("[VALIDAR]", texto)
+    if novo != texto:
+        trocas.append("marcador falso [confirmado]")
+        texto = novo
+    saida, dentro = [], False
+    for linha in texto.splitlines():
+        l = linha.strip()
+        if _FONTE_SECAO.match(l):
+            dentro = True
+        elif dentro and (l.startswith("#") or l.startswith("---") or l.startswith("```")):
+            dentro = False
+        if dentro and _fontes_nao_informadas("## Fontes\n" + linha):
+            trocas.append("fonte inventada")
+            saida.append(re.sub(r"(?<=:).*$", " [VALIDAR: fonte]", linha) if ":" in linha else "- [VALIDAR: fonte]")
+            continue
+        if _PLACEHOLDERS.search(linha) and not l.startswith("|"):
+            trocas.append("nota de conformidade")
+            continue
+        saida.append(linha)
+    return "\n".join(saida), trocas
+
+
 def _guardrail_brief(saida):
     """O brief usa o objetivo do briefing literalmente e não cria baselines que ninguém informou."""
     base = _guardrail_producao(saida)
@@ -871,6 +927,18 @@ def _guardrail_brief(saida):
         return False, (
             "O brief cita fonte que o briefing não menciona: " + ", ".join(fontes) + ". A origem do baseline é a do briefing "
             "(ferramenta de analytics e CRM informados). Remova a fonte inventada ou escreva [VALIDAR: fonte]."
+        )
+    falso = sorted({m.group(0) for m in _MARCADOR_FALSO.finditer(texto)})
+    if falso:
+        return False, (
+            "O brief usa o marcador " + ", ".join(falso) + ", que não existe: nada foi confirmado. O único marcador é [VALIDAR]. Valor que o briefing "
+            "traz só como histórico (consumo dos últimos 90 dias, run-rate) não é verba aprovada: escreva [VALIDAR] e diga o que ele é."
+        )
+    inventadas = _fontes_nao_informadas(texto)
+    if inventadas:
+        return False, (
+            "A seção Fontes cita nomes que o briefing e a base do cliente não trazem: " + ", ".join(inventadas) + ". Cite só as fontes do briefing "
+            "(ferramentas de dados e CRM informados) e o guia de marca; para qualquer outra escreva [VALIDAR: fonte]."
         )
     regulador = [l.strip()[:90] for l in texto.splitlines() if "[validar" not in l.lower() and _FONTE_MERCADO.search(l) and _ORGAO_REGULADOR.search(l)]
     if regulador:
@@ -1664,7 +1732,7 @@ class MarketingOpsCrew:
     @task
     def brief_estrategico(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_brief, saneador=_sanear_producao), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_brief, saneador=_sanear_brief), guardrail_max_retries=2,
             config=self.tasks_config["brief_estrategico"],
             context=[self.pesquisa_mercado(), self.mapa_seo()],
         )
@@ -1685,7 +1753,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g1(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g1_factory(self.brief_estrategico(), self.portao_g1()), saneador=_sanear_producao), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g1_factory(self.brief_estrategico(), self.portao_g1()), saneador=_sanear_brief), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g1"],
             context=[self.brief_estrategico(), self.revisao_g1(), self.portao_g1()],
         )

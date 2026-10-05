@@ -262,3 +262,12 @@ reconhecido como dimensão sem problema.
    são inseridas por código a partir de `config/rotina_midia.yaml`, marcadas como inseridas automaticamente para o gestor revisar.
 2. Saneador: o serviço fora do briefing vira "serviço [VALIDAR: confirmar com o hospital]" com o artigo ajustado ("A telemedicina proporciona" → "O serviço [VALIDAR…] proporciona"), em vez de deixar a frase quebrada.
 3. Rubrica: FALHA que cita trecho já marcado [VALIDAR], ou "Compliance e precisão" ≤ 5/20 por causa do marcador, é rejeitada; o prompt da tarefa diz o mesmo.
+
+# Nono piloto (05/10, execução `b8a53b9b`, build `fa5dafd`): G1
+Brief sem alerta, mas com falhas que as travas não viam: fontes inventadas ("Tendências: Anahp e Estadão"), marcador falso "R$ 11.654 [confirmado]" (o briefing só traz esse valor como consumo
+dos últimos 90 dias), frases de garantia ("A escolha certa") e nota de conformidade dentro do bloco de código ("Todos os elementos foram desenvolvidos em conformidade com o guia").
+
+## Melhorias
+1. Brief: nome próprio na seção Fontes que o briefing e a base do cliente não citam é rejeitado (`_fontes_nao_informadas`); na última tentativa a linha vira `[VALIDAR: fonte]`.
+2. Marcadores que não existem ([confirmado], [validado], [aprovado], [ok]) rejeitados; viram [VALIDAR] na última tentativa.
+3. Autocertificação ampliada ("todos os elementos foram…", "desenvolvidos em conformidade", "respeitando a linguagem de"), inclusive dentro do bloco; a nota é removida na última tentativa (`_sanear_brief`).

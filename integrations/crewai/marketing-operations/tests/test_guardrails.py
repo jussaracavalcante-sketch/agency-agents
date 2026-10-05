@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
 }
 
 
@@ -612,3 +612,43 @@ def test_rubrica_nao_pune_validar():
     assert G._validar_punido_pela_rubrica("- **Compliance e precisão (0/20):** Dados marcados [VALIDAR] sem fontes afetam a precisão.")
     assert G._validar_punido_pela_rubrica('- **G1 Compliance CFM/CDC:** FALHA ("Experiência segura e diferenciada" é promessa sem fonte)') is None   # falha real, sem marcador
     assert G._validar_punido_pela_rubrica("RESUMO | CONTEÚDO | G1=OK G2=OK G3=FALHA G4=NA G5=OK | NOTA=59/100 | VEREDITO=REFAZER | REVISÃO 1 DE 2") is None
+
+
+_BRIEF_FONTES = """```markdown
+# Brief Estratégico
+## 5. Mix de Canais
+- **Mídia Paga** (R$ 15.000 [VALIDAR])
+## 6. Orçamento
+- **Mídia**: R$ 15.000 [VALIDAR]
+  - **Google Ads**: R$ 11.654 [confirmado]
+## 9. Fontes
+- **Baseline**: Nekt Refined, CRM RD Station.
+- **Tendências**: Anahp e Estadão (seções de saúde).
+- Guia de Identidade Visual do Hospital Santa Júlia
+---
+**Nota**: Todos os elementos foram desenvolvidos em conformidade com o guia de identidade visual do Hospital Santa Júlia, respeitando a linguagem de confiança e cuidado humano.
+```"""
+_PERMITIDO_FONTES = "hospital santa júlia nekt refined rfn_midia crm rd station ga4 gtm guia de identidade visual r$ 15.000 r$ 11.654 25.000"
+
+
+def test_brief_fonte_inventada_marcador_falso_e_nota_de_conformidade():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = _PERMITIDO_FONTES
+    assert G._fontes_nao_informadas(_BRIEF_FONTES) == ["Anahp", "Estadão"]
+    assert G._fontes_nao_informadas(_BRIEF_FONTES.replace("Anahp e Estadão (seções de saúde)", "[VALIDAR: fonte]")) == []
+    assert G._MARCADOR_FALSO.search("R$ 11.654 [confirmado]") and not G._MARCADOR_FALSO.search("R$ 11.654 [VALIDAR]")
+    assert G._placeholders("Todos os elementos foram desenvolvidos em conformidade com o guia, respeitando a linguagem de confiança")
+    texto, trocas = G._sanear_brief(_BRIEF_FONTES)
+    assert "Anahp" not in texto and "[confirmado]" not in texto and "Todos os elementos" not in texto
+    assert "Nekt Refined" in texto and "- **Tendências**: [VALIDAR: fonte]" in texto and "R$ 11.654 [VALIDAR]" in texto
+    assert {"fonte inventada", "marcador falso [confirmado]", "nota de conformidade"} <= set(trocas)
+    assert G._fontes_nao_informadas(texto) == []                                      # o texto saneado passa na própria trava
+
+
+def test_brief_trava_rejeita_fonte_inventada_e_marcador_falso():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = _PERMITIDO_FONTES
+    corpo = _BRIEF_FONTES.replace("Todos os elementos foram desenvolvidos", "Texto neutro").replace("respeitando a linguagem de", "com a linguagem de")
+    corpo = "# Brief\n" + "Contexto do hospital com bastante texto útil para atingir o tamanho mínimo do documento exigido. " * 10 + "\n" + corpo
+    r = G._guardrail_brief(_saida(corpo))
+    assert r[0] is False and ("confirmado" in r[1] or "Anahp" in r[1])
+    r2 = G._guardrail_brief(_saida(corpo.replace("[confirmado]", "[VALIDAR]")))
+    assert r2[0] is False and "Anahp" in r2[1]
