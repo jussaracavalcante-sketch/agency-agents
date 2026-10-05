@@ -3,6 +3,7 @@ import { admin, usuarioAtual } from "@/lib/supabase";
 import { execucaoAtiva } from "@/lib/execucoes";
 import { iniciar } from "@/lib/crewai";
 import { CHAVES, validar } from "@/lib/briefing";
+import { contextoDoCliente } from "@/lib/conhecimento";
 
 export const dynamic = "force-dynamic";
 
@@ -27,11 +28,16 @@ export async function POST(req: Request) {
   const inputs: Record<string, string> = {};
   for (const k of CHAVES) inputs[k] = String(k === "cliente" ? cliente.nome : briefing[k]).trim();
 
-  const r = await iniciar(inputs);
+  // Base de conhecimento editada no portal: vai como contexto_cliente (o crew já usa esse insumo quando vem preenchido).
+  const ctx = await contextoDoCliente(cliente.slug);
+  if (ctx.erro) return NextResponse.json({ erro: ctx.erro }, { status: 502 });
+  const enviados = ctx.texto ? { ...inputs, contexto_cliente: ctx.texto } : inputs;
+  const r = await iniciar(enviados);
+  const registro = ctx.texto ? { ...inputs, _conhecimento: { hash: ctx.hash, docs: ctx.docs, chars: ctx.chars, truncado: ctx.truncado } } : inputs;
   await db.from("portal_disparos").insert({
-    humano_id: u.id, humano_nome: u.nome, cliente_slug: cliente.slug, briefing: inputs,
+    humano_id: u.id, humano_nome: u.nome, cliente_slug: cliente.slug, briefing: registro,
     enviado_ao_crewai: r.ok, kickoff_id: r.kickoff, resposta_crewai: r.texto,
   });
   if (!r.ok) return NextResponse.json({ erro: "A plataforma recusou o disparo", detalhe: r.texto }, { status: 502 });
-  return NextResponse.json({ ok: true, kickoff: r.kickoff, mensagem: "Campanha disparada. O primeiro portão (G1) aparece na fila em alguns minutos." });
+  return NextResponse.json({ ok: true, kickoff: r.kickoff, mensagem: "Campanha disparada." + (ctx.texto ? ` Usando a base de conhecimento editada no portal (${ctx.docs} documento(s)${ctx.truncado ? ", texto cortado no limite" : ""}).` : "") + " O primeiro portão (G1) aparece na fila em alguns minutos." });
 }

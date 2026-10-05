@@ -77,3 +77,13 @@ No Supabase, em Authentication, habilitar o provedor de e-mail com link mágico 
 - "Manter conectado" desmarcado encerra a sessão quando o navegador é reaberto (conferido no próprio navegador).
 - Supabase > Authentication > URL Configuration: em Redirect URLs use `https://marketing-operationsagents.vercel.app/**`
   (cobre `/auth/callback` e `/auth/callback?next=/definir-senha`).
+
+## Base de conhecimento editável
+- `/conhecimento` lista os clientes (filtros: incompletos e alterados no portal); `/conhecimento/<cliente>` abre o editor.
+- O guia original continua no repositório (`knowledge/<cliente>/guia_identidade_visual.md`, lido por URL pública). Ao editar, o portal grava a
+  versão nova em `portal_conhecimento` (a original fica guardada como versão 0) e é possível **restaurar o original** ou qualquer versão do histórico.
+- É possível **acrescentar documentos** (texto colado ou arquivo .md/.txt de até 200 KB; até 20 por cliente) e marcar o guia como completo.
+- Quem edita: aprovador e revisor (o leitor só consulta). Edição concorrente: se outra pessoa salvou antes, o portal pede para recarregar.
+- No disparo, se o cliente tem edição ou documento acrescentado, o portal envia o texto efetivo em `contexto_cliente` (limite de 10.000 caracteres,
+  cortando o excedente); sem edição, o crew carrega o guia do próprio repositório, como antes. O disparo registra só o hash e o tamanho do texto.
+- Tabelas: `portal_conhecimento` e `portal_conhecimento_versoes` (RLS ligada, acesso só pelo servidor).

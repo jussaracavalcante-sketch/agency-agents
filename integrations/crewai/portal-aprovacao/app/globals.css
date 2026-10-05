@@ -83,3 +83,6 @@ details { margin:8px 0; } summary { cursor:pointer; font-weight:600; }
 .aviso { border:1px solid var(--bd); border-radius:12px; padding:14px; margin-bottom:16px; background:var(--card); } .aviso.err { border-color:var(--err); background:var(--err-bg); color:var(--tx); }
 .sair { padding:6px 10px; line-height:1; }
 @media (max-width:820px) { .auth-card { padding:22px; } }
+
+/* editor de conhecimento */
+textarea.mono { font:13px/1.55 ui-monospace,Menlo,Consolas,monospace; resize:vertical; min-height:120px; }

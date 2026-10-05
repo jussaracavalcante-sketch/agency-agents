@@ -24,6 +24,7 @@ from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from crewai_tools import FileReadTool, ScrapeWebsiteTool, SerperDevTool
 
+from marketing_ops.tools.brand_book import definir_contexto_do_portal
 from marketing_ops.tools import (
     AnalyticsReadTool,
     BrandBookTool,
@@ -123,6 +124,7 @@ def _injetar_contexto_cliente(inputs):
     """
     inputs = dict(inputs or {})
     if inputs.get("contexto_cliente"):
+        definir_contexto_do_portal(str(inputs.get("cliente") or ""), str(inputs["contexto_cliente"]))
         _TEXTO_PERMITIDO["texto"] = " ".join(str(v) for v in inputs.values()).lower()
         _INPUTS_ATUAIS.update(inputs)
         return inputs
@@ -338,6 +340,8 @@ _CLAIMS_PROIBIDOS = re.compile(
     r"\b(o|a|os|as|ao|do|pelo) melhor(es)?\b|\bmelhor (atendimento|cuidado|experi[êe]ncia|hospital|cl[íi]nica|estrutura)\b|"
     r"tecnologia de ponta|tecnologias? de ponta|equipamentos? de [úu]ltima gera[çc][ãa]o|[úu]ltima gera[çc][ãa]o|estado da arte|"
     r"diagn[óo]sticos? precis\w+|tratamentos? eficaz\w*|confian[çc]a em cada diagn[óo]stico|seguran[çc]a em cada tratamento|"
+    r"\bde ponta\b(?! a ponta)|melhor escolha|escolha preferencial|escolha segura|precis[ãa]o e seguran[çc]a|"
+    r"certifica[çc][õo]es? reconhecid\w+|"
     r"garant\w+[^.\n]{0,60}(precis[ãa]o|seguran[çc]a|excel[êe]ncia|qualidade|efici[êe]ncia|resultados?|cura|"
     r"recupera[çc][ãa]o|lgpd|conformidade|ader[êe]ncia|atendimento|cuidado|diagn[óo]stico|tratamento)",
     re.I,
@@ -345,7 +349,13 @@ _CLAIMS_PROIBIDOS = re.compile(
 _LINHA_NEUTRA = re.compile(r"\[VALIDAR|\bsem (usar )?depoimento|proibid|n[ãa]o (use|usar|incluir|propor|citar)|evitar", re.I)
 
 
-_PLACEHOLDERS = re.compile(r"example\.(com|org|net)|exemplo\.com(\.br)?|lorem ipsum|seu-?site\.com|\[(inserir|link|url)[^\]]*\]", re.I)
+_PLACEHOLDERS = re.compile(
+    r"example\.(com|org|net)|exemplo\.com(\.br)?|lorem ipsum|seu-?site\.com|\[(inserir|link|url)[^\]]*\]|"
+    # nota interna do agente que vazou para dentro da peça (texto de retrabalho)
+    r"\breformulei\b|\breescrevi\b|ajustei (o|a|os|as) (conte[úu]do|texto|pe[çc]as?)|para evitar os problemas|"
+    r"conforme (solicitado|pedido|orienta[çc][ãa]o)|como solicitado|a pedido d[oa]",
+    re.I,
+)
 
 
 def _placeholders(texto):
@@ -379,8 +389,9 @@ def _guardrail_sem_claims(saida):
     ph = _placeholders(texto)
     if ph:
         return False, (
-            "A saída contém link ou texto de exemplo (" + ", ".join(ph) + "). Peça publicável não pode ter placeholder: use "
-            "[VALIDAR: link] no lugar e reemita o documento completo."
+            "A saída contém link/texto de exemplo ou nota interna do agente (" + ", ".join(ph) + "). Peça publicável não pode "
+            "ter placeholder nem comentário sobre o próprio retrabalho (\"reformulei\", \"conforme solicitado\"): use [VALIDAR: link] "
+            "no lugar e entregue só o documento final, sem notas sobre o que você mudou."
         )
     return True, saida
 
@@ -440,6 +451,9 @@ def _trecho_calendario_reemitido(texto):
     return resto[: (m.end() - m.start()) + fim.start()] if fim else resto
 
 
+_FONTE_INTERNA = re.compile(r"an[áa]lise interna|registros? internos?|dados internos|fontes? internas?|crm interno|relat[óo]rios? internos?", re.I)
+
+
 def _guardrail_brief(saida):
     """O brief usa o objetivo do briefing literalmente e não cria baselines que ninguém informou."""
     base = _guardrail_producao(saida)
@@ -453,6 +467,13 @@ def _guardrail_brief(saida):
             f"baseline: \"{_INPUTS_ATUAIS.get('objetivo')}\". Não substitua por outro objetivo (percentuais, ocupação, etc.)."
         )
     permitido = _normalizar(_TEXTO_PERMITIDO["texto"])
+    fontes = sorted({m.group(0).lower() for l in texto.splitlines() if "[validar" not in l.lower() for m in _FONTE_INTERNA.finditer(l)
+                     if _normalizar(m.group(0)) not in permitido})
+    if fontes:
+        return False, (
+            "O brief cita fonte que o briefing não menciona: " + ", ".join(fontes) + ". A origem do baseline é a do briefing "
+            "(ferramenta de analytics e CRM informados). Remova a fonte inventada ou escreva [VALIDAR: fonte]."
+        )
     if permitido:
         inventados = []
         for linha in texto.splitlines():
@@ -534,6 +555,128 @@ def _guardrail_rubrica(saida):
     if _SEGMENTO_SAUDE.search(str(_INPUTS_ATUAIS.get("segmento", ""))) and "aval m" not in _normalizar(texto):
         return False, "O segmento é saúde: inclua a marca AVAL MÉDICO PENDENTE em todas as peças e no quadro de notas."
     return True, saida
+
+
+_CANAIS_PAGOS = ("meta ads", "linkedin ads", "tiktok ads", "youtube ads", "microsoft ads", "pinterest ads", "twitter ads", "display", "programática")
+_LINHA_PROJECAO = re.compile(
+    r"^\|\s*(?P<nome>[^|]+?)\s*\|\s*R\$\s*(?P<cpc>[\d.]+(?:,\d+)?)\s*\|\s*(?P<ctr>[\d.,]+)\s*%\s*\|\s*(?P<cvr>[\d.,]+)\s*%\s*\|\s*(?P<conv>\d[\d.]*)\s*\|?\s*$",
+    re.M,
+)
+
+
+def _num(txt):
+    t = str(txt).strip()
+    if "," in t:
+        t = t.replace(".", "").replace(",", ".")
+    elif re.fullmatch(r"\d{1,3}(\.\d{3})+", t):
+        t = t.replace(".", "")
+    try:
+        return float(t)
+    except ValueError:
+        return None
+
+
+def _problemas_midia(texto, brief_texto=""):
+    """Mensagem de erro do plano de mídia (canal fora do brief, projeção sem fonte, conversões que não fecham) ou None."""
+    baixo = (texto or "").lower()
+    base = _normalizar((brief_texto or "") + " " + _TEXTO_PERMITIDO["texto"])
+    if brief_texto:
+        fora = [c for c in _CANAIS_PAGOS if c in baixo and _normalizar(c) not in base]
+        if fora:
+            return (
+                "O plano de mídia usa canal que o brief aprovado e o briefing não preveem: " + ", ".join(fora) + ". Use só os canais "
+                "do brief aprovado; para outro canal, escreva [VALIDAR: canal fora do brief] e não aloque verba."
+            )
+    linhas = list(_LINHA_PROJECAO.finditer(texto or ""))
+    if linhas:
+        i0 = max(0, texto.rfind("\n", 0, max(0, linhas[0].start() - 200)))
+        bloco = (texto[i0: linhas[-1].end()]).lower()
+        if "[validar" not in bloco:
+            return (
+                "As projeções de CPC, CTR e CVR não têm fonte nos dados do briefing. Marque a tabela inteira como [VALIDAR] "
+                "(premissas a confirmar) ou cite a fonte; não apresente estimativa como dado."
+            )
+        orcamentos = {_num(x) for x in re.findall(r"R\$\s*([\d.]+(?:,\d+)?)", texto)} | {_num(x) for x in re.findall(r"R\$\s*([\d.]+(?:,\d+)?)", str(_INPUTS_ATUAIS.get("orcamento_midia", "")))}
+        orcamentos = {o for o in orcamentos if o and o >= 100}
+        for m in linhas:
+            cpc, cvr, conv = _num(m.group("cpc")), _num(m.group("cvr")), _num(m.group("conv"))
+            if not (cpc and cvr is not None and conv is not None) or not orcamentos:
+                continue
+            esperados = [o / cpc * cvr / 100 for o in orcamentos]
+            if not any(abs(conv - e) <= max(3, 0.15 * e) for e in esperados):
+                return (
+                    f"No cenário '{m.group('nome')}', conversões = verba ÷ CPC × CVR não bate: com CPC R$ {cpc:g} e CVR {cvr:g}% a verba "
+                    f"de R$ {max(orcamentos):,.0f} rende cerca de {max(esperados):.0f}, e a tabela diz {conv:g}. Recalcule (ou use a verba do canal, "
+                    "declarando-a) e refaça a coluna de conversões."
+                ).replace(",", ".")
+    return None
+
+
+def _guardrail_midia_factory(brief_task):
+    def guardrail(saida):
+        base = _guardrail_producao(saida)
+        if base[0] is False:
+            return base
+        texto = getattr(saida, "raw", None) or str(saida) or ""
+        erro = _problemas_midia(texto, getattr(getattr(brief_task, "output", None), "raw", None) or "")
+        return (False, erro) if erro else (True, saida)
+
+    return guardrail
+
+
+def _ocorrencias_proibidas(texto):
+    """(termo, trecho) de superlativo, garantia, placeholder ou nota interna, sem contar linhas com [VALIDAR] ou aviso de proibição."""
+    achados = []
+    for linha in (texto or "").splitlines():
+        m = _PLACEHOLDERS.search(linha)  # nota interna e placeholder valem mesmo em linha com [VALIDAR] ou "evitar"
+        if m:
+            achados.append((m.group(0).lower(), linha.strip()[:110]))
+        m = None if _LINHA_NEUTRA.search(linha) else _CLAIMS_PROIBIDOS.search(linha)
+        if m:
+            achados.append((m.group(0).lower(), linha.strip()[:110]))
+    return achados
+
+
+def _guardrail_rubrica_factory(pecas):
+    """
+    Rubrica + varredura em código: se a varredura acha superlativo, garantia, placeholder, nota interna, canal fora do brief ou
+    conta de conversões errada numa peça, a linha RESUMO dela não pode marcar G1 e G3 como OK sem citar o trecho nos apontamentos.
+    `pecas` mapeia CONTEUDO, CALENDARIO, EMAIL e MIDIA para (tarefa da peça, tarefa do brief aprovado ou None).
+    """
+
+    def guardrail(saida):
+        base = _guardrail_rubrica(saida)
+        if base[0] is False:
+            return base
+        texto = getattr(saida, "raw", None) or str(saida) or ""
+        baixo = texto.lower()
+        resumos = {}
+        for m in _RESUMO_RUBRICA.finditer(texto):
+            peca = _sem_acento(m.group("peca")).replace("-", "").replace(" ", "")
+            resumos[peca] = dict(re.findall(r"G([1-5])\s*=\s*(OK|FALHA|NA)", m.group("gates"), re.I))
+        for peca, (tarefa, brief) in pecas.items():
+            raw = getattr(getattr(tarefa, "output", None), "raw", None)
+            gates = resumos.get(peca)
+            if not raw or not gates:
+                continue
+            gates = {k: v.upper() for k, v in gates.items()}
+            if gates.get("1") == "FALHA" or gates.get("3") == "FALHA":
+                continue
+            nao_citados = [(t, l) for t, l in _ocorrencias_proibidas(raw) if t not in baixo]
+            if nao_citados:
+                t, l = nao_citados[0]
+                return False, (
+                    f"A varredura em código achou em {peca}: \"{l}\" (termo '{t}'), mas a sua linha RESUMO tem G1=OK e G3=OK e o trecho "
+                    "não aparece nos apontamentos. Marque G1=FALHA (superlativo, garantia, promessa) ou G3=FALHA (fato sem fonte) e cite o "
+                    "trecho literal, a regra e a correção; só deixe OK se explicar nos apontamentos, citando o trecho, por que não é falha."
+                )
+            if peca == "MIDIA":
+                erro = _problemas_midia(raw, getattr(getattr(brief, "output", None), "raw", None) or "")
+                if erro:
+                    return False, f"A varredura em código achou problema no plano de mídia: {erro} Marque G3=FALHA e cite o trecho nos apontamentos."
+        return True, saida
+
+    return guardrail
 
 
 def _g_doc():
@@ -811,7 +954,7 @@ class MarketingOpsCrew:
     @task
     def plano_midia_paga(self) -> Task:
         return Task(
-            guardrail=_g_prod(), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_midia_factory(self.aplicacao_g1())), guardrail_max_retries=2,
             config=self.tasks_config["plano_midia_paga"],
             context=[self.aplicacao_g1(), self.mapa_seo(), self.pesquisa_mercado(), self.fluxos_email()],
         )
@@ -833,7 +976,12 @@ class MarketingOpsCrew:
     @task
     def rubrica_qa(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_rubrica), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_rubrica_factory({
+                "CONTEUDO": (self.producao_conteudo(), None),
+                "CALENDARIO": (self.calendario_social(), None),
+                "EMAIL": (self.fluxos_email(), None),
+                "MIDIA": (self.plano_midia_paga(), self.aplicacao_g1()),
+            })), guardrail_max_retries=2,
             config=self.tasks_config["rubrica_qa"],
             context=[
                 self.aplicacao_g1(),
@@ -850,7 +998,6 @@ class MarketingOpsCrew:
             guardrail=_g_doc(), guardrail_max_retries=2,
             config=self.tasks_config["revisao_g2"],
             context=[
-                self.rubrica_qa(),
                 self.producao_conteudo(),
                 self.calendario_social(),
                 self.fluxos_email(),

@@ -11,6 +11,16 @@ from pydantic import BaseModel, Field
 KNOWLEDGE_DIR = Path(__file__).resolve().parents[3] / "knowledge"
 
 
+# Base de conhecimento editada no portal: o portal envia o texto efetivo (guias do repositório + edições + documentos
+# acrescentados) em inputs["contexto_cliente"] e o crew a registra aqui, para que a ferramenta devolva o mesmo texto.
+_CONTEXTO_DO_PORTAL = {"cliente": "", "texto": ""}
+
+
+def definir_contexto_do_portal(cliente: str, texto: str) -> None:
+    _CONTEXTO_DO_PORTAL["cliente"] = _slug(cliente or "")
+    _CONTEXTO_DO_PORTAL["texto"] = texto or ""
+
+
 def _slug(texto: str) -> str:
     s = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode()
     return re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_")
@@ -49,6 +59,13 @@ class BrandBookTool(BaseTool):
     args_schema: type[BaseModel] = BrandBookInput
 
     def _run(self, cliente: str, secao: str = "") -> str:
+        atual = _CONTEXTO_DO_PORTAL
+        if atual["texto"] and atual["cliente"] and (_slug(cliente) in atual["cliente"] or atual["cliente"] in _slug(cliente)):
+            texto = atual["texto"]
+            if secao:
+                blocos = re.split(r"(?m)^(?=#{1,3} )", texto)
+                texto = "\n".join(b for b in blocos if secao.lower() in b.split("\n", 1)[0].lower()) or texto
+            return texto[:20000]
         pasta = _localizar(cliente)
         if pasta is None:
             disponiveis = ", ".join(_clientes_disponiveis()) or "nenhum"
