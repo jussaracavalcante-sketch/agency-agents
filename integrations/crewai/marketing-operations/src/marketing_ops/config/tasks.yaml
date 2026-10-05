@@ -89,6 +89,9 @@ revisao_g1:
     paciente, personagem ou persona tratada como pessoa real; garantia de resultado; superlativos ('referência', 'líder',
     'de ponta', 'à frente') sem fonte; promessa clínica; números sem fonte (projeções, percentuais, tamanhos de base).
     Qualquer um desses itens torna a dimensão veracidade ou setor regulado Reprovada para a peça.
+    [VALIDAR] JÁ MARCADO É PENDÊNCIA HUMANA, NÃO ERRO: item que o autor marcou [VALIDAR] não reprova a dimensão veracidade nem a dimensão de itens [VALIDAR]; ele só entra como "Aprovado com
+    ajustes" com a lista das pendências para a decisão humana. Só reprova item inventado SEM marcação [VALIDAR] e SEM fonte nos dados fornecidos. Uma dimensão cujo apontamento diz que não há
+    correção a fazer não pode ser Reprovada. Cada trecho entre aspas no parecer deve ser CÓPIA EXATA do documento revisado, sem parafrasear nem juntar palavras de trechos diferentes.
     Linhas com "ALERTA DE QUALIDADE" nas entregas indicam problema que a trava automática não conseguiu corrigir: trate o trecho citado como achado e cite-o no parecer.
   expected_output: >
     Parecer Markdown com resultado, checklist por dimensão (status, apontamento, regra,
@@ -142,6 +145,8 @@ aplicacao_g1:
     "Registro de decisão G1" (status, ajustes aplicados, ajustes não aplicados e por quê) e depois traga
     o documento INTEGRAL, nunca um resumo das mudanças, porque as tarefas seguintes dependem do texto
     completo.
+    PRESERVE O QUE JÁ ESTAVA CERTO: reemita o brief mantendo todas as marcações [VALIDAR] do original, porque sem feedback humano escrito nenhuma pendência foi resolvida. Não altere o que já estava
+    correto (por exemplo, um objetivo que já era literal) e não escreva "todos os feedbacks foram incluídos" nem "não há ajustes pendentes". A reemissão termina na última seção, sem comentário depois.
   expected_output: >
     Documento Markdown: bloco "Registro de decisão G1" seguido do Brief Estratégico final, integral,
     com as 9 seções.
@@ -284,6 +289,9 @@ revisao_g2:
     {plataformas_sociais} e do mix do brief aprovado; (c) projeções de CTR, CVR, CPL, CPC ou contatos sem fonte nos dados
     disponíveis; (d) soma de valores de mídia diferente de {orcamento_midia}; (e) superlativos como 'referência', 'líder', 'de renome'.
     Cite o trecho literal de cada ocorrência.
+    [VALIDAR] JÁ MARCADO É PENDÊNCIA HUMANA, NÃO ERRO: item que o autor marcou [VALIDAR] não reprova a dimensão veracidade nem a dimensão de itens [VALIDAR]; ele só entra como "Aprovado com
+    ajustes" com a lista das pendências para a decisão humana. Só reprova item inventado SEM marcação [VALIDAR] e SEM fonte nos dados fornecidos. Uma dimensão cujo apontamento diz que não há
+    correção a fazer não pode ser Reprovada. Cada trecho entre aspas no parecer deve ser CÓPIA EXATA do documento revisado, sem parafrasear nem juntar palavras de trechos diferentes.
     Linhas com "ALERTA DE QUALIDADE" nas entregas indicam problema que a trava automática não conseguiu corrigir: trate o trecho citado como achado e cite-o no parecer.
   expected_output: >
     Documento Markdown com um parecer por entrega (template de checklist) e um quadro-resumo

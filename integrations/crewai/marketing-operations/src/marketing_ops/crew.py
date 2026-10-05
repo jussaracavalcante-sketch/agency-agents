@@ -166,6 +166,15 @@ _FRASES_DE_FALHA = (
     "please provide the",
 )
 _MIN_CARACTERES_DOCUMENTO = 700
+def _texto_apos_documento(texto):
+    """Texto escrito depois do último fechamento de bloco ``` (comentário do agente fora do documento); vazio se não houver."""
+    t = _sem_alerta(texto or "")
+    if t.count("```") < 2 or t.count("```") % 2:
+        return ""
+    resto = t[t.rfind("```") + 3:].strip()
+    return resto if len(resto) > 20 else ""
+
+
 _ABERTURA_DE_CONVERSA = re.compile(
     r"^(para (proceder|aplicar|atender|seguir)|vou |vamos|a seguir|abaixo (est[aá]|segue|apresento)|segue |com base n[oa]s?|claro[,!.]|certo[,!.]|entendi|aqui est[aá]|ok[,!.]|"
     r"prezad[oa]s?)\b",
@@ -180,6 +189,12 @@ def _guardrail_documento(saida):  # sem anotação de retorno: o validador do Cr
     """
     texto = (getattr(saida, "raw", None) or str(saida) or "").strip()
     baixo = texto.lower()
+    apos = _texto_apos_documento(texto)
+    if apos:
+        return False, (
+            f"A saída traz comentário depois do documento (\"{apos[:70]}\"). O documento termina no fechamento do bloco ou na última seção: "
+            "não escreva introdução, resumo, autoavaliação nem frase de conformidade depois dele."
+        )
     primeira = next((l.strip() for l in texto.splitlines() if l.strip() and not l.strip().startswith(("```", ">"))), "")
     if _ABERTURA_DE_CONVERSA.match(primeira):
         return False, (
@@ -390,7 +405,10 @@ _PLACEHOLDERS = re.compile(
     r"example\.(com|org|net)|exemplo\.com(\.br)?|lorem ipsum|seu-?site\.com|\[(inserir|link|url)[^\]]*\]|"
     # nota interna do agente que vazou para dentro da peça (texto de retrabalho)
     r"\breformulei\b|\breescrevi\b|ajustei (o|a|os|as) (conte[úu]do|texto|pe[çc]as?)|para evitar os problemas|"
-    r"conforme (solicitado|pedido|orienta[çc][ãa]o)|como solicitado|a pedido d[oa]",
+    r"conforme (solicitado|pedido|orienta[çc][ãa]o)|como solicitado|a pedido d[oa]|"
+    # autocertificação de conformidade e afirmação de que não há pendência
+    r"seguindo rigorosamente|(foi|foram) (criad|elaborad|redigid)\w+ seguindo|em total conformidade|"
+    r"todas as (propostas|valida[çc][õo]es|corre[çc][õo]es) foram|n[ãa]o h[áa] ajustes pendentes|todos os feedbacks[^.\n]{0,40}(considerad|inclu[íi]d)",
     re.I,
 )
 
@@ -496,6 +514,8 @@ _FONTE_INTERNA = re.compile(
     r"sistema de crm|crm d[oa] [\w ]{3,40}|google analytics|search console|dados d[oa] hospital|sistema interno",
     re.I,
 )
+_FONTE_MERCADO = re.compile(r"dados? de mercado|relat[óo]rio de mercado|fontes?\s*:|\bfonte\b", re.I)
+_ORGAO_REGULADOR = re.compile(r"conselho federal de medicina|\banvisa\b|\bconar\b|\bcfm\b|\bcdc\b", re.I)
 _PCT_NOVO = re.compile(r"(?<![\d.,])(\d{1,3}(?:,\d+)?)\s?%")
 
 
@@ -518,6 +538,12 @@ def _guardrail_brief(saida):
         return False, (
             "O brief cita fonte que o briefing não menciona: " + ", ".join(fontes) + ". A origem do baseline é a do briefing "
             "(ferramenta de analytics e CRM informados). Remova a fonte inventada ou escreva [VALIDAR: fonte]."
+        )
+    regulador = [l.strip()[:90] for l in texto.splitlines() if "[validar" not in l.lower() and _FONTE_MERCADO.search(l) and _ORGAO_REGULADOR.search(l)]
+    if regulador:
+        return False, (
+            f"O brief lista órgão regulador como fonte de dados de mercado (\"{regulador[0]}\"). CFM, ANVISA e CONAR são regras do setor, não "
+            "dados de mercado fornecidos. Em Fontes cite só a ferramenta de dados do briefing e o guia de marca; para o resto escreva [VALIDAR: fonte]."
         )
     pct = []
     for linha in texto.splitlines():
@@ -807,6 +833,102 @@ def _guardrail_parecer_geral(saida):
     return True, saida
 
 
+def _cmp(texto):
+    """Normalização para comparar trechos: minúsculas, sem pontuação nem marcação markdown."""
+    return re.sub(r"[^a-z0-9à-ú]+", " ", (texto or "").lower()).strip()
+
+
+def _citacoes_inexistentes(parecer, fonte):
+    """Trechos entre aspas do parecer que não existem no texto revisado (nem no briefing). Linhas de regra ou correção sugerida não contam."""
+    base = _cmp(fonte)
+    ruins = []
+    for linha in _sem_alerta(parecer).splitlines():
+        if re.search(r"corre[çc][ãa]o|\bregra\b|sugest|exemplo", linha, re.I):
+            continue
+        for m in re.finditer(r'"([^"\n]{25,300})"|“([^”\n]{25,300})”', linha):
+            q = m.group(1) or m.group(2)
+            for seg in re.split(r"\.\.\.|…", q):
+                n = _cmp(seg)
+                if len(n) >= 20 and n not in base:
+                    ruins.append(seg.strip()[:90])
+                    break
+    return ruins[:3]
+
+
+_SEM_PROBLEMA = re.compile(r"nenhuma corre[çc][ãa]o|nenhum ajuste|est[áa] coerente|n[ãa]o h[áa] (diverg[êe]ncia|problema)|sem diverg[êe]ncia", re.I)
+
+
+def _dimensoes_incoerentes(parecer):
+    """Dimensão marcada Reprovada cujo próprio texto diz que está correta (nenhuma correção necessária, está coerente)."""
+    blocos, atual = [], None
+    for l in _sem_alerta(parecer).splitlines():
+        if re.match(r"\s*#{2,4}\s*\d+\.", l):
+            atual = [l, []]
+            blocos.append(atual)
+        elif atual is not None:
+            atual[1].append(l)
+    achados = []
+    for cab, linhas in blocos:
+        corpo = "\n".join(linhas)
+        reprovada = "reprovad" in _normalizar(cab) or re.search(r"status\W{0,6}\s*reprovad", _normalizar(corpo))
+        if reprovada and _SEM_PROBLEMA.search(corpo):
+            achados.append(cab.strip("# ").strip()[:70])
+    return achados
+
+
+def _guardrail_parecer_factory(fontes):
+    """
+    Parecer do Guardião: (1) Resultado Geral = pior dimensão, (2) dimensão Reprovada não pode dizer que está correta, (3) todo trecho
+    entre aspas precisa existir no texto revisado. `fontes` é a lista de tarefas cujo texto é revisado.
+    """
+
+    def guardrail(saida):
+        base = _guardrail_parecer_geral(saida)
+        if base[0] is False:
+            return base
+        texto = getattr(saida, "raw", None) or str(saida) or ""
+        inc = _dimensoes_incoerentes(texto)
+        if inc:
+            return False, (
+                f"A dimensão '{inc[0]}' está Reprovada, mas o próprio apontamento diz que está correta (nenhuma correção necessária). "
+                "Se não há problema a corrigir, o status não pode ser Reprovado; se há, descreva o problema com o trecho literal."
+            )
+        revisado = "\n".join(getattr(getattr(t, "output", None), "raw", None) or "" for t in fontes) + "\n" + _TEXTO_PERMITIDO["texto"]
+        if revisado.strip():
+            ruins = _citacoes_inexistentes(texto, revisado)
+            if ruins:
+                return False, (
+                    "O parecer cita trechos que não existem no texto revisado: " + "; ".join(f'"{r}"' for r in ruins) + ". Cada trecho entre aspas "
+                    "deve ser cópia exata do documento (não parafraseie nem junte palavras). Se não achar o trecho, o apontamento não existe."
+                )
+        return True, saida
+
+    return guardrail
+
+
+def _guardrail_aplicacao_g1_factory(brief_task, portao_task):
+    """Reemissão do brief: passa pela trava do brief e não pode perder [VALIDAR] do original quando o humano não deu feedback escrito."""
+
+    def guardrail(saida):
+        base = _guardrail_brief(saida)
+        if base[0] is False:
+            return base
+        original = getattr(getattr(brief_task, "output", None), "raw", None) or ""
+        portao = getattr(getattr(portao_task, "output", None), "raw", None) or ""
+        sem_feedback = (not portao) or "nenhum feedback humano" in _normalizar(portao)
+        if original and sem_feedback:
+            antes = _sem_alerta(original).lower().count("[validar")
+            depois = _sem_alerta(getattr(saida, "raw", None) or str(saida) or "").lower().count("[validar")
+            if depois < antes:
+                return False, (
+                    f"O brief original tem {antes} marcações [VALIDAR] e a reemissão tem {depois}. Sem feedback humano escrito, nenhuma pendência foi "
+                    "resolvida: mantenha todas as marcações [VALIDAR] e não altere o que já estava correto no brief original."
+                )
+        return True, saida
+
+    return guardrail
+
+
 def _g_doc():
     return _com_limite_de_rejeicoes(_guardrail_documento)
 
@@ -1035,7 +1157,8 @@ class MarketingOpsCrew:
 
     @task
     def revisao_g1(self) -> Task:
-        return Task(guardrail=_com_limite_de_rejeicoes(_guardrail_parecer_geral), guardrail_max_retries=2, config=self.tasks_config["revisao_g1"], context=[self.brief_estrategico()])
+        return Task(guardrail=_com_limite_de_rejeicoes(_guardrail_parecer_factory([self.brief_estrategico()])), guardrail_max_retries=2,
+                    config=self.tasks_config["revisao_g1"], context=[self.brief_estrategico()])
 
     @task
     def portao_g1(self) -> Task:
@@ -1048,7 +1171,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g1(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_brief), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g1_factory(self.brief_estrategico(), self.portao_g1())), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g1"],
             context=[self.brief_estrategico(), self.revisao_g1(), self.portao_g1()],
         )
@@ -1123,7 +1246,8 @@ class MarketingOpsCrew:
     @task
     def revisao_g2(self) -> Task:
         return Task(
-            guardrail=_g_doc(), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_parecer_factory(
+                [self.producao_conteudo(), self.calendario_social(), self.fluxos_email(), self.plano_midia_paga(), self.direcao_arte()])), guardrail_max_retries=2,
             config=self.tasks_config["revisao_g2"],
             context=[
                 self.producao_conteudo(),
@@ -1196,7 +1320,7 @@ class MarketingOpsCrew:
     @task
     def revisao_g3(self) -> Task:
         return Task(
-            guardrail=_g_doc(), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_parecer_factory([self.pacote_publicacao(), self.plano_medicao(), self.aplicacao_g2()])), guardrail_max_retries=2,
             config=self.tasks_config["revisao_g3"],
             context=[self.pacote_publicacao(), self.plano_medicao(), self.aplicacao_g2()],
         )
