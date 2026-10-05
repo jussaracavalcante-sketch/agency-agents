@@ -214,7 +214,7 @@ _ABERTURA_DE_CONVERSA = re.compile(
 )
 
 
-_PALAVRAS_EN = frozenset("the and with has have been will is are was were as per to for of if please that this all any further i'll i we our your you its be by on at from it not or but also should must can may these those into".split())
+_PALAVRAS_EN = frozenset("the and with has have been will is are was were as per to for of if please that this all any further i'll i we our your you its be by on at from it not or but also should must can may these those into in an how why what about care trust medical health patients building techniques best better".split())
 _PALAVRAS_PT = frozenset("o a os as de do da dos das e que para com um uma em no na nos nas por se ao à são é não ou mais como sua seu suas seus foi ser".split())
 
 
