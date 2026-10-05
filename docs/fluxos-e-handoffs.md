@@ -14,6 +14,7 @@
 | 8 | `calendario_social` | 06 Social | 6, 7, 1 | |
 | 9 | `fluxos_email` | 07 E-mail | 6, 7 | |
 | 10 | `plano_midia_paga` | 08 Mídia | 6, 2, 1, 9 | |
+| 10b | `auditoria_midia` | 14 Supervisor de Mídia Paga | 10, 6 | Auditoria técnica: 7 itens (OK/PENDENTE/FALHA) e parecer LIBERAR PARA G2 ou DEVOLVER AO GESTOR |
 | 11 | `direcao_arte` | 09 Arte | 6, 7, 8, 9, 10 | |
 | 12 | `revisao_g2` | 11 Guardião | 7–11 | |
 | 12b | `rubrica_qa` | 13 Revisor de qualidade | 6, 7–10 | Rubrica: 5 gates, nota de 0 a 100 e veredito por peça |

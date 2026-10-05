@@ -209,10 +209,26 @@ plano_midia_paga:
     declaradas, rotina semanal de otimização e requisitos de rastreamento. Briefe os criativos
     necessários (formato, dimensão, quantidade). NÃO crie nem ative nada em plataforma.
   expected_output: >
-    Documento Markdown "Plano de Mídia" com as 9 seções do template, tabela de estrutura de
-    campanhas e briefing de criativos.
+    Documento Markdown "Plano de Mídia" com as 9 seções do template, mais "Insumos e pendências", "Rotina operacional (diária, semanal)"
+    e "Alçadas e autorizações", tabela de estrutura de campanhas e briefing de criativos.
   agent: gestor_midia_paga
   output_file: output/09_plano_midia.md
+
+auditoria_midia:
+  description: >
+    AUDITORIA TÉCNICA do plano de mídia de {cliente}, como Supervisor de Mídia Paga, antes da revisão do portão G2. Leia o plano de mídia e o brief
+    aprovado que estão no CONTEXTO (não abra arquivos). Audite os sete itens e emita o parecer. Cada FALHA cita entre aspas o trecho literal do plano e
+    a regra violada, mais a orientação de correção; você orienta, não reescreve o plano. Item que depende de dado não fornecido e já está marcado
+    [VALIDAR] é PENDENTE (pendência humana), não FALHA. Verifique também: canal que o brief aprovado não prevê, soma de verbas diferente de
+    {orcamento_midia}, projeções de CPC, CTR e CVR sem [VALIDAR] ou com conversões que não fecham (verba ÷ CPC × CVR), superlativos e promessas nas copies.
+    FORMATO OBRIGATÓRIO, uma linha por item, sem texto antes nem depois do bloco:
+    AUDITORIA | <ITEM> | OK, PENDENTE ou FALHA | <trecho literal ou motivo>
+    e, por último, uma linha: PARECER DO SUPERVISOR | LIBERAR PARA G2 ou DEVOLVER AO GESTOR | <resumo em uma frase>.
+    Qualquer FALHA exige DEVOLVER AO GESTOR; sem FALHA o parecer é LIBERAR PARA G2 (com as pendências listadas).
+  expected_output: >
+    Sete linhas AUDITORIA (SEGMENTAÇÃO, PIXEL/CAPI E TAGS, CRIATIVOS, URLS E UTM, COPIES, VERBA E BUDGET PACE, ALÇADAS) e a linha PARECER DO SUPERVISOR.
+  agent: supervisor_midia_paga
+  output_file: output/09b_auditoria_midia.md
 
 direcao_arte:
   description: >
@@ -247,6 +263,7 @@ rubrica_qa:
     Sem trecho literal não há apontamento. Varra cada peça procurando superlativos ('o melhor', 'de ponta', 'líder',
     'referência'), garantias ('garante', 'garantindo'), promessas clínicas, depoimentos, números sem fonte, link ou texto de
     exemplo, canal ou serviço fora do briefing. [VALIDAR] marcado não reprova; dado sem fonte sem marcador reprova em G3.
+    A auditoria técnica do Supervisor de Mídia Paga (linhas AUDITORIA e PARECER DO SUPERVISOR) está no CONTEXTO: use-a como insumo para a peça MÍDIA, sem copiá-la nem depender dela; a nota é sua.
     CONSISTÊNCIA ENTRE CANAIS: orçamento, datas, preços, serviços e grafia da marca devem ser idênticos em todas as peças;
     divergência é ajuste obrigatório.
     SAÚDE: se o segmento é saúde (hospital, clínica, farmácia, médico), aplique também o checklist CFM 2.336/2023 em cada
@@ -315,7 +332,7 @@ portao_g2:
     FORMATO OBRIGATÓRIO DA SAÍDA, em todas as passadas (inclusive retrabalho): (1) "Histórico de feedbacks humanos" com cada rodada
     transcrita literalmente; (2) "Parecer do Guardião (cópia literal)": copie o texto integral do parecer da tarefa de revisão, sem
     resumir, reordenar, renomear o resultado (Reprovado continua Reprovado) nem acrescentar "revisado" ou "com ajustes"; só o Guardião
-    altera o próprio parecer; (2b) "Quadro da rubrica de qualidade (cópia literal)": copie, sem alterar, as quatro linhas que começam com RESUMO | da rubrica de qualidade (nota e veredito por peça);
+    altera o próprio parecer; (2b) "Quadro da rubrica de qualidade (cópia literal)": copie, sem alterar, as quatro linhas que começam com RESUMO | da rubrica de qualidade (nota e veredito por peça); (2c) "Auditoria técnica de mídia (cópia literal)": copie, sem alterar, as linhas AUDITORIA | e a linha PARECER DO SUPERVISOR | da auditoria do Supervisor de Mídia Paga;
     (3) resumo e riscos, usando apenas o que consta nas entregas; (4) pedido de decisão. Se o feedback humano
     pedir correções, registre-as como pendentes para a tarefa de aplicação: este portão não as executa nem afirma que foram cumpridas.
     ALERTAS DE QUALIDADE: se qualquer entrega ou parecer do contexto trouxer uma linha com "ALERTA DE QUALIDADE", a trava automática reprovou aquela saída e ela foi
@@ -360,7 +377,8 @@ plano_medicao:
     frequência e dono; dicionário de UTMs (source, medium, campaign, content, term em minúsculas
     e sem espaços) para todos os links de social, e-mail e mídia paga; eventos de conversão a
     configurar ({ferramenta_analytics}); especificação do dashboard (visões, filtros, métricas);
-    checklist de rastreamento a validar antes de G3.
+    checklist de rastreamento a validar antes de G3 (auditoria de pixel: verificar tags no GTM, disparar eventos de teste, validar no GA4 e
+    no Gerenciador de Anúncios, corrigir inconsistências de atribuição).
   expected_output: >
     Documento Markdown com Plano de medição (tabela de KPIs), Dicionário de UTMs (tabela),
     Eventos de conversão, Spec do dashboard e Checklist de rastreamento.
@@ -495,8 +513,10 @@ relatorio_performance:
   description: >
     Produza o relatório de performance do período {periodo_relatorio} da campanha
     "{briefing_titulo}", a partir dos dados fornecidos em {caminho_dados} (CSV/JSON exportados
-    das plataformas) e do plano de medição. Compare KPIs vs. meta, analise por canal, separe fato
-    de hipótese e priorize recomendações por impacto × esforço.
+    das plataformas) e do plano de medição. Compare KPIs vs. meta (ROAS, CPA, CPL, CTR, CPM, taxa de conversão do funil, budget pace), analise por canal,
+    separe fato de hipótese e priorize recomendações por impacto × esforço. Fluxo do relatório mensal: coletar dados das plataformas e do CRM, preencher
+    o template, inserir análises qualitativas e diagnósticos, submeter à validação do Supervisor de Mídia Paga e só então enviar ao Account; indique no
+    topo "Status: aguardando validação do Supervisor". Feche com os insights estratégicos e o plano de ação do próximo ciclo.
   expected_output: >
     Relatório Markdown com Resumo executivo (3 bullets), KPIs vs. meta (tabela), Por canal,
     Insights, Recomendações priorizadas e Fontes.

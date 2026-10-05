@@ -78,3 +78,17 @@
 ## 7. Referência Agency
 
 `paid-media/paid-media-ppc-strategist.md`, `paid-media/paid-media-paid-social-strategist.md`, `paid-media/paid-media-creative-strategist.md`, `paid-media/paid-media-auditor.md`, `paid-media/paid-media-search-query-analyst.md`.
+
+
+## 8. Rotina parametrizada (Vanguarda Martech)
+Parâmetros em `src/marketing_ops/config/rotina_midia.yaml`, anexados à tarefa `plano_midia_paga` e conferidos por trava em código. Fonte: rotina profissional
+do Analista de Mídia Paga (formulário de 18/09/2026). Detalhes em `docs/rotina-midia-paga.md`.
+
+- **Insumos obrigatórios** do briefing: verba total e por canal, objetivo, público, artes aprovadas, acessos e dados de conversão. O que faltar vira [VALIDAR].
+- **Verba:** budget pace diário por conta; alerta aos 90% do orçamento; alteração de verba só por e-mail ou chamado no VJOB.
+- **Fluxo de nova campanha:** conferir briefing e artes → configurar público, verba e objetivo → parametrizar URLs com UTM → montar anúncios → revisão técnica do
+  Supervisor → ativar só após o G3.
+- **Otimização:** diária (CPA, CPL, ROAS, CTR; pausar o fraco; remanejar verba dentro do limite) e semanal (check-in de performance e plano de testes).
+- **Autonomia:** pausar criativos, ajustar distribuição diária, testar públicos e formatos. **Exige autorização:** orçamento total, escopo contratado,
+  relatório ao cliente sem validação, prazo com impacto na entrega.
+- **Trava em código:** o plano precisa trazer budget pace, alerta de 90%, UTM, revisão técnica do Supervisor e alçadas.

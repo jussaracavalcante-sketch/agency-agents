@@ -72,3 +72,12 @@
 ## 7. Referência Agency
 
 `paid-media/paid-media-tracking-specialist.md`, `_arquivo/project-management/project-management-experiment-tracker.md`, `_arquivo/specialized/data-consolidation-agent.md`, `_arquivo/specialized/report-distribution-agent.md`.
+
+
+## 8. Rotina parametrizada (Vanguarda Martech)
+Parâmetros em `src/marketing_ops/config/rotina_midia.yaml` (seção `medicao_relatorio`), anexados à tarefa `plano_medicao`. Fonte: rotinas do Analista e do Supervisor de
+Mídia Paga (formulários de 18/09/2026).
+
+- **Auditoria de pixel e rastreamento:** verificar tags no GTM → disparar eventos de teste → validar no GA4 e no Gerenciador de Anúncios → corrigir inconsistências de atribuição.
+- **Relatório mensal:** coletar dados das plataformas e do CRM → template → análises qualitativas → **validação do Supervisor** → envio ao Account (nunca direto ao cliente).
+- **KPIs acompanhados:** ROAS, CPA, CPL, CTR, CPM, taxa de conversão do funil, budget pace e índice de retrabalho.
