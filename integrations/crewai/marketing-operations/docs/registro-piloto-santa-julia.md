@@ -171,3 +171,23 @@ G1 e G2 aprovados com "Aprovado." e G3 pendente com parecer Reprovado do Guardi�
 - `revisao_g1`: o Resultado Geral precisa ser o pior entre as dimensões.
 - Abertura de conversa do agente ("Para proceder…", "Abaixo está…") rejeitada em todo documento.
 - Fica para depois: cenários de orçamento do brief somarem exatamente o total do briefing.
+
+# Quarto piloto com rubrica (05/10, execução `c3298b2a`, build `8723f3c`)
+G1 aprovado com "Aprovado." (parecer Reprovado e alerta no brief); a execução seguiu para as peças.
+
+| Verificação | Resultado |
+|---|---|
+| Alerta de trava esgotada | **Funcionou**: linha `ALERTA DE QUALIDADE` no topo do brief, no pedido do G1, em conteúdo ("de ponta") e em mídia |
+| Resultado Geral do parecer do G1 | Reprovado e coerente com as dimensões (regra do pior resultado) |
+| Objetivo literal | Falhou após 3 tentativas ("...ao longo da campanha de 8 semanas") |
+| Fonte | "CRM do Hospital Santa Júlia" inventada |
+| Orçamento e hipóteses | Tabela por canal inventada, ignorando a verba de mídia do briefing; "+40%" e "+20%" sem [VALIDAR]; "Total R$ 25.000" sem o [VALIDAR] do briefing |
+| Mensagem da trava | O agente a tratou como feedback humano e comentou "conforme o feedback recebido" no brief |
+
+## Melhorias (pós-rodada)
+- Abertura "Vamos…" entra na lista de aberturas de conversa rejeitadas.
+- Fontes: "CRM do <cliente>", "sistema de CRM", "Google Analytics", "Search Console", "dados do hospital" e "sistema interno" rejeitadas quando o briefing não os cita.
+- Percentual novo no brief (meta, hipótese, divisão de orçamento) exige [VALIDAR] na mesma linha.
+- O brief precisa citar a verba de mídia do briefing e manter o [VALIDAR] dos valores que o briefing marca assim.
+- Toda rejeição de trava chega ao agente com o prefixo "REVISÃO AUTOMÁTICA DE QUALIDADE (não é feedback humano…)"; o alerta mostra o motivo sem o prefixo.
+- Objetivo literal pedido em bloco de citação (`> objetivo`), sem objetivo específico, e orçamento sem divisão inventada (a divisão restante vai [VALIDAR]); `aplicacao_g1` passa pela mesma trava do brief.

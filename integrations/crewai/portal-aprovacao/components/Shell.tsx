@@ -21,7 +21,7 @@ export default function Shell({ nome, papel, children }: { nome: string; papel: 
   return (
     <div className="shell">
       <aside className="side">
-        <Link href="/" className="brand"><span className="logo">◎</span>Marketing Ops</Link>
+        <Link href="/" className="brand"><img src="/logo-vanguarda.png" alt="" className="logo" width={36} height={36} /><span>Marketing Ops<small>Vanguarda</small></span></Link>
         <nav className="nav">
           {ITENS.filter((i) => !i.so || i.so === papel).map((i) => (
             <Link key={i.href} href={i.href} className={ativo(i.href) ? "on" : ""}><span className="ic">{i.ic}</span>{i.rot}</Link>
