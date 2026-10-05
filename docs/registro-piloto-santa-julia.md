@@ -123,3 +123,27 @@ elimina o risco; o G2 e o G3 humanos continuam sendo a barreira final.
 Acrescentados o agente `revisor_qualidade` (13º) e a tarefa `rubrica_qa` (22ª do pipeline), antes da revisão do G2, com guardrail
 de formato e coerência (gates, nota, veredito, selo AVAL MÉDICO em saúde) e cópia literal do quadro de notas no pedido do G2.
 Ainda não validada em execução. Se o próximo piloto falhar duas vezes, vale a regra de rollback (base `8fa07e3`).
+
+
+# Segundo piloto com rubrica (05/10, execução `e3b795a7`, build `8bc1cbad` / `d590968`)
+G1 aprovado com "Aprovado." e G2 pendente na data do registro. Objetivo literal e baselines do briefing: **OK**. Fonte "Análise interna do
+Hospital Santa Júlia" inventada (o Guardião pediu a correção e a aplicação a incluiu): **falhou**.
+
+| Peça | Rubrica do Rui | Guardião | Conferência por trecho literal |
+|---|---|---|---|
+| Conteúdo web | 97 APROVAR | Aprovado com ajustes | "infraestrutura de ponta", "Sua Melhor Escolha", "Escolha Segura", "precisão e segurança nos tratamentos", nota interna "reformulei o conteúdo" |
+| Calendário | 100 APROVAR | Aprovado | 8 semanas completas; pilar "Acolhimento Premium" e hashtags #SaudePremium (decisão humana) |
+| E-mail | 59 REFAZER (G1 e G3) | Reprovado | "o melhor atendimento em saúde", "acolhimento premium que você merece" não citados pela rubrica |
+| Mídia | 98 APROVAR | Aprovado | Meta Ads e LinkedIn Ads fora do brief aprovado; CPC/CTR/CVR sem fonte; conversões 100/200/300 não batem (75/120/187) |
+
+Conclusão: a rubrica funciona no formato e nas faixas, mas foi leniente e ancorou o Guardião (que deixou de apontar o que apontava antes).
+
+## Melhorias de trava (pós-rodada)
+- Rubrica passa por varredura em código: se achar superlativo, garantia, placeholder, nota interna, canal fora do brief ou conversões que não
+  fecham numa peça, a linha RESUMO não pode marcar G1 e G3 como OK sem citar o trecho nos apontamentos.
+- O Guardião do G2 revisa de forma independente: a rubrica saiu do contexto dele e continua ao lado, no pedido do portão.
+- Notas internas do agente dentro da peça ("reformulei", "conforme solicitado") barradas.
+- Plano de mídia: canal fora do brief, projeção sem [VALIDAR] e conversões fora de verba ÷ CPC × CVR (tolerância de 15%) rejeitados.
+- Brief: fonte do baseline que o briefing não cita ("análise interna", "registros internos") rejeitada.
+- Termos novos: "de ponta", "melhor escolha", "escolha preferencial", "escolha segura", "precisão e segurança", "certificações reconhecidas".
+  "Premium" e "excelência" ficam fora da trava (decisão: rubrica e G2 humano).

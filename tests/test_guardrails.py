@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory",
 }
 
 
@@ -123,3 +123,57 @@ def test_rubrica_exige_aval_medico_em_saude():
 def test_linhas_resumo_para_copia_literal():
     r = _rubrica(["**" + _OK[0] + "**"] + _OK[1:])
     assert len(G._linhas_resumo_rubrica(r.raw)) == 4
+
+
+# --- rodada de 05/10 (execução e3b795a7): trechos reais ---------------------------------------------------------------------
+_MIDIA_REAL = """| Cenário | CPC Estimado | CTR Estimado | CVR Estimado | Conversões Calculadas |
+|---|---|---|---|---|
+| Conservador | R$ 3,00 | 1.5% | 1.5% | 100 |
+| Moderado | R$ 2,50 | 2.0% | 2.0% | 200 |
+| Otimista | R$ 2,00 | 2.5% | 2.5% | 300 |
+"""
+
+
+def test_termos_novos_e_notas_internas():
+    for t in ["aliando infraestrutura de ponta a um atendimento personalizado", "Por que Um Hospital Privado Pode Ser Sua Melhor Escolha",
+              "Escolha Segura para Seu Cuidado", "priorizam a precisão e segurança nos tratamentos",
+              "posicionar o hospital como a escolha preferencial", "Provas de excelência médica através de certificações reconhecidas",
+              "para evitar os problemas de superlativos e garantias não justificadas, reformulei o conteúdo"]:
+        assert G._ocorrencias_proibidas(t), t
+    for t in ["Trabalho de ponta a ponta com o time", "Escolha informada para a sua saúde.", "Evitar superlativos como o melhor atendimento."]:
+        assert not G._ocorrencias_proibidas(t), t
+
+
+def test_fonte_inventada_no_brief():
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["objetivo"] = "Gerar 400 contatos"
+    G._TEXTO_PERMITIDO["texto"] = "gerar 400 contatos nekt rd station"
+    corpo = "# Brief\n" + ("x" * 1500) + "\n## Objetivo\nGerar 400 contatos\n- *Fonte:* Análise interna do Hospital\n"
+    assert G._guardrail_brief(types.SimpleNamespace(raw=corpo))[0] is False
+    assert G._guardrail_brief(types.SimpleNamespace(raw=corpo.replace("Análise interna do Hospital", "Nekt e RD Station")))[0] is True
+
+
+def test_midia_conversoes_canal_e_projecao():
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["orcamento_midia"] = "R$ 15.000 [VALIDAR]"
+    G._TEXTO_PERMITIDO["texto"] = "google ads r$ 15.000"
+    brief = "Mix: Google Ads, SEO, redes sociais"
+    sem_validar = G._problemas_midia(_MIDIA_REAL, brief)
+    assert sem_validar and "VALIDAR" in sem_validar                                   # projeção sem fonte
+    assert "bate" in G._problemas_midia("Premissas [VALIDAR]\n" + _MIDIA_REAL, brief)   # 15000/3*1,5% = 75, não 100
+    certo = _MIDIA_REAL.replace("| 100 |", "| 75 |").replace("| 200 |", "| 120 |").replace("| 300 |", "| 187 |")
+    assert G._problemas_midia("Premissas [VALIDAR]\n" + certo, brief) is None
+    assert "Meta Ads" in (G._problemas_midia("Meta Ads: 30% (R$ 4.500)", brief) or "") or "meta ads" in (G._problemas_midia("Meta Ads: 30%", brief) or "")
+    assert G._problemas_midia("Meta Ads: 30%", "Mix: Google Ads e Meta Ads") is None
+
+
+def test_rubrica_com_varredura_em_codigo():
+    G._INPUTS_ATUAIS.clear()
+    peca = lambda raw: types.SimpleNamespace(output=types.SimpleNamespace(raw=raw))
+    fab = G._guardrail_rubrica_factory({
+        "CONTEUDO": (peca("aliando infraestrutura de ponta a um atendimento"), None), "CALENDARIO": (peca("ok"), None),
+        "EMAIL": (peca("ok"), None), "MIDIA": (peca("ok"), None)})
+    ok_cego = _rubrica(_OK[:3] + ["RESUMO | MÍDIA | G1=OK G2=OK G3=OK G4=NA G5=OK | NOTA=98/100 | VEREDITO=APROVAR | REVISÃO 1 DE 2"])
+    assert fab(ok_cego)[0] is False                                                    # G1=OK com "de ponta" na peça
+    citado = _rubrica(ok_cego.raw.splitlines(), 'Apontamento: "infraestrutura de ponta" é superlativo sem fonte, mas marcado [VALIDAR]')
+    assert fab(citado)[0] is True                                                      # o trecho foi citado nos apontamentos
+    reprovou = _rubrica([_OK[0].replace("G1=OK", "G1=FALHA").replace("NOTA=92", "NOTA=50").replace("APROVAR", "REFAZER")] + _OK[1:])
+    assert fab(reprovou)[0] is True                                                    # G1=FALHA já reconhece o problema
