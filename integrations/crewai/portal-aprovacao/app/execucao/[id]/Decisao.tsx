@@ -46,7 +46,7 @@ export default function Decisao({ execucaoId, portao, podeDecidir }: { execucaoI
       <textarea rows={7} value={instrucoes} onChange={(e) => setInstrucoes(e.target.value)} disabled={!!escolha} placeholder="Ex.: remover o depoimento do calendário; marcar a paleta como [VALIDAR]…" />
       {!escolha && (
         <p className="row" style={{ justifyContent: "flex-start" }}>
-          <button className="p" disabled={busy} onClick={() => setEscolha("aprovar")}>Aprovar</button>
+          <button className="p" disabled={busy || !!instrucoes.trim()} title={instrucoes.trim() ? "Há texto escrito: use Devolver com ajustes, ou apague o texto para aprovar" : undefined} onClick={() => setEscolha("aprovar")}>Aprovar</button>
           <button disabled={busy || !instrucoes.trim()} onClick={() => setEscolha("devolver")}>Devolver com ajustes</button>
           <button className="d" disabled={busy} onClick={() => setEscolha("reprovar")}>Reprovar</button>
         </p>
@@ -65,6 +65,7 @@ export default function Decisao({ execucaoId, portao, podeDecidir }: { execucaoI
           </p>
         </div>
       )}
+      {!!instrucoes.trim() && <p style={{ color: "var(--err)" }}>Há texto escrito: Aprovar fica bloqueado para o texto não se perder. Use <strong>Devolver com ajustes</strong> para enviá-lo ou apague-o para aprovar.</p>}
       <p className="mut">“Aprovar” libera o portão sem correções. Se você quer que algo seja corrigido, devolva. “Reprovar” encerra a execução.</p>
       {msg && <p className="msg" style={{ color: msg.ok ? "var(--ok)" : "var(--err)" }}>{msg.t}</p>}
     </div>
