@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_limpar_final", "_trecho_em_ingles", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_REDES", "_HORA_COM_FUSO_COLADO", "_posts_da_tabela", "_bloqueadas_do_g2", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_limpar_final", "_trecho_em_ingles", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_linhas_do_calendario", "_saneador_pacote_factory", "_REDES", "_HORA_COM_FUSO_COLADO", "_posts_da_tabela", "_bloqueadas_do_g2", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
 }
 
 
@@ -834,3 +834,53 @@ def test_reemissao_nao_troca_o_tema_para_servico_fora_do_briefing():
     assert r[0] is False and "cirurgia" in r[1] and "tema" in r[1]
     consultas = base + "### Consultas e exames no hospital\nAgende sua consulta [VALIDAR].\n### Parte C: Lista de Versões\n- Conteúdo: reemitido\n"
     assert G._guardrail_aplicacao_g2(_saida(consultas))[0] is True
+
+
+def test_fontes_com_orgao_regulador_e_links_inventados():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = "hospital santa júlia nekt refined rfn_midia cfm anvisa conar setor regulado"
+    fontes = ("## 9. Fontes\n- **Nekt Refined**: (rfn_midia__desempenho_diario)\n- **Conselho Federal de Medicina**: [cfm.org.br](https://cfm.org.br)\n"
+              "- **ANVISA**: [gov.br/anvisa](https://www.gov.br/anvisa/pt-br)\n")
+    achados = G._fontes_nao_informadas(fontes)
+    assert "órgão regulador como fonte" in achados and "https://cfm.org.br" in achados
+    assert "órgão regulador como fonte" not in G._fontes_nao_informadas("## Fontes\n- Nekt Refined (rfn_midia__desempenho_diario)\n")
+
+
+def test_coerencia_reprovada_citando_o_objetivo_identico():
+    G._INPUTS_ATUAIS.clear()
+    G._INPUTS_ATUAIS["objetivo"] = "Gerar 400 contatos qualificados (agendamentos e orçamentos) em 8 semanas (baseline: 863 conversões RD em 90 dias, 343 vindas de mídia paga)"
+    parecer = ("# Parecer\n\n## Resultado: Reprovado\n\n### Dimensão: Coerência com o Briefing\n- **Status**: Reprovado\n- **Apontamento**: O objetivo no brief diverge do briefing. "
+               "No brief, é mencionado: \"Gerar 400 contatos qualificados (agendamentos e orçamentos) em 8 semanas (baseline: 863 conversões RD em 90 dias, 343 vindas de mídia paga)\".\n"
+               "- **Correção Sugerida**: Alinhar o objetivo.\n\n### Dimensão: Aderência ao Guia de Marca\n- **Status**: Aprovado\n- **Apontamento**: Conforme.\n")
+    achados = G._dimensoes_incoerentes(parecer)
+    assert len(achados) == 1 and "idêntico" in achados[0]
+    outro = parecer.replace("Gerar 400 contatos qualificados (agendamentos e orçamentos) em 8 semanas (baseline: 863 conversões RD em 90 dias, 343 vindas de mídia paga)\"", "Gerar 500 contatos em 6 semanas e mais algum texto aqui\"")
+    assert G._dimensoes_incoerentes(outro) == []
+
+
+def test_claim_uma_referencia_e_valor_de_marca_nao_e_claim():
+    assert G._claims_proibidos("A confiança que nos torna uma referência está no atendimento.")
+    assert G._claims_proibidos("Somos uma referência em cuidado.")
+    assert not G._claims_proibidos("Excelência médica e cuidado humano são os valores do hospital.")
+    assert not G._claims_proibidos("Consulte as referências do guia de marca.")
+
+
+def test_cronograma_refeito_a_partir_do_calendario_na_ultima_tentativa():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+    apl = _tarefa("### Entregas Bloqueadas:\n- Plano de Mídia Paga")
+    cal = _tarefa(_CAL_8)
+    assert len(G._linhas_do_calendario(_CAL_8)) == 6 and G._linhas_do_calendario(_CAL_8)[0]["rede"] == "instagram"
+    inventado = _pacote_cron("| Data | Hora | Canal | Peça |", ["| 02/11/2026 | 10:00 | Instagram | Post 1 |", "| 03/11/2026 | 10:00 | Facebook | Post 2 |"])
+    g = G._com_limite_de_rejeicoes(G._guardrail_pacote_factory(cal, apl), saneador=G._saneador_pacote_factory(cal, apl))
+    assert g(inventado)[0] is False and g(inventado)[0] is False
+    ok, texto = g(inventado)
+    corpo = texto.split("\n\n", 1)[1]
+    assert ok is True and "cronograma refeito" in texto and "Post 1" not in corpo
+    assert len(G._posts_da_tabela(corpo)) == 6 and "02/11/2026" not in corpo and "01/11/2026 | a definir | America/Manaus | Instagram" in corpo
+    assert G._guardrail_pacote_factory(cal, apl)(_saida(corpo))[0] is True                 # o texto refeito passa na própria trava
+    # sem título de cronograma: a seção é acrescentada
+    sem_titulo = _saida("# Índice\n" + ("peça listada com o status de liberação do pacote de publicação. " * 12) + "\n```\n")
+    novo, trocas = G._saneador_pacote_factory(cal, apl)(sem_titulo.raw)
+    assert "## Cronograma de Publicação" in novo and len(G._posts_da_tabela(novo)) == 6 and trocas
+    # calendário bloqueado: não mexe
+    bloq = _tarefa("### Entregas Bloqueadas:\n- Calendário Social")
+    assert G._saneador_pacote_factory(cal, bloq)(inventado.raw) == (inventado.raw, [])
