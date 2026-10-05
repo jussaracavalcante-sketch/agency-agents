@@ -282,3 +282,8 @@ telemedicina (fora do briefing) e o saneador deixou o artigo sem assunto. Plano 
 2. Calendário: datas em formato dd-Mon-aa reconhecidas (e 2023 acusado como passado); tabela com menos de metade das datas legíveis é rejeitada.
 3. "Segurança em cada diagnóstico" entra nos claims; "Garantir …" em item de checklist deixa de ser tratado como promessa.
 4. Portal: Aprovar fica bloqueado quando há texto de ajustes escrito (evita Aprovar com o texto perdido).
+
+## Melhorias (itens do relatório do nono piloto)
+1. Calendário: a tabela precisa da coluna Data; post com história, relato ou depoimento de paciente é rejeitado mesmo com [VALIDAR] em outra célula da linha (`_tabela_sem_coluna_data`, `_historias_de_pacientes`).
+2. Reemissão do G2: marcador inexistente ([confirmado]) rejeitado e trocado por [VALIDAR]; o plano de mídia reemitido precisa manter a rotina (budget pace, alerta de 90%, UTM, alçadas) e, ao esgotar, as seções são inseridas por código.
+3. Serviços: `before_kickoff` calcula `servicos_nao_informados` (serviços e especialidades que o briefing e a base do cliente não citam) e as tarefas de conteúdo, calendário, e-mail, direção de arte e plano de mídia o recebem no prompt como lista de itens que não podem ser tema, título, exemplo nem copy.

@@ -116,25 +116,39 @@ _REGRA_CONTEXTO_CLIENTE = (
 _LIMITE_CONTEXTO_CLIENTE = 8000
 
 
+_SERVICOS_LISTA = ("cirurgia robótica", "telemedicina", "UTI", "cardiologia", "ortopedia", "urologia", "oncologia", "neurologia", "maternidade",
+                   "pediatria", "pronto-socorro", "hemodinâmica", "transplante", "centro cirúrgico")
+
+
+def _texto_permitido(inputs):
+    """Texto que o briefing e a base do cliente permitem citar. Não inclui a lista de serviços não informados, para ela não se autorizar."""
+    return " ".join(str(v) for k, v in inputs.items() if k != "servicos_nao_informados").lower()
+
+
+def _servicos_nao_informados(permitido):
+    return ", ".join(sv for sv in _SERVICOS_LISTA if not re.search(rf"\b{re.escape(sv.lower())}\b", permitido)) or "nenhum"
+
+
 def _injetar_contexto_cliente(inputs):
     """
     before_kickoff: carrega a base de conhecimento do cliente informado em inputs['cliente'] e a expõe como
     inputs['contexto_cliente'], usada por todas as tarefas. Determinístico: não depende de o agente decidir
-    consultar a ferramenta.
+    consultar a ferramenta. Também expõe inputs['servicos_nao_informados']: serviços e especialidades que o briefing e a base não citam,
+    que as peças não podem usar (o modelo costuma "lembrar" serviços reais do cliente que ninguém informou).
     """
     inputs = dict(inputs or {})
     if inputs.get("contexto_cliente"):
         definir_contexto_do_portal(str(inputs.get("cliente") or ""), str(inputs["contexto_cliente"]))
-        _TEXTO_PERMITIDO["texto"] = " ".join(str(v) for v in inputs.values()).lower()
-        _INPUTS_ATUAIS.update(inputs)
-        return inputs
-    cliente = str(inputs.get("cliente") or "").strip()
-    if not cliente:
-        inputs["contexto_cliente"] = "[SEM CLIENTE INFORMADO] Marque decisões de marca como [VALIDAR]."
     else:
-        texto = BrandBookTool()._run(cliente)
-        inputs["contexto_cliente"] = texto[:_LIMITE_CONTEXTO_CLIENTE]
-    _TEXTO_PERMITIDO["texto"] = " ".join(str(v) for v in inputs.values()).lower()
+        cliente = str(inputs.get("cliente") or "").strip()
+        if not cliente:
+            inputs["contexto_cliente"] = "[SEM CLIENTE INFORMADO] Marque decisões de marca como [VALIDAR]."
+        else:
+            texto = BrandBookTool()._run(cliente)
+            inputs["contexto_cliente"] = texto[:_LIMITE_CONTEXTO_CLIENTE]
+    permitido = _texto_permitido(inputs)
+    inputs["servicos_nao_informados"] = _servicos_nao_informados(permitido)
+    _TEXTO_PERMITIDO["texto"] = permitido
     _INPUTS_ATUAIS.update(inputs)
     return inputs
 
@@ -321,6 +335,22 @@ _AFIRMACOES_FALSAS = re.compile(
 _CLAIMS_NOVOS = re.compile(r"garant\w+\s+(a\s+|o\s+)?(seguran[çc]a|precis[ãa]o|resultado|cura|recupera[çc][ãa]o)", re.I)
 
 
+def _trecho_reemitido(texto, nome_regex):
+    """Da seção "Peça reemitida: <nome>" até a próxima peça reemitida ou a lista de versões; vazio se a peça não foi reemitida."""
+    m = re.search(rf"(pe[çc]a reemitida|reemiss[ãa]o)[^\n]*(?:{nome_regex})|(?:{nome_regex})[^\n]*reemitid", texto or "", re.I)
+    if not m:
+        return ""
+    resto = texto[m.start():]
+    fim = re.search(r"\n#{1,4}\s*(pe[çc]a reemitida|parte c|lista de vers)", resto[m.end() - m.start():], re.I)
+    return resto[: (m.end() - m.start()) + fim.start()] if fim else resto
+
+
+def _a_partir_da_reemissao(texto):
+    """Texto da Parte B em diante (peças reemitidas); o registro da Parte A pode citar o problema e não entra."""
+    m = re.search(r"parte b|pe[çc]a reemitida", texto or "", re.I)
+    return texto[m.start():] if m else ""
+
+
 def _guardrail_aplicacao_g2(saida):
     """Ajuste de veracidade só remove ou marca [VALIDAR]: nunca afirma que depoimento é real ou autorizado."""
     base = _guardrail_documento(saida)
@@ -340,6 +370,23 @@ def _guardrail_aplicacao_g2(saida):
         erro = _problemas_calendario(cal)
         if erro:
             return False, "O calendário reemitido tem problema. " + erro + " Reemita o calendário inteiro, não só as linhas ajustadas."
+    reemitido = _sem_alerta(_a_partir_da_reemissao(texto))
+    falso = sorted({m.group(0) for m in _MARCADOR_FALSO.finditer(reemitido)})
+    if falso:
+        return False, (
+            "A reemissão usa o marcador " + ", ".join(falso) + ", que não existe: nada foi confirmado. O único marcador é [VALIDAR]; troque-o e diga o que o valor é."
+        )
+    plano = _trecho_reemitido(texto, r"m[íi]dia")
+    if plano:
+        faltas = _faltas_rotina_midia(plano)
+        if faltas:
+            return False, (
+                "O plano de mídia reemitido perdeu a rotina da Vanguarda: " + "; ".join(faltas) + ". Reemita o plano inteiro, mantendo as seções "
+                "\"Insumos e pendências\", \"Rotina operacional (diária, semanal)\" e \"Alçadas e autorizações\"."
+            )
+        canais = _problemas_midia(plano, " ")
+        if canais and "canal" in canais:
+            return False, "No plano de mídia reemitido: " + canais
     if _AFIRMACOES_FALSAS.search(texto):
         return False, (
             "A saída afirma que depoimentos/testemunhos são reais, colhidos com consentimento ou autorizados. Isso não "
@@ -411,7 +458,16 @@ def _saneador_aplicacao_g2_factory(portao_task):
     def saneador(texto):
         invalida = len(texto.strip()) < _MIN_CARACTERES_DOCUMENTO or any(f in texto.lower()[:900] for f in _FRASES_DE_FALHA)
         if not invalida:
-            return _sanear_reemissao(texto)
+            novo, trocas = _sanear_reemissao(texto)
+            sem_falso = _MARCADOR_FALSO.sub("[VALIDAR]", novo)
+            if sem_falso != novo:
+                trocas.append("marcador falso [confirmado]")
+                novo = sem_falso
+            plano = _trecho_reemitido(novo, r"m[íi]dia")
+            if plano and _faltas_rotina_midia(plano):
+                novo = novo.rstrip() + "\n\n### Plano de mídia: seções da rotina (inseridas automaticamente)\n" + _secoes_rotina_midia(plano) + "\n"
+                trocas.append("seções da rotina de mídia")
+            return novo, trocas
         feedback = _feedback_do_portao(getattr(getattr(portao_task, "output", None), "raw", None) or "")
         linhas = [
             "# Aplicação da decisão G2: NÃO EXECUTADA",
@@ -756,8 +812,43 @@ def _linha_solta_na_tabela(texto):
     return ""
 
 
+_HISTORIAS_PACIENTES = re.compile(r"hist[óo]rias? de pacientes?|relatos? (inspiradores )?de (recupera[çc][ãa]o|pacientes?)|depoimentos?|antes e depois|casos? de sucesso", re.I)
+
+
+def _historias_de_pacientes(texto):
+    """Post ou peça que usa história, relato ou depoimento de paciente: não existe nos insumos e [VALIDAR] em outra célula da linha não o legitima."""
+    achados = []
+    for linha in _sem_alerta(texto or "").splitlines():
+        m = _HISTORIAS_PACIENTES.search(linha)
+        if m and not re.search(r"\bsem\b|n[ãa]o\b|proibid|evitar|nunca", linha, re.I):
+            achados.append(m.group(0).lower())
+    return sorted(set(achados))
+
+
+def _tabela_sem_coluna_data(texto):
+    """True se a tabela do calendário (cabeçalho com 'Semana') não tem coluna de data."""
+    linhas = _sem_alerta(texto or "").splitlines()
+    for i, linha in enumerate(linhas[:-1]):
+        l = linha.strip()
+        if l.startswith("|") and re.fullmatch(r"\|[\s:|-]+\|?", linhas[i + 1].strip()):
+            celulas = [c.strip().lower() for c in l.strip("|").split("|")]
+            if any(c.startswith("semana") for c in celulas):
+                return not any(c.startswith("data") for c in celulas)
+    return False
+
+
 def _problemas_calendario(texto):
     """Erro do calendário (cobertura, data passada, linha solta na tabela) ou None."""
+    if _tabela_sem_coluna_data(texto):
+        return (
+            "A tabela do calendário não tem a coluna Data. Cada post precisa da data completa (dd/mm/aaaa) numa coluna chamada Data, ao lado de Semana e Plataforma."
+        )
+    historias = _historias_de_pacientes(texto)
+    if historias:
+        return (
+            "O calendário usa " + ", ".join(historias) + ". Não há histórias, relatos nem depoimentos de pacientes nos insumos, e [VALIDAR] não os legitima: "
+            "troque esses posts por conteúdo institucional ou educativo que o briefing e a base do cliente sustentem."
+        )
     linhas_tabela = len(re.findall(r"^\|\s*\d{1,2}\s*\|", _sem_alerta(texto), re.M | re.I))
     if linhas_tabela >= 6 and len(_extrair_datas(_sem_alerta(texto))) < linhas_tabela * 0.5:
         return (
