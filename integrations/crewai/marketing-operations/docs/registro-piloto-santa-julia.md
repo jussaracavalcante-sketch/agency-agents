@@ -256,3 +256,9 @@ reconhecido como dimensão sem problema.
 2. `aplicacao_g2` esgotada com saída curta ou recusa vira registro honesto "aplicação NÃO EXECUTADA": nenhuma peça reemitida, todas bloqueadas, feedback humano copiado literalmente.
 3. `pacote_publicacao`: com aplicação não executada, o cronograma não pode listar posts.
 4. Datas dd/mm sem ano valem como do ano corrente (cobertura e data passada); `_SEM_PROBLEMA` reconhece "não há necessidade de alteração" e "não apresenta alterações".
+
+## Melhorias (itens 3 a 5 do relatório do oitavo piloto)
+1. Plano de mídia: quando a trava esgota, as seções da rotina que o plano omitiu ("Insumos e pendências", "Rotina operacional (diária, semanal)" com budget pace, alerta aos 90% e UTM, "Alçadas e autorizações")
+   são inseridas por código a partir de `config/rotina_midia.yaml`, marcadas como inseridas automaticamente para o gestor revisar.
+2. Saneador: o serviço fora do briefing vira "serviço [VALIDAR: confirmar com o hospital]" com o artigo ajustado ("A telemedicina proporciona" → "O serviço [VALIDAR…] proporciona"), em vez de deixar a frase quebrada.
+3. Rubrica: FALHA que cita trecho já marcado [VALIDAR], ou "Compliance e precisão" ≤ 5/20 por causa do marcador, é rejeitada; o prompt da tarefa diz o mesmo.

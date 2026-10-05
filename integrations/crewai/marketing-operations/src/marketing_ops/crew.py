@@ -582,6 +582,11 @@ def _guardrail_sem_claims(saida):
     return True, saida
 
 
+_ARTIGO_MASCULINO = {"a": "o", "as": "os", "da": "do", "das": "dos", "na": "no", "nas": "nos", "pela": "pelo", "pelas": "pelos", "à": "ao", "às": "aos",
+                     "uma": "um", "umas": "uns", "o": "o", "os": "os", "do": "do", "dos": "dos", "no": "no", "nos": "nos", "um": "um"}
+_TERMOS_COM_ARTIGO = re.compile(r"(?:\b(?P<art>a|as|o|os|da|das|do|dos|na|nas|no|nos|pela|pelas|à|às|uma|umas|um)\s+)?(?P<termo>" + _TERMOS_SENSIVEIS.pattern + r")", re.I)
+
+
 def _acrescentar_marca(linha, marca):
     """Põe a marca no fim da linha; em linha de tabela, antes do último separador, para não quebrar a tabela."""
     if linha.rstrip().endswith("|"):
@@ -613,11 +618,17 @@ def _sanear_claims(texto, so_apos=None):
             continue
         if permitido:
             def _trocar(m):
-                if re.search(rf"\b{re.escape(m.group(0).lower())}\b", permitido):
+                termo = m.group("termo").lower()
+                if re.search(rf"\b{re.escape(termo)}\b", permitido):
                     return m.group(0)
-                trocas.append(m.group(0).lower())
-                return "[VALIDAR: serviço fora do briefing]"
-            l = _TERMOS_SENSIVEIS.sub(_trocar, l)
+                trocas.append(termo)
+                # "A telemedicina proporciona" vira "O serviço [VALIDAR...] proporciona": o artigo vai para o masculino de "serviço" e a frase continua legível
+                original = m.group("art") or ""
+                artigo = _ARTIGO_MASCULINO.get(original.lower(), original)
+                if original[:1].isupper():
+                    artigo = artigo[:1].upper() + artigo[1:]
+                return f"{artigo}{' ' if artigo else ''}serviço [VALIDAR: confirmar com o hospital]"
+            l = _TERMOS_COM_ARTIGO.sub(_trocar, l)
         if "[validar" not in l.lower() and _CLAIMS_PROIBIDOS.search(l) and not _LINHA_NEUTRA.search(l):
             trocas.append(_CLAIMS_PROIBIDOS.search(l).group(0).lower())
             l = _acrescentar_marca(l, "[VALIDAR MÉDICO]")
@@ -636,6 +647,10 @@ def _sanear_reemissao(texto):
 def _sanear_midia(texto):
     """Plano de mídia: além das afirmações, canal pago que o briefing não prevê vira [VALIDAR: canal fora do brief] (a verba segue para o humano decidir)."""
     texto, trocas = _sanear_claims(texto)
+    extra = _secoes_rotina_midia(texto)
+    if extra:
+        texto = texto.rstrip() + "\n\n" + extra + "\n"
+        trocas.append("seções da rotina de mídia")
     base = _normalizar(_TEXTO_PERMITIDO["texto"])
     for canal in _CANAIS_PAGOS:
         if _normalizar(canal) in base:
@@ -925,6 +940,28 @@ def _linhas_resumo_rubrica(texto):
     return [m.group(0).strip(" *`>-\t") for m in _RESUMO_RUBRICA.finditer(texto or "")]
 
 
+def _validar_punido_pela_rubrica(texto):
+    """
+    [VALIDAR] é pendência humana: não reprova gate nem zera "Compliance e precisão". Devolve a mensagem se a rubrica tratou o marcador como falha
+    (FALHA citando trecho com [VALIDAR], ou critério de compliance ≤ 5/20 justificado pelo marcador); None se não.
+    """
+    for linha in _sem_alerta(texto or "").splitlines():
+        if re.search(r"\bFALHA\b", linha) and not linha.lstrip().upper().startswith("RESUMO"):
+            for citado in re.findall(r"[\"“]([^\"”]{3,200})[\"”]", linha):
+                if "[validar" in citado.lower():
+                    return (
+                        f"A rubrica deu FALHA citando um trecho que já tem [VALIDAR] (\"{citado[:70]}\"). [VALIDAR] é pendência humana e não reprova gate. "
+                        "Só há FALHA para afirmação sem fonte e SEM marcação; cite o trecho que está sem [VALIDAR] ou troque o gate para OK."
+                    )
+        m = re.search(r"compliance e precis[ãa]o[^\d\n]{0,12}(\d{1,2})\s*/\s*20", linha, re.I)
+        if m and int(m.group(1)) <= 5 and "validar" in linha.lower():
+            return (
+                "A nota de Compliance e precisão está em " + m.group(1) + "/20 por causa do marcador [VALIDAR]. O marcador é pendência humana: avalie só o que está "
+                "afirmado sem marcação e não reduza a nota por ele."
+            )
+    return None
+
+
 def _guardrail_rubrica(saida):
     """
     Rubrica de qualidade: quatro peças, cada uma com a linha RESUMO (5 gates, nota, veredito, ciclo) coerente com as regras:
@@ -965,6 +1002,9 @@ def _guardrail_rubrica(saida):
             esperado = "APROVAR" if nota >= 90 else "APROVAR COM AJUSTES MENORES" if nota >= 80 else "DEVOLVER" if nota >= 60 else "REFAZER"
             if ver != esperado:
                 return False, f"{peca}: a nota {nota} corresponde ao veredito {esperado}, não {ver}."
+    punido = _validar_punido_pela_rubrica(texto)
+    if punido:
+        return False, punido
     if _SEGMENTO_SAUDE.search(str(_INPUTS_ATUAIS.get("segmento", ""))) and "aval m" not in _normalizar(texto):
         return False, "O segmento é saúde: inclua a marca AVAL MÉDICO PENDENTE em todas as peças e no quadro de notas."
     return True, saida
@@ -1374,6 +1414,25 @@ def _faltas_rotina_midia(texto):
     """Elementos da rotina de mídia que o plano precisa trazer e não trouxe."""
     baixo = _sem_alerta(texto).lower()
     return [rot for _, rx, rot in _FALTAS_ROTINA if not re.search(rx, baixo)]
+
+
+def _secoes_rotina_midia(texto):
+    """Seções da rotina parametrizada que o plano de mídia omitiu, em Markdown e a partir de _ROTINA (nada inventado). Vazio se o plano já traz tudo."""
+    r = _ROTINA.get("operacao") or {}
+    if not r:
+        return ""
+    baixo = _sem_alerta(texto).lower()
+    nota = "> Seção inserida automaticamente a partir da rotina parametrizada da Vanguarda, porque a trava esgotou: o gestor de mídia deve revisar e completar."
+    partes = []
+    if "insumos e pendências" not in baixo and "insumos e pendencias" not in baixo:
+        partes.append("## Insumos e pendências\n" + nota + "\n" + " ".join(str(r.get("insumos_obrigatorios", "")).split()) + "\n- Verba, canais e objetivo vêm do brief aprovado; o que faltar fica [VALIDAR] para o Account.")
+    if not re.search(r"rotina operacional", baixo) or _faltas_rotina_midia(texto):
+        verba = [str(x).replace("{alerta_consumo_pct}", str(_ALERTA_PCT)) for x in r.get("verba", [])]
+        itens = verba + [f"URLs de todos os anúncios com UTM (minúsculas e sem espaços)."] + [f"Diária: {_lista(r.get('otimizacao_diaria'), ' → ')}.", f"Semanal: {r.get('rotina_semanal', '')}"]
+        partes.append("## Rotina operacional (diária, semanal)\n" + nota + "\n" + "\n".join(f"- {i}" for i in itens if i))
+    if not re.search(r"al[çc]adas", baixo):
+        partes.append("## Alçadas e autorizações\n" + nota + "\n- Autonomia do gestor: " + _lista(r.get("autonomia")) + ".\n- Exige autorização (Supervisor ou Diretoria): " + _lista(r.get("exige_autorizacao")) + ".\n- Revisão técnica do Supervisor de Mídia Paga antes de ativar; ativação só após o G3.")
+    return "\n\n".join(partes)
 
 
 def _g_doc():
