@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_limpar_final", "_trecho_em_ingles", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_linhas_do_calendario", "_saneador_pacote_factory", "_REDES", "_HORA_COM_FUSO_COLADO", "_posts_da_tabela", "_bloqueadas_do_g2", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_limpar_final", "_trecho_em_ingles", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_linhas_do_calendario", "_saneador_pacote_factory", "_REDES", "_HORA_COM_FUSO_COLADO", "_posts_da_tabela", "_bloqueadas_do_g2", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario", "_trechos_entre_aspas", "_fim_do_documento", "_PALAVRAS_TITULO_EN", "_PT_PT", "_PT_PT_RE", "_titulo_em_ingles", "_portugues_de_portugal", "_linhas_do_cronograma", "_problemas_cronograma", "_tamanho_util", "_pecas_encolhidas", "_MARCA_HISTORICO", "_orcamento_de_historico", "_ECRA_COM_ARTIGO", "_ECRA_ARTIGO",
 }
 
 
@@ -801,14 +801,14 @@ def test_pacote_copia_todas_as_linhas_do_calendario_e_nao_inventa_posts():
     G._INPUTS_ATUAIS.clear()
     apl = _tarefa("### Entregas Liberadas:\n- Calendário Social\n- Fluxos de E-mail\n\n### Entregas Bloqueadas:\n- Plano de Mídia Paga")
     g = G._guardrail_pacote_factory(_tarefa(_CAL_8), apl)
-    cab = "| Data | Hora | Canal | Peça |"
-    todas = [f"| {d} | 10:00 | {r} | Post |" for d, r in [("01/11/2026", "Instagram"), ("03/11/2026", "Facebook"), ("05/11/2026", "LinkedIn"),
-                                                               ("08/11/2026", "Instagram"), ("10/11/2026", "Facebook"), ("12/11/2026", "LinkedIn")]]
+    cab = "| Data | Hora | Canal | Peça | UTM |"
+    todas = [f"| {d} | a definir | {r} | Carrossel – post {i} | utm_source={r.lower()}&utm_medium=social&utm_campaign=cal |" for i, (d, r) in enumerate(
+        [("01/11/2026", "Instagram"), ("03/11/2026", "Facebook"), ("05/11/2026", "LinkedIn"), ("08/11/2026", "Instagram"), ("10/11/2026", "Facebook"), ("12/11/2026", "LinkedIn")])]
     assert G._posts_da_tabela(_CAL_8)[:2] == [("01/11/2026", "instagram"), ("03/11/2026", "facebook")]
     assert g(_pacote_cron(cab, todas))[0] is True
     faltando = g(_pacote_cron(cab, todas[:3]))
     assert faltando[0] is False and "TODAS as linhas" in faltando[1] and "3 posts" in faltando[1]
-    inventado = g(_pacote_cron(cab, todas[:2] + ["| 01/11/2026 | 12:00 | Instagram | Post 2 – Mês da Saúde |"] + todas[2:]))
+    inventado = g(_pacote_cron(cab, todas[:2] + ["| 01/11/2026 | a definir | Instagram | Post 2 – Mês da Saúde | utm_source=instagram&utm_medium=social |"] + todas[2:]))
     assert inventado[0] is False and "não tem" in inventado[1]                     # mesma data e rede repetidas além do calendário
 
 
@@ -884,3 +884,105 @@ def test_cronograma_refeito_a_partir_do_calendario_na_ultima_tentativa():
     # calendário bloqueado: não mexe
     bloq = _tarefa("### Entregas Bloqueadas:\n- Calendário Social")
     assert G._saneador_pacote_factory(cal, bloq)(inventado.raw) == (inventado.raw, [])
+
+
+# ───────── correções do piloto 2896d45e ─────────
+
+def test_citacao_curta_nao_cria_citacao_falsa_entre_aspas():
+    linha = 'Uso de superlativos sem validação, como "última geração" e "tecnologia de ponta", não está respaldado por fontes. Expressões como "unimos cuidado humano com tecnologia de última geração" precisam de validação.'
+    assert G._trechos_entre_aspas(linha) == ["unimos cuidado humano com tecnologia de última geração"]
+    parecer = "- **Resultado:** Reprovado\n- " + linha
+    assert G._citacoes_inexistentes(parecer, "Estamos felizes. unimos cuidado humano com tecnologia de última geração para você") == []
+    assert G._citacoes_inexistentes(parecer, "texto sem a frase") == ["unimos cuidado humano com tecnologia de última geração"]
+
+
+def test_comentario_entre_o_documento_e_uma_cerca_solta():
+    doc = "```markdown\n# Metadados\n- titulo: Guia\n# Texto\n" + "conteúdo do guia para escolher um hospital. " * 5 + "\n```\n\n**Notas para o Diretor de Arte:**\n- Utilize a paleta institucional em todos os títulos.\n```"
+    assert G._texto_apos_documento(doc).startswith("**Notas para o Diretor de Arte")
+    assert G._guardrail_documento(_saida(doc + "x" * 800))[0] is False
+    limpo, feitos = G._limpar_final(doc)
+    assert "Notas para o Diretor" not in limpo and limpo.rstrip().endswith("```") and "comentário depois do documento removido" in feitos
+    assert G._texto_apos_documento(limpo) == ""
+    assert G._texto_apos_documento("```markdown\n# Doc\n```") == ""            # documento correto segue valendo
+
+
+def test_portugues_de_portugal_e_barrado_e_trocado():
+    base = "# Conteúdo\n" + "texto em português do Brasil com bastante conteúdo útil para o leitor do guia. " * 12
+    assert G._guardrail_documento(_saida(base))[0] is True
+    ruim = base + "\nEquipas médicas e utilizadores no ecrã."
+    r = G._guardrail_documento(_saida(ruim))
+    assert r[0] is False and "equipas" in r[1] and "Brasil" in r[1]
+    limpo, feitos = G._limpar_final(ruim)
+    assert "Equipes médicas e usuários na tela." in limpo and feitos
+
+
+def test_titulo_em_ingles_e_barrado_e_titulo_em_portugues_passa():
+    assert G._titulo_em_ingles("1. **Completeness of Deliverables:**")
+    assert G._titulo_em_ingles("2. **Legal and Claim Compliance:**")
+    assert G._titulo_em_ingles("5. **Technical and Visual Details:**")
+    for pt in ("### Importância da Especialização", "1. **Conformidade legal e de claims:**", "## Plano de Mídia Paga", "**Orçamento total:**", "Checklist de Entregabilidade"):
+        assert not G._titulo_em_ingles(pt), pt
+    doc = "# Parecer\n" + "texto em português do Brasil com bastante conteúdo útil para o leitor. " * 12 + "\n1. **Completeness of Deliverables:**\n- tudo analisado\n"
+    assert G._guardrail_documento(_saida(doc))[0] is False
+
+
+def _post_cron(linhas, cab="| Data | Hora | Fuso | Canal | Peça | Link | UTM | Responsável | Status |"):
+    return _saida("# Índice\n" + ("peça listada no índice com o status de liberação e o nome padronizado do arquivo. " * 10) + "\n## Cronograma de Publicação\n" + cab
+                  + "\n|---|---|---|---|---|---|---|---|---|\n" + "\n".join(linhas) + "\n")
+
+
+def test_cronograma_exige_peca_do_post_utm_e_hora_a_definir():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+    cal = _tarefa(_CAL_8)
+    apl = _tarefa("### Entregas Bloqueadas:\n- Plano de Mídia Paga")
+    g = G._guardrail_pacote_factory(cal, apl)
+    redes = [("01/11/2026", "Instagram"), ("03/11/2026", "Facebook"), ("05/11/2026", "LinkedIn"), ("08/11/2026", "Instagram"), ("10/11/2026", "Facebook"), ("12/11/2026", "LinkedIn")]
+    def linha(d, r, peca, hora="a definir", utm=None):
+        utm = utm if utm is not None else f"utm_source={r.lower()}&utm_medium=social&utm_campaign=cal"
+        return f"| {d} | {hora} | America/Manaus | {r} | {peca} | a definir após a publicação | {utm} | a definir | A definir |"
+    certo = [linha(d, r, f"Carrossel – post {i}") for i, (d, r) in enumerate(redes)]
+    assert g(_post_cron(certo))[0] is True
+    # a mesma peça em todas as linhas (título do conteúdo longo repetido)
+    r = g(_post_cron([linha(d, r_, "Guia para Escolher um Hospital de Alta Complexidade em Manaus") for d, r_ in redes]))
+    assert r[0] is False and "Peça repete" in r[1]
+    # UTM "a definir"
+    r = g(_post_cron([linha(d, r_, f"Post {i}", utm="a definir") for i, (d, r_) in enumerate(redes)]))
+    assert r[0] is False and "sem UTM" in r[1]
+    # hora assumida quando o calendário não traz horário
+    r = g(_post_cron([linha(d, r_, f"Post {i}", hora="10:00") for i, (d, r_) in enumerate(redes)]))
+    assert r[0] is False and "a definir" in r[1] and "horário" in r[1]
+    # o texto refeito pelo saneador passa na própria trava e traz uma peça distinta por post
+    novo, _ = G._saneador_pacote_factory(cal, apl)(_post_cron([linha(d, r_, "Guia", hora="10:00") for d, r_ in redes]).raw)
+    assert g(_saida(novo))[0] is True and len({p["peca"] for p in G._linhas_do_cronograma(novo)}) == 6
+
+
+_CONTEUDO_COMPLETO = "# Metadados\n- titulo: Como escolher\n- slug: como-escolher\n- meta_description: " + "descrição do guia. " * 10 + "\n\n# Texto Completo\n" + "Parágrafo do guia com bastante informação útil. " * 40
+_EMAIL_COMPLETO = "# Segmentação\n" + "critério de segmentação do público. " * 20 + "\n## Fluxo de boas-vindas\n" + "| Espera | Condição | E-mail |\n|---|---|---|\n" * 3 + "texto do fluxo de e-mail. " * 40
+
+
+def test_reemissao_resumida_e_barrada_e_registrada_como_bloqueada():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+    originais = {"Conteúdo longo": (r"conte[úu]do", _tarefa(_CONTEUDO_COMPLETO)), "Fluxos de e-mail": (r"e-?mail", _tarefa(_EMAIL_COMPLETO))}
+    rub, portao = _tarefa(_RUB), _tarefa("# Histórico de feedbacks humanos\nAjustes pedidos: remover o superlativo.")
+    g = G._guardrail_aplicacao_g2_factory(rub, portao, originais)
+    registro = "# Registro G2\n" + "Decisão e ajustes registrados para cada entrega do pacote. " * 12 + "\n"
+    resumida = registro + "# Peça reemitida: Conteúdo Completo\n# Texto\nGuia curto.\n\n# Peça reemitida: Fluxos de E-mail\nE-mail 1 curto.\n"
+    r = g(_saida(resumida))
+    assert r[0] is False and "resumida" in r[1] and "Conteúdo longo" in r[1] and "Fluxos de e-mail" in r[1]
+    completa = registro + "# Peça reemitida: Conteúdo Completo\n" + _CONTEUDO_COMPLETO + "\n\n# Peça reemitida: Fluxos de E-mail\n" + _EMAIL_COMPLETO + "\n"
+    assert g(_saida(completa))[0] is True
+    # sem acesso às originais a trava não opina
+    assert G._guardrail_aplicacao_g2_factory(rub, portao)(_saida(resumida))[0] is True
+    # saneador: a peça resumida vira bloqueada no registro
+    novo, trocas = G._saneador_aplicacao_g2_factory(portao, originais)(resumida)
+    assert "Bloqueadas: Conteúdo longo, Fluxos de e-mail" in novo and any("reemissão incompleta" in t for t in trocas)
+
+
+def test_gasto_historico_nao_pode_ser_orcamento_do_canal():
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["orcamento_midia"] = "R$ 15.000"; G._TEXTO_PERMITIDO["texto"] = ""
+    ruim = "## Insumos\n- **Breakdown:** Google Ads com run-rate de R$ 11.654 em 90 dias.\n## Estrutura\n- **Orçamento:** R$ 11.654\n"
+    r = G._problemas_midia(ruim)
+    assert r and "gasto histórico" in r and "R$ 15.000" in r and "[VALIDAR]" in r
+    bom = "## Insumos\n- **Breakdown:** Google Ads com run-rate de R$ 11.654 em 90 dias (referência).\n## Estrutura\n- **Orçamento do Google Ads:** parte dos R$ 15.000 [VALIDAR]\n"
+    assert G._problemas_midia(bom) is None
+    G._INPUTS_ATUAIS.clear()
