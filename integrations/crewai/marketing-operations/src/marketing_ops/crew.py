@@ -198,12 +198,31 @@ _FRASES_DE_FALHA = (
     "please provide the",
 )
 _MIN_CARACTERES_DOCUMENTO = 700
+def _fim_do_documento(t):
+    """
+    Posição do fechamento do bloco ``` onde o documento termina, ou None. Com número PAR de cercas é a última. Com número ÍMPAR e texto que abre com ```,
+    o comentário do agente costuma vir entre o fechamento do documento e uma cerca solta no fim (```...```, "Notas para o Diretor de Arte", ```):
+    o documento termina na segunda cerca.
+    """
+    n = t.count("```")
+    if n < 2:
+        return None
+    if n % 2 == 0:
+        return t.rfind("```") + 3
+    if t.lstrip().startswith("```"):
+        primeira = t.find("```")
+        segunda = t.find("```", primeira + 3)
+        return segunda + 3 if segunda > 0 else None
+    return None
+
+
 def _texto_apos_documento(texto):
-    """Texto escrito depois do último fechamento de bloco ``` (comentário do agente fora do documento); vazio se não houver."""
+    """Texto escrito depois do fechamento do documento (comentário do agente fora do bloco ```); vazio se não houver."""
     t = _sem_alerta(texto or "")
-    if t.count("```") < 2 or t.count("```") % 2:
+    fim = _fim_do_documento(t)
+    if fim is None:
         return ""
-    resto = t[t.rfind("```") + 3:].strip()
+    resto = t[fim:].replace("```", "").strip()
     return resto if len(resto) > 20 else ""
 
 
@@ -227,11 +246,37 @@ def _trecho_em_ingles(trecho):
     return en / len(palavras) >= 0.28 and pt / len(palavras) <= 0.1
 
 
+_PALAVRAS_TITULO_EN = frozenset("of and the legal claim technical visual details deliverables completeness summary findings recommendations risks overview issues proper".split())
+_PT_PT = {"equipas": "equipes", "equipa": "equipe", "utilizadores": "usuários", "utilizador": "usuário", "telemóvel": "celular", "telemóveis": "celulares",
+          "ecrã": "tela", "ecrãs": "telas", "contactos": "contatos", "contacto": "contato"}
+_ECRA_COM_ARTIGO = re.compile(r"\b(no|do|ao|um|o|nos|dos|aos|os)\s+(ecrã|ecrãs)\b", re.I)
+_ECRA_ARTIGO = {"no": "na", "do": "da", "ao": "à", "um": "uma", "o": "a", "nos": "nas", "dos": "das", "aos": "às", "os": "as"}
+_PT_PT_RE = re.compile(r"\b(" + "|".join(sorted(_PT_PT, key=len, reverse=True)) + r")\b", re.I)
+
+
+def _titulo_em_ingles(linha):
+    """Título ou rótulo curto em inglês ("### Completeness of Deliverables", "**Legal and Claim Compliance:**"): duas palavras de título em inglês, ou "of the"."""
+    l = re.sub(r"^[\s#>*_\-\d.)]+|[\s*_:]+$", "", linha)
+    palavras = re.findall(r"[a-zA-Z']+", l.lower())
+    if not 2 <= len(palavras) <= 7:
+        return False
+    return sum(1 for p in palavras if p in _PALAVRAS_TITULO_EN) >= 2 and not any(p in _PALAVRAS_PT for p in palavras)
+
+
+def _portugues_de_portugal(texto):
+    """Palavras do português de Portugal ("equipas", "utilizadores", "ecrã"): a crew escreve em português do Brasil."""
+    return sorted({m.group(0).lower() for m in _PT_PT_RE.finditer(_sem_alerta(texto or ""))})
+
+
 def _linha_em_ingles(texto):
     """Primeira frase em inglês (inclusive numa célula de tabela; a crew escreve em português do Brasil); vazio se não houver."""
     for linha in _sem_alerta(texto or "").splitlines():
         l = linha.strip()
-        if not l or l.startswith(("```", "#")):
+        if not l or l.startswith("```"):
+            continue
+        if len(l) < 90 and _titulo_em_ingles(l):
+            return l[:80]
+        if l.startswith("#"):
             continue
         if l.startswith("|"):
             for celula in l.strip("|").split("|"):
@@ -260,6 +305,11 @@ def _guardrail_documento(saida):  # sem anotação de retorno: o validador do Cr
     if ingles:
         return False, (
             f"A saída tem frase em inglês (\"{ingles}\"). Escreva tudo em português do Brasil, só o documento, sem introdução nem fechamento em outro idioma."
+        )
+    pt_pt = _portugues_de_portugal(texto)
+    if pt_pt:
+        return False, (
+            "A saída usa português de Portugal (" + ", ".join(pt_pt) + "). Escreva em português do Brasil (equipe, usuário, tela, celular, contato)."
         )
     primeira = next((l.strip() for l in texto.splitlines() if l.strip() and not l.strip().startswith(("```", ">"))), "")
     if _ABERTURA_DE_CONVERSA.match(primeira):
@@ -364,7 +414,7 @@ def _trecho_reemitido(texto, nome_regex):
     if not m:
         return ""
     resto = texto[m.start():]
-    fim = re.search(r"\n#{1,4}\s*(pe[çc]a reemitida|parte c|lista de vers)", resto[m.end() - m.start():], re.I)
+    fim = re.search(r"\n#{1,4}\s*(pe[çc]a reemitida|parte c|lista (final )?de vers)", resto[m.end() - m.start():], re.I)
     return resto[: (m.end() - m.start()) + fim.start()] if fim else resto
 
 
@@ -372,6 +422,24 @@ def _a_partir_da_reemissao(texto):
     """Texto da Parte B em diante (peças reemitidas); o registro da Parte A pode citar o problema e não entra."""
     m = re.search(r"parte b|pe[çc]a reemitida", texto or "", re.I)
     return texto[m.start():] if m else ""
+
+
+def _tamanho_util(texto):
+    return len(re.sub(r"\s+", " ", _sem_alerta(texto or "")).strip())
+
+
+def _pecas_encolhidas(texto, originais, minimo=0.6):
+    """
+    Peças reemitidas que ficaram com menos de 60% do tamanho da original: reemitir é copiar a peça INTEIRA trocando só o trecho ajustado; um resumo ou esqueleto
+    perde metadados, e-mails, seções e tabelas. `originais`: {nome da entrega: (regex do nome, tarefa da peça original)}. Devolve [(nome, % do original)].
+    """
+    achadas = []
+    for nome, (rx, tarefa) in (originais or {}).items():
+        orig = getattr(getattr(tarefa, "output", None), "raw", None) or ""
+        novo = _trecho_calendario_reemitido(texto) if "calend" in rx else _trecho_reemitido(texto, rx)
+        if novo and _tamanho_util(orig) > 600 and _tamanho_util(novo) < minimo * _tamanho_util(orig):
+            achadas.append((nome, round(100 * _tamanho_util(novo) / _tamanho_util(orig))))
+    return achadas
 
 
 def _guardrail_aplicacao_g2(saida):
@@ -417,7 +485,7 @@ def _guardrail_aplicacao_g2(saida):
                 "\"Insumos e pendências\", \"Rotina operacional (diária, semanal)\" e \"Alçadas e autorizações\"."
             )
         canais = _problemas_midia(plano, " ")
-        if canais and "canal" in canais:
+        if canais and ("canal" in canais or "gasto histórico" in canais):
             return False, "No plano de mídia reemitido: " + canais
     if _AFIRMACOES_FALSAS.search(texto):
         return False, (
@@ -440,7 +508,7 @@ def _pecas_para_refazer(rubrica):
     return saida
 
 
-def _guardrail_aplicacao_g2_factory(rubrica_task, portao_task):
+def _guardrail_aplicacao_g2_factory(rubrica_task, portao_task, originais=None):
     """
     "Aprovado." sozinho não carrega correções. Peça que a rubrica mandou REFAZER não pode sair liberada quando o humano não escreveu
     nenhum ajuste: tem de constar na lista de bloqueadas. Se o humano devolveu com texto, as correções dele são aplicadas e a regra não vale.
@@ -450,6 +518,12 @@ def _guardrail_aplicacao_g2_factory(rubrica_task, portao_task):
         base = _guardrail_aplicacao_g2(saida)
         if base[0] is False:
             return base
+        encolhidas = _pecas_encolhidas(_sem_alerta(getattr(saida, "raw", None) or str(saida) or ""), originais)
+        if encolhidas:
+            return False, (
+                "A reemissão ficou resumida: " + ", ".join(f"{n} com {p}% do tamanho da original" for n, p in encolhidas) + ". Reemitir é copiar a peça INTEIRA, "
+                "com todas as seções, campos, metadados, e-mails, tabelas e checklists da original, trocando só o trecho ajustado. Reemita cada peça completa."
+            )
         rubrica = getattr(getattr(rubrica_task, "output", None), "raw", None) or ""
         portao = getattr(getattr(portao_task, "output", None), "raw", None) or ""
         devolvido = "ajustes pedidos" in _normalizar(portao)
@@ -480,7 +554,7 @@ def _feedback_do_portao(portao_texto):
     return (m.group(1).strip() if m else "")[:3000]
 
 
-def _saneador_aplicacao_g2_factory(portao_task):
+def _saneador_aplicacao_g2_factory(portao_task, originais=None):
     """
     Última barreira da aplicação do G2. Saída curta ou que "não conseguiu ler o feedback" não pode seguir adiante como se as peças tivessem
     sido ajustadas (o pacote de publicação usaria as peças antigas). Nesse caso a saída vira um registro honesto: aplicação NÃO executada, nenhuma
@@ -499,6 +573,15 @@ def _saneador_aplicacao_g2_factory(portao_task):
             if plano and _faltas_rotina_midia(plano):
                 novo = novo.rstrip() + "\n\n### Plano de mídia: seções da rotina (inseridas automaticamente)\n" + _secoes_rotina_midia(plano) + "\n"
                 trocas.append("seções da rotina de mídia")
+            encolhidas = _pecas_encolhidas(novo, originais)
+            if encolhidas:
+                nomes = ", ".join(n for n, _ in encolhidas)
+                novo = novo.rstrip() + (
+                    "\n\n### Reemissão incompleta (inserida automaticamente)\n"
+                    f"Bloqueadas: {nomes}. A reemissão perdeu partes da peça original (seções, metadados, e-mails ou tabelas): mantenha a versão original e reaplique "
+                    "os ajustes pedidos antes de liberar.\n"
+                )
+                trocas.append("reemissão incompleta: " + nomes)
             return novo, trocas
         feedback = _feedback_do_portao(getattr(getattr(portao_task, "output", None), "raw", None) or "")
         linhas = [
@@ -565,9 +648,20 @@ def _limpar_final(texto):
         else:
             saida.append(linha)
     novo = "\n".join(saida)
+    if _portugues_de_portugal(novo):
+        def _tela(m):  # "no ecrã" vira "na tela": o gênero muda junto com o artigo
+            art = _ECRA_ARTIGO[m.group(1).lower()]
+            return (art.capitalize() if m.group(1)[:1].isupper() else art) + (" telas" if m.group(2).lower().endswith("s") else " tela")
+        novo = _ECRA_COM_ARTIGO.sub(_tela, novo)
+
+        def _br(m):
+            t = _PT_PT[m.group(0).lower()]
+            return t.capitalize() if m.group(0)[:1].isupper() else t
+        novo = _PT_PT_RE.sub(_br, novo)
+        feitos.append("português de Portugal trocado por português do Brasil")
     apos = _texto_apos_documento(novo)
     if apos:
-        novo = novo[: novo.rfind("```") + 3] + "\n"
+        novo = novo[: _fim_do_documento(novo)] + "\n"
         feitos.append("comentário depois do documento removido")
     return novo, feitos
 
@@ -594,7 +688,7 @@ def _com_limite_de_rejeicoes(guardrail, maximo=2, saneador=None):
                 if not trocas:
                     return True, _com_alerta(saida, veredito[1])
                 tipo = type("SaidaSaneada", (), {"raw": limpo, "name": getattr(saida, "name", None) or ""})()
-                return True, _com_alerta(tipo, f"{veredito[1]} Termos trocados automaticamente por [VALIDAR]: {', '.join(sorted(set(trocas)))[:200]}.")
+                return True, _com_alerta(tipo, f"{veredito[1]} Saneamento automático aplicado (linha marcada com [VALIDAR] ou [VALIDAR MÉDICO], trecho trocado ou removido): {', '.join(sorted(set(trocas)))[:200]}.")
             return False, _PREFIXO_AUTO + str(veredito[1])
         return veredito
 
@@ -1043,6 +1137,56 @@ def _linhas_do_calendario(texto):
     return saida
 
 
+def _linhas_do_cronograma(texto):
+    """Posts de rede social do cronograma do pacote: dicts com peça, hora e UTM (cabeçalho da tabela com Canal e Peça); vazio se não houver."""
+    linhas = _sem_alerta(texto or "").splitlines()
+    saida, cab = [], None
+    for i, linha in enumerate(linhas):
+        l = linha.strip()
+        if not l.startswith("|"):
+            cab = None
+            continue
+        if re.fullmatch(r"\|[\s:|-]+\|?", l):
+            continue
+        celulas = [c.strip() for c in l.strip("|").split("|")]
+        baixo = [_sem_acento(c).lower() for c in celulas]
+        if cab is None and i + 1 < len(linhas) and re.fullmatch(r"\|[\s:|-]+\|?", linhas[i + 1].strip()):
+            idx = lambda *nomes: next((k for k, c in enumerate(baixo) if c.startswith(nomes)), None)  # noqa: E731
+            canal, peca = idx("canal", "plataforma"), idx("peca")
+            cab = {"canal": canal, "peca": peca, "hora": idx("hora"), "utm": idx("utm")} if canal is not None and peca is not None else ()
+            continue
+        if cab:
+            def cel(k):
+                return celulas[cab[k]] if cab[k] is not None and cab[k] < len(celulas) else ""
+            if any(x in cel("canal").lower() for x in _REDES):
+                saida.append({"peca": cel("peca"), "hora": cel("hora"), "utm": cel("utm")})
+    return saida
+
+
+def _problemas_cronograma(texto, vigente):
+    """Defeitos do cronograma de posts que o código sabe refazer: Peça repetida, UTM não preenchida, hora inventada. None se estiver correto."""
+    posts = _linhas_do_cronograma(texto)
+    if len(posts) < 3:
+        return None
+    pecas = {_normalizar(p["peca"]) for p in posts}
+    if len(pecas) == 1:
+        return (
+            "A coluna Peça repete o mesmo valor em todos os posts. Cada linha identifica o post do calendário vigente (formato e hook dele), "
+            "não o título do conteúdo longo."
+        )
+    sem_utm = [p for p in posts if "utm_source=" not in p["utm"].lower()]
+    if sem_utm:
+        return (
+            f"{len(sem_utm)} post(s) estão sem UTM. Preencha a UTM de cada post com utm_source=<rede>&utm_medium=social&utm_campaign=<campanha>, "
+            "em minúsculas e sem espaços, conforme o dicionário de UTMs do plano de medição."
+        )
+    if not re.search(r"\b\d{1,2}[:h]\d{2}\b", vigente or ""):
+        com_hora = [p for p in posts if re.search(r"\d{1,2}:\d{2}", p["hora"])]
+        if com_hora:
+            return "O calendário vigente não traz horário: escreva \"a definir\" na coluna Hora em vez de assumir um horário (ex.: 10:00)."
+    return None
+
+
 def _saneador_pacote_factory(calendario_task, aplicacao_task):
     """
     Última barreira do pacote: o cronograma de redes sociais é DADO do calendário, não texto livre. Se a trava esgotou, a tabela do cronograma é refeita por código
@@ -1059,8 +1203,10 @@ def _saneador_pacote_factory(calendario_task, aplicacao_task):
         if not posts:
             return texto, []
         linhas = ["| Data | Hora | Fuso | Canal | Peça | Link | UTM | Responsável | Status |", "|---|---|---|---|---|---|---|---|---|"]
-        for p in posts:
-            peca = " – ".join(x for x in (p["formato"], re.sub(r"\s+", " ", p["hook"])[:70]) if x) or "post do calendário"
+        pecas = [" – ".join(x for x in (p["formato"], re.sub(r"\s+", " ", p["hook"])[:70]) if x) or f"post {p['rede'].capitalize()}" for p in posts]
+        if len(set(pecas)) < len(pecas):  # hooks repetidos: a data distingue o post na coluna Peça
+            pecas = [f"{x} ({p['data'][:5]})" for x, p in zip(pecas, posts)]
+        for p, peca in zip(posts, pecas):
             utm = f"utm_source={p['rede']}&utm_medium=social&utm_campaign=calendario_social"
             linhas.append(f"| {p['data']} | a definir | America/Manaus | {p['rede'].capitalize()} | {peca} | a definir após a publicação | {utm} | a definir | A definir |")
         tabela = "\n".join(linhas)
@@ -1133,6 +1279,10 @@ def _guardrail_pacote_factory(calendario_task, aplicacao_task):
                     f"O cronograma tem {sum(pac.values())} posts de rede social e o calendário vigente tem {sum(vig.values())}. Copie TODAS as linhas do calendário, "
                     "uma por post, com a data e a rede dele (faltam, por exemplo: " + "; ".join(f"{d} {r}" for d, r in faltam[:4]) + ")."
                 )
+        if posts_vigentes and not calendario_bloqueado:
+            erro = _problemas_cronograma(texto, vigente)
+            if erro:
+                return False, erro
         datas_vigentes = _datas_do_texto(vigente)
         sociais = "\n".join(_linhas_social(texto))
         if datas_vigentes and sociais:
@@ -1436,6 +1586,29 @@ def _num(txt):
         return None
 
 
+_MARCA_HISTORICO = re.compile(r"run-?rate|[úu]ltimos? \d+ dias|\bem \d+ dias|hist[óo]ric|gasto", re.I)
+
+
+def _orcamento_de_historico(texto):
+    """Mensagem quando o gasto histórico (run-rate de N dias) aparece como orçamento do plano; None se não houver."""
+    linhas = _sem_alerta(texto or "").splitlines()
+    historico = set()
+    for l in linhas:
+        if _MARCA_HISTORICO.search(l):
+            historico |= {_num(x) for x in re.findall(r"R\$\s*([\d.]+(?:,\d+)?)", l)}
+    historico = {h for h in historico if h and h >= 100}
+    for l in linhas:
+        if re.search(r"or[çc]amento|verba", l, re.I) and not _MARCA_HISTORICO.search(l):
+            achados = {_num(x) for x in re.findall(r"R\$\s*([\d.]+(?:,\d+)?)", l)} & historico
+            if achados:
+                total = str(_INPUTS_ATUAIS.get("orcamento_midia", "") or "o orçamento do briefing")
+                return (
+                    f"R$ {max(achados):,.0f} é gasto histórico (run-rate de dias passados), não orçamento. O orçamento do plano é {total}: declare a verba de cada canal "
+                    "como parte desse total, marcada [VALIDAR], e cite o histórico só como referência."
+                ).replace(",", ".")
+    return None
+
+
 def _problemas_midia(texto, brief_texto=""):
     """Mensagem de erro do plano de mídia (canal fora do brief, projeção sem fonte, conversões que não fecham) ou None."""
     texto = _sem_alerta(texto)
@@ -1448,6 +1621,9 @@ def _problemas_midia(texto, brief_texto=""):
                 "O plano de mídia usa canal que o brief aprovado e o briefing não preveem: " + ", ".join(fora) + ". Use só os canais "
                 "do brief aprovado; para outro canal, escreva [VALIDAR: canal fora do brief] e não aloque verba."
             )
+    historico = _orcamento_de_historico(texto)
+    if historico:
+        return historico
     linhas = list(_LINHA_PROJECAO.finditer(texto or ""))
     lista = list(_LINHA_PROJECAO_LISTA.finditer(texto or ""))
     if linhas or lista:
@@ -1651,6 +1827,20 @@ def _cmp(texto):
     return re.sub(r"[^a-z0-9à-ú]+", " ", (texto or "").lower()).strip()
 
 
+def _trechos_entre_aspas(linha):
+    """
+    Trechos entre aspas da linha, pareando as aspas retas na ordem (1ª com 2ª, 3ª com 4ª). Pareamento por regex global erra quando há citação curta
+    (ex.: "última geração" e "tecnologia de ponta", ...): o texto ENTRE duas citações vira "citação" falsa. Só entram trechos de 25 a 300 caracteres.
+    """
+    saida = [m.group(1) for m in re.finditer(r"“([^”\n]{25,300})”", linha)]
+    pos = [i for i, c in enumerate(linha) if c == '"']
+    for a, b in zip(pos[0::2], pos[1::2]):
+        q = linha[a + 1:b]
+        if 25 <= len(q) <= 300:
+            saida.append(q)
+    return saida
+
+
 def _citacoes_inexistentes(parecer, fonte):
     """Trechos entre aspas do parecer que não existem no texto revisado (nem no briefing). Linhas de regra ou correção sugerida não contam."""
     base = _cmp(fonte)
@@ -1658,8 +1848,7 @@ def _citacoes_inexistentes(parecer, fonte):
     for linha in _sem_alerta(parecer).splitlines():
         if re.search(r"corre[çc][ãa]o|\bregra\b|sugest|exemplo", linha, re.I):
             continue
-        for m in re.finditer(r'"([^"\n]{25,300})"|“([^”\n]{25,300})”', linha):
-            q = m.group(1) or m.group(2)
+        for q in _trechos_entre_aspas(linha):
             for seg in re.split(r"\.\.\.|…", q):
                 n = _cmp(seg)
                 if len(n) >= 20 and n not in base:
@@ -2233,10 +2422,19 @@ class MarketingOpsCrew:
             ],
         )
 
+    def _pecas_originais(self):
+        """Peças de produção na versão original (para conferir que a reemissão do G2 não encolheu a peça)."""
+        return {
+            "Conteúdo longo": (r"conte[úu]do", self.producao_conteudo()),
+            "Calendário social": (r"calend[áa]rio", self.calendario_social()),
+            "Fluxos de e-mail": (r"e-?mail", self.fluxos_email()),
+            "Plano de mídia paga": (r"m[íi]dia", self.plano_midia_paga()),
+        }
+
     @task
     def aplicacao_g2(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g2_factory(self.rubrica_qa(), self.portao_g2()), saneador=_saneador_aplicacao_g2_factory(self.portao_g2())), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g2_factory(self.rubrica_qa(), self.portao_g2(), self._pecas_originais()), saneador=_saneador_aplicacao_g2_factory(self.portao_g2(), self._pecas_originais())), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g2"],
             context=[
                 self.portao_g2(),

@@ -337,6 +337,15 @@ Melhorou: cronograma do pacote com 24 linhas, mesmas datas e canais do calendár
 Pendências para o próximo PR:
 - `aplicacao_g2` encolhe as peças na reemissão (conteúdo sem metadados, e-mail sem fluxos e segmentação, lista de assets removida em vez de corrigida) e não declara o orçamento do Google Ads dentro dos R$ 15.000.
 - Pacote: coluna Peça repete o título do conteúdo em todas as linhas; Link, UTM e Responsável "a definir"; hora 10:00 assumida; primeiro post na data de hoje.
-- Alerta de claims com falso positivo ("garantir cuidado") em linhas já marcadas com [VALIDAR MÉDICO]; "Termos trocados" informado sem troca no texto.
+- (Corrigido na análise posterior) O alerta de claims NÃO era falso positivo: o modelo manteve "garantir cuidados", "tecnologia de última geração" e "de ponta" nas três tentativas e o saneador acrescentou [VALIDAR MÉDICO] à linha, como projetado. O que estava errado era só o rótulo do alerta ("Termos trocados"), que agora diz "Saneamento automático aplicado (linha marcada…)".
 - Guardião: citações que não são cópia exata, trechos de versões antigas cobrados nas reemitidas, títulos em inglês e erro de grafia no parecer do G3.
 - Comentário "Notas para o Diretor de Arte" depois do bloco de código no conteúdo; "Equipas" (português de Portugal).
+
+### Correções de código após o piloto 2896d45e
+- Guardião: pareamento das aspas na checagem de citações (citação curta como "última geração" criava uma "citação" falsa entre duas aspas e gerava o alerta do `revisao_g2`); títulos de seção em inglês ("Legal and Claim Compliance") barrados; instrução para revisar a versão vigente.
+- Comentário depois do documento: detecta o caso de número ímpar de cercas ``` (comentário entre o fechamento e uma cerca solta) e o saneador o corta; `expected_output` do conteúdo não pede mais "notas para o Diretor de Arte" fora do bloco (ficam em `notas_visuais`).
+- Português de Portugal ("equipas", "utilizadores", "ecrã", "contacto", "telemóvel") barrado e trocado por português do Brasil na última tentativa.
+- `aplicacao_g2`: reemissão com menos de 60% do tamanho da original é barrada; na última tentativa a peça vira "Bloqueadas" no registro.
+- Plano de mídia: gasto histórico (run-rate de N dias) não pode ser declarado como orçamento do canal; a verba do canal é parte do orçamento do briefing, [VALIDAR].
+- Pacote: coluna Peça com o formato e o hook de cada post (não o título do conteúdo longo), UTM por post preenchida, hora "a definir" quando o calendário não traz horário; o saneador do pacote gera a mesma tabela.
+- Testes: 65 passando.

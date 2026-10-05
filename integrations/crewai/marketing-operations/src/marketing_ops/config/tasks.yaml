@@ -164,8 +164,8 @@ producao_conteudo:
     título e 2 de CTA. Nenhum dado sem fonte. Marque [AVAL ESPECIALISTA] onde couber.
     SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
   expected_output: >
-    Um bloco Markdown por conteúdo, com cabeçalho de metadados, texto final, variações de título
-    e CTA e notas visuais para o Diretor de Arte.
+    Um bloco Markdown por conteúdo, com cabeçalho de metadados, texto final e variações de título e CTA. As notas visuais para o Diretor de Arte
+    ficam só no campo notas_visuais dos metadados, dentro do bloco: nada de "Notas" ou comentário depois do bloco. Português do Brasil (equipe, não "equipa").
   agent: redator_conteudo
   output_file: output/06_conteudo.md
 
@@ -212,6 +212,7 @@ plano_midia_paga:
     declaradas, rotina semanal de otimização e requisitos de rastreamento. Briefe os criativos
     necessários (formato, dimensão, quantidade). NÃO crie nem ative nada em plataforma.
     SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
+    ORÇAMENTO: a verba de cada canal é parte do orçamento de {orcamento_midia}, marcada [VALIDAR]; gasto histórico (run-rate de 90 dias, por exemplo) é referência e nunca vira orçamento.
   expected_output: >
     Documento Markdown "Plano de Mídia" com as 9 seções do template, mais "Insumos e pendências", "Rotina operacional (diária, semanal)"
     e "Alçadas e autorizações", tabela de estrutura de campanhas e briefing de criativos.
@@ -364,7 +365,9 @@ aplicacao_g2:
     acrescente conteúdo novo além do necessário e não invente dados. Ajuste que depende de informação ausente vira
     [VALIDAR] na peça. Ajuste de veracidade (depoimento, testemunho, caso de paciente, claim) só pode REMOVER o trecho ou
     marcá-lo [VALIDAR]: é proibido declarar que algo é real, autorizado, consentido ou validado. Reemita cada peça no mesmo
-    formato e extensão da original (não apenas o trecho alterado), sem notas que afirmem conformidade. Ao reemitir, NÃO acrescente nenhuma afirmação nova: é proibido
+    formato e extensão da original (não apenas o trecho alterado), sem notas que afirmem conformidade. Reemitir é COPIAR a peça inteira trocando só o trecho
+    ajustado: conteúdo com todos os metadados e o texto completo; e-mail com segmentação, fluxos, tabelas, todos os e-mails e checklist; plano de mídia com todas
+    as seções; calendário com todas as linhas e as listas de apoio. Resumo ou esqueleto da peça é reprovado (a reemissão precisa ter ao menos 60% do tamanho da original). Ao reemitir, NÃO acrescente nenhuma afirmação nova: é proibido
     introduzir 'garantimos', 'garantindo', 'segurança', 'precisão' ou 'tecnologia de ponta' sem fonte; ajuste só remove, suaviza
     com [VALIDAR] ou mantém o texto original. Entrega sem ajuste não precisa ser reemitida. Ao final liste, por entrega, "versão reemitida" ou
     "versão original". BLOQUEIO POR RUBRICA: a aprovação "Aprovado." sem nenhum ajuste escrito pelo humano não carrega correções e
@@ -413,7 +416,9 @@ pacote_publicacao:
     aplicacao_g2 lista como "versão original". Para o calendário social, o cronograma copia TODAS as linhas do calendário vigente (todas as
     semanas), com a data e a plataforma de cada post; não deixe "a definir" onde o calendário já tem data e não use posts, datas ou
     temas do calendário substituído. Cada post do calendário vira UMA linha do cronograma, com a data (dd/mm/aaaa) e a rede dele; não crie posts nem títulos
-    novos ("Post 1 – Mês da Saúde") e não repita a mesma data e rede além do que o calendário tem. A hora é HH:MM (ex.: 10:00) e o fuso fica na coluna própria,
+    novos ("Post 1 – Mês da Saúde") e não repita a mesma data e rede além do que o calendário tem. Na coluna Peça de cada post escreva o formato e o hook do próprio post do calendário (nunca o título do conteúdo longo repetido em todas as linhas).
+    Na coluna UTM de cada post escreva utm_source=<rede>&utm_medium=social&utm_campaign=<campanha>, em minúsculas e sem espaços, conforme o dicionário do plano de medição.
+    A hora fica "a definir" quando o calendário não traz horário (não assuma 10:00); se trouxer, escreva HH:MM, e o fuso fica na coluna própria,
     nunca colado na hora ("10:00-04:00"). Se o calendário social estiver entre as entregas bloqueadas em aplicacao_g2, o cronograma não lista posts de rede social.
     Escreva em português do Brasil e entregue só o documento.
   expected_output: >
@@ -436,6 +441,8 @@ revisao_g3:
     'de ponta', 'à frente') sem fonte; promessa clínica; números sem fonte (projeções, percentuais, tamanhos de base).
     Qualquer um desses itens torna a dimensão veracidade ou setor regulado Reprovada para a peça.
     Linhas com "ALERTA DE QUALIDADE" nas entregas indicam problema que a trava automática não conseguiu corrigir: trate o trecho citado como achado e cite-o no parecer.
+    VERSÃO VIGENTE: revise a versão reemitida em aplicacao_g2 quando existir; um trecho só é achado se estiver presente nela (não cobre o que a reemissão já removeu).
+    Escreva todo o parecer, inclusive títulos de seção e rótulos, em português do Brasil (nada de "Legal and Claim Compliance"), e copie cada trecho citado letra por letra.
   expected_output: >
     Parecer Markdown do pacote com resultado, checklist e riscos residuais.
   agent: guardiao_marca_compliance
