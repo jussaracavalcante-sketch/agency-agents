@@ -10,13 +10,15 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas",
 }
 
 
 def _carregar():
     arvore = ast.parse(_FONTE.read_text())
-    ns = {"re": re}
+    import yaml
+    rotina = yaml.safe_load((_FONTE.parent / "config/rotina_midia.yaml").read_text(encoding="utf-8"))
+    ns = {"re": re, "_ROTINA": rotina, "_ALERTA_PCT": int(rotina["parametros"]["alerta_consumo_pct"])}
     for no in arvore.body:
         nome = getattr(no, "name", None) or (no.targets[0].id if isinstance(no, ast.Assign) and isinstance(no.targets[0], ast.Name) else None)
         if nome in _NOMES:
@@ -256,3 +258,142 @@ def test_vamos_e_prefixo_de_revisao_automatica():
     assert ok is False and msg.startswith("REVISÃO AUTOMÁTICA DE QUALIDADE (não é feedback humano") and msg.endswith("problema X")
     ok2, saida = (g(types.SimpleNamespace(raw="y", name="t")))
     assert ok2 is True and "Pendência: problema X" in saida and "REVISÃO AUTOMÁTICA" not in saida     # o alerta traz o motivo sem o prefixo
+
+
+# --- 5 melhorias (execução 8e11e98c): trechos reais -------------------------------------------------------------------------------
+_BRIEF_REAL = """```markdown
+# Brief Estratégico
+## 4. Proposta de Valor
+| Consideração | Conheça a diferença que um atendimento [VALIDAR] pode fazer | Agende uma visita |
+## 9. Fontes
+- Baseline: Nekt Refined
+```
+
+Este documento foi criado seguindo rigorosamente as diretrizes do guia de identidade visual. Todas as propostas e validações foram claramente indicadas."""
+
+_PARECER_REAL = """# Parecer
+## Resultado Geral: Reprovado
+### 1. Coerência com o Briefing
+- **Status:** Reprovado
+- **Apontamento:** O objetivo está coerente com o briefing.
+- **Correção Sugerida:** Nenhuma correção necessária quanto ao objetivo SMART.
+### 3. Veracidade e Setor Regulamentado
+- **Status:** Reprovado
+- **Apontamento:** Trechos como "conhecimento da diferença que um atendimento [VALIDAR] pode fazer" carecem de validação.
+"""
+
+
+def _tarefa(raw):
+    return types.SimpleNamespace(output=types.SimpleNamespace(raw=raw))
+
+
+def test_texto_depois_do_documento_e_autocertificacao():
+    assert G._texto_apos_documento(_BRIEF_REAL).startswith("Este documento foi criado")
+    assert G._texto_apos_documento("```markdown\n# Doc\n```") == ""
+    assert G._texto_apos_documento("# Doc sem bloco\n" + "x" * 50) == ""
+    d = types.SimpleNamespace(raw=_BRIEF_REAL + "\n" + "y" * 800)
+    assert G._guardrail_documento(d)[0] is False
+    assert G._ocorrencias_proibidas("Todos os feedbacks e revisões foram considerados e incluídos. Não há ajustes pendentes.")
+    assert G._ocorrencias_proibidas("Este documento foi criado seguindo rigorosamente as diretrizes")
+    assert not G._ocorrencias_proibidas("O documento segue as diretrizes do guia de marca.")
+
+
+def test_orgao_regulador_como_fonte_de_mercado():
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS.update(_INPUTS_STJ)
+    G._TEXTO_PERMITIDO["texto"] = " ".join(_INPUTS_STJ.values()).lower()
+    ruim = _brief_stj("- Dados de Mercado: Conselho Federal de Medicina, ANVISA, CONAR\n")
+    assert "regulador" in G._guardrail_brief(ruim)[1]
+    assert G._guardrail_brief(_brief_stj("- Regras do setor: CFM, ANVISA e CONAR [VALIDAR]\n"))[0] is True
+
+
+def test_parecer_com_citacao_deturpada_e_dimensao_incoerente():
+    brief = _tarefa(_BRIEF_REAL)
+    g = G._guardrail_parecer_factory([brief])
+    G._TEXTO_PERMITIDO["texto"] = ""
+    r = g(types.SimpleNamespace(raw=_PARECER_REAL + "x" * 900))
+    assert r[0] is False and ("Coerência" in r[1] or "Reprovada" in r[1])                     # dimensão incoerente vem primeiro
+    sem_incoerencia = _PARECER_REAL.replace("- **Status:** Reprovado\n- **Apontamento:** O objetivo está coerente", "- **Status:** Aprovado\n- **Apontamento:** O objetivo está coerente", 1)
+    r2 = g(types.SimpleNamespace(raw=sem_incoerencia + "x" * 900))
+    assert r2[0] is False and "conhecimento da diferença" in r2[1]                              # citação deturpada
+    certo = sem_incoerencia.replace("conhecimento da diferença que um atendimento [VALIDAR] pode fazer", "Conheça a diferença que um atendimento [VALIDAR] pode fazer")
+    certo = certo.replace("Resultado Geral: Reprovado", "Resultado Geral: Reprovado")
+    assert g(types.SimpleNamespace(raw=certo + "x" * 900))[0] is True
+    assert G._citacoes_inexistentes('- Apontamento: "Conheça a diferença ... pode fazer uma diferença enorme"', _BRIEF_REAL)    # segmento inexistente
+    assert not G._citacoes_inexistentes('- Correção Sugerida: "Trocar por texto sem promessa e sem superlativo"', _BRIEF_REAL)    # linha de correção não conta
+
+
+def test_aplicacao_g1_preserva_validar():
+    original = "# Brief\n" + "x" * 900 + "\n- Mídia R$ 15.000 [VALIDAR]\n- +20% [VALIDAR]\n- Total R$ 25.000 [VALIDAR]\n"
+    portao = _tarefa("# G1\n## Histórico de Feedbacks Humanos\nNenhum feedback humano recebido.\n")
+    g = G._guardrail_aplicacao_g1_factory(_tarefa(original), portao)
+    nova = _brief_stj()
+    nova.raw = nova.raw.replace(" [VALIDAR]", "", 2)
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS.update(_INPUTS_STJ)
+    G._TEXTO_PERMITIDO["texto"] = " ".join(_INPUTS_STJ.values()).lower()
+    perdeu = types.SimpleNamespace(raw="# Brief\n" + "x" * 1500 + "\n## Objetivos SMART\n> " + _INPUTS_STJ["objetivo"] + "\n- Fonte: Nekt\n- Mídia R$ 15.000 [VALIDAR]\n- Total R$ 25.000 [VALIDAR]\n")
+    assert "[VALIDAR]" in g(perdeu)[1]                                                       # 2 marcações contra 3 do original
+    mantem = types.SimpleNamespace(raw=perdeu.raw + "- +20% [VALIDAR]\n")
+    assert g(mantem)[0] is True
+    com_feedback = g.__class__ and G._guardrail_aplicacao_g1_factory(_tarefa(original), _tarefa("# G1\nFeedback: confirmado o orçamento"))
+    assert com_feedback(perdeu)[0] is True                                                   # humano escreveu feedback: a regra não se aplica
+
+
+# --- rotina de mídia paga e performance (formulários de Carlos André e João Araújo) ------------------------------------------------
+_PLANO_OK = ("# Plano de Mídia\n" + "x" * 700 + "\n## Insumos e pendências\n- Verba por canal [VALIDAR]\n## Rotina operacional (diária, semanal)\n"
+             "- Budget pace diário por conta; alerta aos 90% do orçamento.\n- URLs com UTM em minúsculas.\n- Revisão técnica do Supervisor antes de ativar.\n"
+             "## Alçadas e autorizações\n- Alterar orçamento total exige autorização.\n")
+
+
+def test_blocos_da_rotina_trazem_os_parametros():
+    op = G._bloco_operacao()
+    assert "90%" in op and "budget pace" in op.lower() and "UTM" in op and "e-mail ou chamado no VJOB" in op
+    assert "alterar o valor total do orçamento do cliente" in op and "pausar criativos" in op
+    aud = G._bloco_auditoria()
+    for item in ("SEGMENTAÇÃO", "PIXEL/CAPI E TAGS", "CRIATIVOS", "URLS E UTM", "COPIES", "VERBA E BUDGET PACE", "ALÇADAS"):
+        assert item in aud, item
+    med = G._bloco_medicao()
+    assert "GTM" in med and "GA4" in med and "Supervisor" in med and "Account" in med
+
+
+def test_plano_de_midia_exige_a_rotina():
+    assert G._faltas_rotina_midia(_PLANO_OK) == []
+    faltas = G._faltas_rotina_midia("# Plano\nSó Google Ads e CPC.")
+    assert len(faltas) == 5
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = "google ads"
+    g = G._guardrail_midia_factory(types.SimpleNamespace(output=types.SimpleNamespace(raw="Mix: Google Ads")))
+    assert "rotina de mídia" in g(types.SimpleNamespace(raw="# Plano\n" + "x" * 800 + "\nGoogle Ads"))[1]
+    assert g(types.SimpleNamespace(raw=_PLANO_OK))[0] is True
+
+
+_AUD = [
+    "AUDITORIA | SEGMENTAÇÃO | OK | públicos coerentes com o briefing",
+    "AUDITORIA | PIXEL/CAPI E TAGS | PENDENTE | [VALIDAR] eventos a configurar",
+    "AUDITORIA | CRIATIVOS | OK | briefing de criativos presente",
+    "AUDITORIA | URLS E UTM | OK | todas as URLs com UTM em minúsculas",
+    "AUDITORIA | COPIES | OK | sem superlativos",
+    "AUDITORIA | VERBA E BUDGET PACE | OK | soma R$ 15.000",
+    "AUDITORIA | ALÇADAS | OK | alteração de orçamento exige autorização",
+]
+
+
+def _aud(linhas, parecer):
+    return types.SimpleNamespace(raw="\n".join(linhas) + "\n" + parecer + "\n" + "x" * 800)
+
+
+def test_auditoria_do_supervisor():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = "google ads"
+    plano = types.SimpleNamespace(output=types.SimpleNamespace(raw=_PLANO_OK))
+    brief = types.SimpleNamespace(output=types.SimpleNamespace(raw="Mix: Google Ads"))
+    g = G._guardrail_auditoria_factory(plano, brief)
+    lib = "PARECER DO SUPERVISOR | LIBERAR PARA G2 | pendências de pixel"
+    assert g(_aud(_AUD, lib))[0] is True
+    assert g(_aud(_AUD[:6], lib))[0] is False                                                       # falta o item ALÇADAS
+    falha = [l.replace("| OK | sem superlativos", "| FALHA | \"garante o melhor atendimento\" é promessa") for l in _AUD]
+    assert g(_aud(falha, lib))[0] is False                                                          # FALHA exige DEVOLVER
+    assert g(_aud(falha, "PARECER DO SUPERVISOR | DEVOLVER AO GESTOR | copies"))[0] is True
+    assert g(_aud(_AUD, "PARECER DO SUPERVISOR | DEVOLVER AO GESTOR | x"))[0] is False             # devolve sem FALHA
+    assert g(_aud(_AUD, "sem parecer"))[0] is False
+    ruim = types.SimpleNamespace(output=types.SimpleNamespace(raw=_PLANO_OK + "\nMeta Ads: 30% (R$ 4.500)\n"))
+    g2 = G._guardrail_auditoria_factory(ruim, brief)
+    r = g2(_aud(_AUD, lib))                                                                          # a varredura achou canal fora do brief e o parecer liberou
+    assert r[0] is False and "varredura" in r[1]

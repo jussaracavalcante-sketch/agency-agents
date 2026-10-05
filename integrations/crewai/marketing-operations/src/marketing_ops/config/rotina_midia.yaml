@@ -1,0 +1,73 @@
+# Parâmetros da rotina de Mídia Paga e Performance da Vanguarda Martech.
+# Fonte: formulários de rotina profissional de Carlos André (Analista de Mídia Paga) e João Araújo (Supervisor de Mídia Paga), 18/09/2026.
+# Este arquivo alimenta os prompts das tarefas plano_midia_paga, auditoria_midia, plano_medicao e relatorio_performance e as travas em código (crew.py).
+versao: 1
+
+parametros:
+  alerta_consumo_pct: 90          # alerta quando a conta chega a 90% do orçamento ou saldo baixo (item 9 dos formulários)
+
+kpis: [ROAS, CPA, CPL, CTR, CPM, "taxa de conversão do funil", "budget pace (ritmo de consumo de verba)", "índice de retrabalho"]
+
+# ─────────── Gestor(a) de Mídia Paga (rotina do Analista de Mídia Paga) ───────────
+operacao:
+  insumos_obrigatorios: >
+    Antes de montar o plano, confira os insumos do briefing: verba total e por canal/praça, objetivo e direcionamento de público.
+    Artes e vídeos aprovados pela Criação, acessos às contas e dados de conversão também entram. O que faltar vira pendência
+    [VALIDAR] para o Account; nunca assuma valor.
+  verba:
+    - "Controle de verba por budget pace (ritmo de consumo) diário, por conta e plataforma, sem estouro nem saldo pausado."
+    - "Alerta quando a conta atingir {alerta_consumo_pct}% do orçamento ou saldo baixo."
+    - "Alteração de verba só vale registrada por e-mail ou chamado no VJOB; pedido só por WhatsApp não altera o plano."
+  fluxo_nova_campanha:
+    - "conferir briefing e artes aprovadas"
+    - "configurar público, verba e objetivo"
+    - "parametrizar todas as URLs com UTM (minúsculas, sem espaços)"
+    - "montar os anúncios e as copies"
+    - "enviar para revisão técnica do Supervisor de Mídia Paga"
+    - "ativar somente após a aprovação do portão G3"
+  otimizacao_diaria:
+    - "analisar CPA, CPL, ROAS e CTR por conta"
+    - "pausar anúncios e conjuntos de baixo desempenho"
+    - "remanejar verba e ajustar lances dentro do limite aprovado"
+    - "pedir novos criativos à Criação quando a peça se esgotar"
+  rotina_semanal: "Check-in de performance com o Supervisor: resultados da carteira, gargalos de conversão e plano de testes de criativos e públicos."
+  copies: "Variações de títulos e descrições para teste A/B geradas a partir do briefing, sempre revisadas (marca, políticas da plataforma, [VALIDAR])."
+  autonomia:
+    - "pausar criativos ou conjuntos de baixo desempenho"
+    - "ajustar a distribuição diária de verba dentro do limite aprovado pelo cliente"
+    - "testar novos públicos e formatos de anúncio"
+  exige_autorizacao:
+    - "alterar o valor total do orçamento do cliente"
+    - "criar estrutura de conta que mude o escopo contratado"
+    - "enviar relatório mensal ao cliente sem validação do Supervisor"
+    - "repactuar prazo com impacto na data final do projeto"
+  prazos_criticos: "Lançamentos promocionais e sazonais; criativos aprovados com antecedência definida no VJOB antes do lançamento."
+
+# ─────────── Supervisor(a) de Mídia Paga e Performance (rotina do Supervisor) ───────────
+auditoria:
+  itens:
+    - {chave: "SEGMENTAÇÃO", pergunta: "públicos, tipos, fontes e tamanhos coerentes com o briefing; base legal para listas de CRM"}
+    - {chave: "PIXEL/CAPI E TAGS", pergunta: "eventos de conversão, Pixel/CAPI, GTM e GA4 previstos e com plano de teste"}
+    - {chave: "CRIATIVOS", pergunta: "peças necessárias, formatos e aprovação da Criação com antecedência"}
+    - {chave: "URLS E UTM", pergunta: "todas as URLs parametrizadas, minúsculas e sem espaços"}
+    - {chave: "COPIES", pergunta: "sem superlativo, garantia ou promessa; limites da plataforma; [VALIDAR] onde falta fonte"}
+    - {chave: "VERBA E BUDGET PACE", pergunta: "soma igual à verba do briefing, canais do brief aprovado, ritmo diário e alerta de {alerta_consumo_pct}%"}
+    - {chave: "ALÇADAS", pergunta: "mudança de orçamento, de escopo ou de prazo marcada como dependente de autorização"}
+  regra: >
+    O Supervisor audita e orienta a correção; não reescreve o plano nem executa o trabalho do gestor. Item sem problema recebe OK, item com
+    [VALIDAR] pendente de dado recebe PENDENTE e problema real recebe FALHA, com o trecho literal. Qualquer FALHA devolve o plano ao gestor.
+
+# ─────────── Analista de Dados e Performance (relatórios e rastreamento) ───────────
+medicao_relatorio:
+  auditoria_rastreamento:
+    - "verificar tags no GTM"
+    - "disparar eventos de teste"
+    - "validar no GA4 e no Gerenciador de Anúncios"
+    - "corrigir inconsistências de atribuição"
+  relatorio_mensal:
+    - "coletar dados das plataformas e do CRM"
+    - "preencher o template do relatório"
+    - "inserir análises qualitativas e diagnósticos"
+    - "submeter à validação do Supervisor de Mídia Paga"
+    - "enviar ao Account (nunca direto ao cliente sem validação)"
+  fechamento: "Relatório executivo com variações de performance, insights estratégicos e plano de ação do próximo ciclo."
