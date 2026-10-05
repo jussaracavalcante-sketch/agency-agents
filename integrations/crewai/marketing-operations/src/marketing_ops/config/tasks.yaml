@@ -82,6 +82,7 @@ revisao_g1:
     paciente, personagem ou persona tratada como pessoa real; garantia de resultado; superlativos ('referência', 'líder',
     'de ponta', 'à frente') sem fonte; promessa clínica; números sem fonte (projeções, percentuais, tamanhos de base).
     Qualquer um desses itens torna a dimensão veracidade ou setor regulado Reprovada para a peça.
+    Linhas com "ALERTA DE QUALIDADE" nas entregas indicam problema que a trava automática não conseguiu corrigir: trate o trecho citado como achado e cite-o no parecer.
   expected_output: >
     Parecer Markdown com resultado, checklist por dimensão (status, apontamento, regra,
     correção sugerida) e riscos residuais.
@@ -107,6 +108,9 @@ portao_g1:
     resumir, reordenar, renomear o resultado (Reprovado continua Reprovado) nem acrescentar "revisado" ou "com ajustes"; só o Guardião
     altera o próprio parecer; (3) resumo e riscos, usando apenas o que consta nas entregas; (4) pedido de decisão. Se o feedback humano
     pedir correções, registre-as como pendentes para a tarefa de aplicação: este portão não as executa nem afirma que foram cumpridas.
+    ALERTAS DE QUALIDADE: se qualquer entrega ou parecer do contexto trouxer uma linha com "ALERTA DE QUALIDADE", a trava automática reprovou aquela saída e ela foi
+    aceita sem correção. Reproduza todas essas linhas, literalmente e sem resumir, numa seção "Alertas de qualidade" do pedido, antes do pedido de decisão; sem alertas,
+    escreva "Nenhum alerta de qualidade". Nunca omita um alerta.
     HISTÓRICO DE FEEDBACKS: transcreva apenas mensagens que o humano de fato enviou nesta conversa. Se nenhuma mensagem
     humana anterior existir, escreva exatamente "Nenhum feedback humano recebido". É proibido redigir, supor ou reconstruir
     feedback a partir do parecer do Guardião ou de pendências; isso é falsificação de decisão humana.
@@ -273,6 +277,7 @@ revisao_g2:
     {plataformas_sociais} e do mix do brief aprovado; (c) projeções de CTR, CVR, CPL, CPC ou contatos sem fonte nos dados
     disponíveis; (d) soma de valores de mídia diferente de {orcamento_midia}; (e) superlativos como 'referência', 'líder', 'de renome'.
     Cite o trecho literal de cada ocorrência.
+    Linhas com "ALERTA DE QUALIDADE" nas entregas indicam problema que a trava automática não conseguiu corrigir: trate o trecho citado como achado e cite-o no parecer.
   expected_output: >
     Documento Markdown com um parecer por entrega (template de checklist) e um quadro-resumo
     final: entrega × resultado × nº de ajustes.
@@ -298,6 +303,9 @@ portao_g2:
     altera o próprio parecer; (2b) "Quadro da rubrica de qualidade (cópia literal)": copie, sem alterar, as quatro linhas que começam com RESUMO | da rubrica de qualidade (nota e veredito por peça);
     (3) resumo e riscos, usando apenas o que consta nas entregas; (4) pedido de decisão. Se o feedback humano
     pedir correções, registre-as como pendentes para a tarefa de aplicação: este portão não as executa nem afirma que foram cumpridas.
+    ALERTAS DE QUALIDADE: se qualquer entrega ou parecer do contexto trouxer uma linha com "ALERTA DE QUALIDADE", a trava automática reprovou aquela saída e ela foi
+    aceita sem correção. Reproduza todas essas linhas, literalmente e sem resumir, numa seção "Alertas de qualidade" do pedido, antes do pedido de decisão; sem alertas,
+    escreva "Nenhum alerta de qualidade". Nunca omita um alerta.
     HISTÓRICO DE FEEDBACKS: transcreva apenas mensagens que o humano de fato enviou nesta conversa. Se nenhuma mensagem
     humana anterior existir, escreva exatamente "Nenhum feedback humano recebido". É proibido redigir, supor ou reconstruir
     feedback a partir do parecer do Guardião ou de pendências; isso é falsificação de decisão humana.
@@ -377,6 +385,7 @@ revisao_g3:
     paciente, personagem ou persona tratada como pessoa real; garantia de resultado; superlativos ('referência', 'líder',
     'de ponta', 'à frente') sem fonte; promessa clínica; números sem fonte (projeções, percentuais, tamanhos de base).
     Qualquer um desses itens torna a dimensão veracidade ou setor regulado Reprovada para a peça.
+    Linhas com "ALERTA DE QUALIDADE" nas entregas indicam problema que a trava automática não conseguiu corrigir: trate o trecho citado como achado e cite-o no parecer.
   expected_output: >
     Parecer Markdown do pacote com resultado, checklist e riscos residuais.
   agent: guardiao_marca_compliance
@@ -400,6 +409,9 @@ portao_g3:
     resumir, reordenar, renomear o resultado (Reprovado continua Reprovado) nem acrescentar "revisado" ou "com ajustes"; só o Guardião
     altera o próprio parecer; (3) resumo e riscos, usando apenas o que consta nas entregas; (4) pedido de decisão. Se o feedback humano
     pedir correções, registre-as como pendentes para a tarefa de aplicação: este portão não as executa nem afirma que foram cumpridas.
+    ALERTAS DE QUALIDADE: se qualquer entrega ou parecer do contexto trouxer uma linha com "ALERTA DE QUALIDADE", a trava automática reprovou aquela saída e ela foi
+    aceita sem correção. Reproduza todas essas linhas, literalmente e sem resumir, numa seção "Alertas de qualidade" do pedido, antes do pedido de decisão; sem alertas,
+    escreva "Nenhum alerta de qualidade". Nunca omita um alerta.
     HISTÓRICO DE FEEDBACKS: transcreva apenas mensagens que o humano de fato enviou nesta conversa. Se nenhuma mensagem
     humana anterior existir, escreva exatamente "Nenhum feedback humano recebido". É proibido redigir, supor ou reconstruir
     feedback a partir do parecer do Guardião ou de pendências; isso é falsificação de decisão humana.

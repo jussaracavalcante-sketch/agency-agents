@@ -21,6 +21,11 @@ export default async function PainelAprovacoes({ u, selecionada, aba }: { u: Usu
   const { data: decisoes } = exec ? await admin().from("portal_decisoes").select("*").eq("execucao_id", exec.chave).order("criado_em") : { data: [] };
   const tarefas = exec ? exec.eventos.filter((e) => e.tipo === "task") : [];
   const feitas = new Set(tarefas.map((e) => e.task_name)).size;
+  // Linhas "ALERTA DE QUALIDADE": a trava automática reprovou a saída e ela foi aceita sem correção (limite de tentativas).
+  const TAG = "ALERTA DE QUALIDADE";
+  const alertas = tarefas.flatMap((e) =>
+    (e.output || "").split("\n").filter((l) => l.includes(TAG)).map((l) => ({ id: e.id, tarefa: rotuloTarefa(e.task_name || ""), texto: l.replace(/^[>\s⚠️]+/u, "").trim() })));
+  const contaAlertas = (evs: { tipo: string; output: string | null }[]) => evs.reduce((n, e) => n + (e.tipo === "task" && e.output ? e.output.split("\n").filter((l) => l.includes(TAG)).length : 0), 0);
   const abas: [Aba, string][] = [["aguardando", "Aguardando"], ["andamento", "Em andamento"], ["concluidas", "Concluídas"]];
 
   return (
@@ -37,7 +42,7 @@ export default async function PainelAprovacoes({ u, selecionada, aba }: { u: Usu
               <div className="row" style={{ flexWrap: "nowrap" }}>
                 <div className="item" style={{ padding: 0, border: 0 }}>
                   <span className={`bola ${e.pendente ? "w" : e.concluida ? "o" : ""}`}>{e.portao ?? (e.concluida ? "✔" : "…")}</span>
-                  <div className="grow"><strong>{nome(e.chave)}</strong><div className="mut">{e.pendente ? `Portão ${e.portao ?? "?"} pendente` : e.concluida ? "Concluída" : "Em andamento"}</div></div>
+                  <div className="grow"><strong>{nome(e.chave)}</strong><div className="mut">{e.pendente ? `Portão ${e.portao ?? "?"} pendente` : e.concluida ? "Concluída" : "Em andamento"}{contaAlertas(e.eventos) > 0 && <> · <span style={{ color: "var(--err)" }}>⚠ {contaAlertas(e.eventos)} alerta(s)</span></>}</div></div>
                 </div>
                 <span className="mut" style={{ whiteSpace: "nowrap" }}>{haQuanto(e.ultimo)}</span>
               </div>
@@ -54,6 +59,13 @@ export default async function PainelAprovacoes({ u, selecionada, aba }: { u: Usu
                   {exec.pendente ? <span className="st warn">Portão {exec.portao ?? "?"} aguardando decisão</span> : exec.concluida ? <span className="st ok">Concluída</span> : <span className="st ac">Em andamento</span>}
                 </div>
                 <p className="mut">Execução {exec.chave.slice(0, 8)} · {feitas} de {TOTAL_TAREFAS} tarefas entregues · última atividade {fmt(exec.ultimo)}</p>
+                {alertas.length > 0 && (
+                  <div className="aviso err" role="alert">
+                    <strong>⚠ {alertas.length} alerta(s) das travas automáticas</strong>
+                    <div className="mut">A trava reprovou a saída e ela foi aceita sem correção. Confira o trecho antes de decidir.</div>
+                    {alertas.map((a, i) => <p key={a.id + "-" + i} style={{ margin: "8px 0 0" }}><strong>{a.tarefa}:</strong> {a.texto.includes("Pendência:") ? a.texto.split("Pendência:").slice(1).join("Pendência:").trim() : a.texto}</p>)}
+                  </div>
+                )}
                 {exec.pendente && (<><h3>Pedido de aprovação ({exec.portao})</h3><pre className="doc">{exec.pendente.output}</pre></>)}
               </div>
               <div className="card">
