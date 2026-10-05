@@ -412,7 +412,10 @@ pacote_publicacao:
     VERSÃO VIGENTE: para cada peça use a versão REEMITIDA em aplicacao_g2 quando existir; a original só vale para a peça que
     aplicacao_g2 lista como "versão original". Para o calendário social, o cronograma copia TODAS as linhas do calendário vigente (todas as
     semanas), com a data e a plataforma de cada post; não deixe "a definir" onde o calendário já tem data e não use posts, datas ou
-    temas do calendário substituído. Escreva em português do Brasil e entregue só o documento.
+    temas do calendário substituído. Cada post do calendário vira UMA linha do cronograma, com a data (dd/mm/aaaa) e a rede dele; não crie posts nem títulos
+    novos ("Post 1 – Mês da Saúde") e não repita a mesma data e rede além do que o calendário tem. A hora é HH:MM (ex.: 10:00) e o fuso fica na coluna própria,
+    nunca colado na hora ("10:00-04:00"). Se o calendário social estiver entre as entregas bloqueadas em aplicacao_g2, o cronograma não lista posts de rede social.
+    Escreva em português do Brasil e entregue só o documento.
   expected_output: >
     Documento Markdown com Índice do pacote, Cronograma de publicação (tabela) e Checklist
     pré-publicação por canal com status.

@@ -307,3 +307,8 @@ trava de idioma não via (ela pulava linhas de tabela): corrigido, agora cada c�
 G2 devolvido na intenção, registrado como Aprovar sem texto. A `aplicacao_g2` abriu com "I'm going to reissue each piece…" e fechou com "This reissuance accounts for…" (inglês antes e depois do documento) e a trava aceitou na 3ª tentativa;
 o pacote cobriu 2 das 8 semanas, com posts inventados ("Mês da Saúde") e horário malformado ("10:00-04:00"). Melhoria: na última tentativa, `_limpar_final` remove a frase em inglês (em célula de tabela vira
 `[VALIDAR: texto em inglês]`) e corta o comentário depois do último bloco, antes de o saneador de cada tarefa atuar.
+
+## Melhorias (itens do relatório do décimo primeiro disparo)
+1. Pacote de publicação: o cronograma copia todas as linhas do calendário vigente (data e rede de cada post, 8 semanas) e não pode ter post que o calendário não tem nem repetir data e rede além do calendário;
+   horário com fuso colado ("10:00-04:00") é rejeitado; com o calendário social entre as bloqueadas (ou aplicação não executada), o cronograma não lista posts de rede social (`_posts_da_tabela`, `_bloqueadas_do_g2`).
+2. Reemissão do G2: serviço, especialidade ou tecnologia fora do briefing é rejeitado também na reemissão (o assunto da peça não muda); "cirurgia" e derivados entram na lista de termos sensíveis e na de serviços não informados.

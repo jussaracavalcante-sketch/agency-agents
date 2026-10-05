@@ -116,7 +116,7 @@ _REGRA_CONTEXTO_CLIENTE = (
 _LIMITE_CONTEXTO_CLIENTE = 8000
 
 
-_SERVICOS_LISTA = ("cirurgia robótica", "telemedicina", "UTI", "cardiologia", "ortopedia", "urologia", "oncologia", "neurologia", "maternidade",
+_SERVICOS_LISTA = ("cirurgia", "cirurgia robótica", "telemedicina", "UTI", "cardiologia", "ortopedia", "urologia", "oncologia", "neurologia", "maternidade",
                    "pediatria", "pronto-socorro", "hemodinâmica", "transplante", "centro cirúrgico")
 _MARCA_SERVICOS = "\n\n[SERVIÇOS NÃO INFORMADOS]"
 
@@ -394,6 +394,15 @@ def _guardrail_aplicacao_g2(saida):
         if erro:
             return False, "O calendário reemitido tem problema. " + erro + " Reemita o calendário inteiro, não só as linhas ajustadas."
     reemitido = _sem_alerta(_a_partir_da_reemissao(texto))
+    permitido_srv = _TEXTO_PERMITIDO["texto"]
+    if permitido_srv and reemitido:
+        fora = sorted({m.group(0).lower() for m in _TERMOS_SENSIVEIS.finditer(reemitido)
+                       if not re.search(rf"\b{re.escape(m.group(0).lower())}\b", permitido_srv)})
+        if fora:
+            return False, (
+                "A reemissão cita serviços, especialidades ou tecnologias que o briefing e a base do cliente não citam: " + ", ".join(fora) + ". Reemitir não é "
+                "trocar o tema: mantenha o assunto da peça original e remova ou marque [VALIDAR] só o que o Guardião apontou."
+            )
     falso = sorted({m.group(0) for m in _MARCADOR_FALSO.finditer(reemitido)})
     if falso:
         return False, (
@@ -595,7 +604,7 @@ def _com_limite_de_rejeicoes(guardrail, maximo=2, saneador=None):
 _TEXTO_PERMITIDO = {"texto": ""}
 _TERMOS_SENSIVEIS = re.compile(
     r"cirurgia rob[óo]tica|\brob[óo]tic[ao]s?\b|\bUTI\b|telemedicina|cardiologia|ortopedia|urologia|oncologia|"
-    r"neurologia|maternidade|pediatria|pronto[- ]socorro|hemodin[âa]mica|transplante|centro cirúrgico",
+    r"neurologia|maternidade|pediatria|pronto[- ]socorro|hemodin[âa]mica|transplante|centro cirúrgico|cirurgi\w+|cir[úu]rgic\w+",
     re.I,
 )
 
@@ -951,6 +960,56 @@ def _trecho_calendario_reemitido(texto):
     return resto[: (m.end() - m.start()) + fim.start()] if fim else resto
 
 
+_REDES = ("instagram", "facebook", "linkedin", "tiktok", "youtube")
+_HORA_COM_FUSO_COLADO = re.compile(r"\b\d{1,2}:\d{2}\s?[-+]\d{2}(?::?\d{2})?\b")
+
+
+def _posts_da_tabela(texto):
+    """Pares (data dd/mm/aaaa, rede) de cada linha de tabela que tem colunas Data e Plataforma/Canal e cuja rede é social."""
+    linhas = _sem_alerta(texto or "").splitlines()
+    posts, cab = [], None
+    for i, linha in enumerate(linhas):
+        l = linha.strip()
+        if not l.startswith("|"):
+            cab = None
+            continue
+        if re.fullmatch(r"\|[\s:|-]+\|?", l):
+            continue
+        celulas = [c.strip() for c in l.strip("|").split("|")]
+        baixo = [c.lower() for c in celulas]
+        if cab is None and i + 1 < len(linhas) and re.fullmatch(r"\|[\s:|-]+\|?", linhas[i + 1].strip()):
+            col_data = next((k for k, c in enumerate(baixo) if c.startswith("data")), None)
+            col_rede = next((k for k, c in enumerate(baixo) if c.startswith(("plataforma", "canal"))), None)
+            cab = (col_data, col_rede) if col_data is not None and col_rede is not None else ()
+            continue
+        if cab:
+            col_data, col_rede = cab
+            if max(col_data, col_rede) >= len(celulas):
+                continue
+            datas = _extrair_datas(celulas[col_data])
+            rede = next((r for r in _REDES if r in celulas[col_rede].lower()), None)
+            if datas and rede:
+                posts.append((datas[0].strftime("%d/%m/%Y"), rede))
+    return posts
+
+
+def _bloqueadas_do_g2(aplicacao):
+    """Texto da lista de entregas bloqueadas da aplicação do G2 (na mesma linha ou nos itens que seguem); vazio se não houver."""
+    linhas = _sem_alerta(aplicacao or "").splitlines()
+    for i, l in enumerate(linhas):
+        if re.search(r"entregas? bloquead|bloquead[ao]s?\W{0,4}:", l, re.I):
+            coletado = [l.split(":", 1)[1] if ":" in l else ""]
+            for prox in linhas[i + 1:]:
+                if prox.strip().startswith(("-", "*")):
+                    coletado.append(prox)
+                elif prox.strip() == "":
+                    continue
+                else:
+                    break
+            return "\n".join(coletado)
+    return ""
+
+
 def _linhas_social(texto):
     return [l for l in (texto or "").splitlines() if l.strip().startswith("|") and re.search(r"instagram|facebook|linkedin|tiktok|youtube", l, re.I)]
 
@@ -973,7 +1032,36 @@ def _guardrail_pacote_factory(calendario_task, aplicacao_task):
                 "A aplicação do G2 não foi executada e nenhuma entrega foi liberada. O cronograma não pode listar posts: escreva que não há peça liberada "
                 "para publicação (cronograma vazio) e mantenha só o índice e o checklist."
             )
+        if _HORA_COM_FUSO_COLADO.search(texto):
+            return False, (
+                "Há horário com o fuso colado (ex.: \"10:00-04:00\"). Escreva a hora como HH:MM (ex.: 10:00) e deixe o fuso na coluna própria (America/Manaus)."
+            )
+        nao_executada = "não executada" in aplicacao.lower() and "nenhuma peça foi reemitida" in aplicacao.lower()
+        calendario_bloqueado = nao_executada or bool(re.search(r"calend", _bloqueadas_do_g2(aplicacao), re.I))
+        if calendario_bloqueado and _posts_da_tabela(texto):
+            return False, (
+                "O calendário social está entre as entregas bloqueadas em aplicacao_g2: o cronograma não pode listar posts de rede social. "
+                "Liste só e-mail e artigo liberados, ou escreva que não há post liberado."
+            )
         vigente = _trecho_calendario_reemitido(aplicacao) or original
+        posts_vigentes = _posts_da_tabela(vigente)
+        if posts_vigentes and not calendario_bloqueado:
+            do_pacote = _posts_da_tabela(texto)
+            from collections import Counter
+
+            vig, pac = Counter(posts_vigentes), Counter(do_pacote)
+            inventados = sorted(k for k in pac if pac[k] > vig.get(k, 0))
+            if inventados:
+                return False, (
+                    "O cronograma traz posts que o calendário vigente não tem (data e rede: " + "; ".join(f"{d} {r}" for d, r in inventados[:4]) + "). "
+                    "Copie só as linhas do calendário, sem criar posts nem títulos novos."
+                )
+            faltam = sorted(k for k in vig if pac.get(k, 0) < vig[k])
+            if faltam:
+                return False, (
+                    f"O cronograma tem {sum(pac.values())} posts de rede social e o calendário vigente tem {sum(vig.values())}. Copie TODAS as linhas do calendário, "
+                    "uma por post, com a data e a rede dele (faltam, por exemplo: " + "; ".join(f"{d} {r}" for d, r in faltam[:4]) + ")."
+                )
         datas_vigentes = _datas_do_texto(vigente)
         sociais = "\n".join(_linhas_social(texto))
         if datas_vigentes and sociais:
