@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import AoVivo from "./AoVivo";
+import GuardaSessao from "./GuardaSessao";
 
 const ITENS = [
   { href: "/", rot: "Visão geral", ic: "⌂" },
@@ -27,7 +28,12 @@ export default function Shell({ nome, papel, children }: { nome: string; papel: 
           ))}
         </nav>
         <div className="sp" />
-        <div className="eu"><span className="av">{nome.split(/\s+/).slice(0, 2).map((x) => x[0]).join("").toUpperCase()}</span><div><div style={{ fontWeight: 500 }}>{nome}</div><div className="mut">{papel}</div></div></div>
+        <div className="eu">
+          <span className="av">{nome.split(/\s+/).slice(0, 2).map((x) => x[0]).join("").toUpperCase()}</span>
+          <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 500 }}>{nome}</div><div className="mut">{papel} · <Link href="/definir-senha">senha</Link></div></div>
+          <form action="/auth/sair" method="post"><button type="submit" className="n sair" title="Sair da conta" aria-label="Sair da conta">⏻</button></form>
+        </div>
+        <GuardaSessao />
       </aside>
       <div>
         <div className="top">

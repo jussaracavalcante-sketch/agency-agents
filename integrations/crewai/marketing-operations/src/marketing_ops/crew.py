@@ -1,7 +1,7 @@
 """
 crew.py — Equipe de Operação de Marketing (CrewAI)
 
-Define os 12 agentes e as 21 tarefas do pipeline de campanha (a 22ª, relatório de
+Define os 13 agentes e as 22 tarefas do pipeline de campanha (a 23ª, relatório de
 performance, roda em uma crew separada pós-campanha). Os textos de role/goal/backstory e
 description/expected_output vivem em config/agents.yaml e config/tasks.yaml; este arquivo
 só liga agentes, tarefas, ferramentas, dependências (context) e processo.
@@ -195,7 +195,7 @@ def _linhas_significativas(texto):
     return [n for n in (_normalizar(l) for l in (texto or "").splitlines()) if len(n) > 25]
 
 
-def _guardrail_portao_factory(revisao_task):
+def _guardrail_portao_factory(revisao_task, rubrica_task=None):
     """
     Portão humano: o pedido deve copiar o parecer do Guardião (mesmo resultado, pelo menos 70% das linhas) e ter as
     seções obrigatórias. Rejeita paráfrase e a troca de "Reprovado" por outro resultado.
@@ -232,6 +232,14 @@ def _guardrail_portao_factory(revisao_task):
                         "O parecer do Guardião foi parafraseado ou resumido. Copie o texto do parecer integralmente, "
                         "sem reescrever, na seção 'Parecer do Guardião (cópia literal)'."
                     )
+        rubrica = getattr(getattr(rubrica_task, "output", None), "raw", None) if rubrica_task is not None else None
+        if rubrica:
+            linhas = [_normalizar(l) for l in _linhas_resumo_rubrica(rubrica)]
+            if linhas and not all(l in norm for l in linhas):
+                return False, (
+                    "Falta o quadro da rubrica de qualidade. Na seção 'Quadro da rubrica de qualidade (cópia literal)' copie, sem "
+                    "alterar, as quatro linhas que começam com RESUMO | da tarefa de rubrica."
+                )
         return True, saida
 
     return guardrail
@@ -254,13 +262,18 @@ def _guardrail_aplicacao_g2(saida):
         return base
     texto = (getattr(saida, "raw", None) or str(saida) or "")
     claims = _claims_proibidos(texto)
-    if claims:
+    if claims or _placeholders(texto):
         return _guardrail_sem_claims(saida)
     if _CLAIMS_NOVOS.search(texto):
         return False, (
             "A saída introduz garantia de segurança, precisão, resultado ou recuperação sem fonte. Remova a afirmação "
             "ou marque [VALIDAR MÉDICO]; a reemissão não pode acrescentar promessas."
         )
+    cal = _trecho_calendario_reemitido(texto)
+    if cal:
+        erro = _cobertura_calendario(cal)
+        if erro:
+            return False, "O calendário reemitido está incompleto. " + erro + " Reemita o calendário inteiro, não só as linhas ajustadas."
     if _AFIRMACOES_FALSAS.search(texto):
         return False, (
             "A saída afirma que depoimentos/testemunhos são reais, colhidos com consentimento ou autorizados. Isso não "
@@ -303,7 +316,7 @@ def _guardrail_producao(saida):
         return base
     texto = (getattr(saida, "raw", None) or str(saida) or "")
     claims = _claims_proibidos(texto)
-    if claims:
+    if claims or _placeholders(texto):
         return _guardrail_sem_claims(saida)
     permitido = _TEXTO_PERMITIDO["texto"]
     if not permitido:  # execução retomada sem inputs disponíveis: não há como conferir
@@ -321,10 +334,23 @@ def _guardrail_producao(saida):
 _CLAIMS_PROIBIDOS = re.compile(
     r"depoimento|testemunho|hist[óo]rias? de (pacientes?|recupera[çc][ãa]o|sucesso)|casos? de sucesso|"
     r"paciente real|pacientes? satisfeit|\blidera\b|\bl[íi]der(es)?\b|refer[êe]ncia em|\bpremiad[oa]s?\b|"
-    r"o melhor hospital|n[º°o] ?1\b|\bmelhor do (estado|brasil|norte)\b",
+    r"o melhor hospital|n[º°o] ?1\b|\bmelhor do (estado|brasil|norte)\b|"
+    r"\b(o|a|os|as|ao|do|pelo) melhor(es)?\b|\bmelhor (atendimento|cuidado|experi[êe]ncia|hospital|cl[íi]nica|estrutura)\b|"
+    r"tecnologia de ponta|tecnologias? de ponta|equipamentos? de [úu]ltima gera[çc][ãa]o|[úu]ltima gera[çc][ãa]o|estado da arte|"
+    r"diagn[óo]sticos? precis\w+|tratamentos? eficaz\w*|confian[çc]a em cada diagn[óo]stico|seguran[çc]a em cada tratamento|"
+    r"garant\w+[^.\n]{0,60}(precis[ãa]o|seguran[çc]a|excel[êe]ncia|qualidade|efici[êe]ncia|resultados?|cura|"
+    r"recupera[çc][ãa]o|lgpd|conformidade|ader[êe]ncia|atendimento|cuidado|diagn[óo]stico|tratamento)",
     re.I,
 )
 _LINHA_NEUTRA = re.compile(r"\[VALIDAR|\bsem (usar )?depoimento|proibid|n[ãa]o (use|usar|incluir|propor|citar)|evitar", re.I)
+
+
+_PLACEHOLDERS = re.compile(r"example\.(com|org|net)|exemplo\.com(\.br)?|lorem ipsum|seu-?site\.com|\[(inserir|link|url)[^\]]*\]", re.I)
+
+
+def _placeholders(texto):
+    """Link ou texto de exemplo que iria para publicação como se fosse real."""
+    return sorted({m.group(0).lower() for m in _PLACEHOLDERS.finditer(texto or "")})
 
 
 def _claims_proibidos(texto):
@@ -340,12 +366,21 @@ def _guardrail_sem_claims(saida):
     base = _guardrail_documento(saida)
     if base[0] is False:
         return base
-    achados = _claims_proibidos(getattr(saida, "raw", None) or str(saida) or "")
+    texto = getattr(saida, "raw", None) or str(saida) or ""
+    achados = _claims_proibidos(texto)
     if achados:
         return False, (
             "A saída propõe itens que não existem nos insumos: " + ", ".join(achados) + ". Não há depoimentos, testemunhos, "
-            "histórias ou casos de pacientes, nem prova de liderança ou premiação. Remova esses trechos (ou troque por "
-            "conteúdo informativo sem prova social) e reemita o documento completo."
+            "histórias ou casos de pacientes, nem prova de liderança ou premiação. Superlativos (\"o melhor\", \"tecnologia de "
+            "ponta\", \"última geração\"), garantias (\"garante precisão/excelência/LGPD\") e promessas clínicas (\"diagnósticos "
+            "precisos\", \"tratamentos eficazes\") exigem fonte: remova ou marque [VALIDAR MÉDICO] na mesma linha. Reemita o "
+            "documento completo."
+        )
+    ph = _placeholders(texto)
+    if ph:
+        return False, (
+            "A saída contém link ou texto de exemplo (" + ", ".join(ph) + "). Peça publicável não pode ter placeholder: use "
+            "[VALIDAR: link] no lugar e reemita o documento completo."
         )
     return True, saida
 
@@ -353,16 +388,12 @@ def _guardrail_sem_claims(saida):
 _INPUTS_ATUAIS = {}
 
 
-def _guardrail_calendario(saida):
-    """O calendário deve cobrir todas as semanas da campanha (por datas ou por marcadores 'Semana N')."""
-    base = _guardrail_producao(saida)
-    if base[0] is False:
-        return base
+def _cobertura_calendario(texto):
+    """Devolve a mensagem de erro se o calendário não cobre todas as semanas da campanha; None se cobre (ou não há como medir)."""
     try:
         semanas = int(str(_INPUTS_ATUAIS.get("duracao_semanas", "")).strip())
     except ValueError:
-        return True, saida
-    texto = getattr(saida, "raw", None) or str(saida) or ""
+        return None
     from datetime import datetime
 
     datas = []
@@ -371,14 +402,138 @@ def _guardrail_calendario(saida):
             datas.append(datetime(int(a), int(mth), int(d)))
         except ValueError:
             pass
+    for a, mth, d in re.findall(r"\b(20\d{2})-(\d{2})-(\d{2})\b", texto):
+        try:
+            datas.append(datetime(int(a), int(mth), int(d)))
+        except ValueError:
+            pass
     blocos = {(x - min(datas)).days // 7 for x in datas} if datas else set()
     marcadores = [int(n) for n in re.findall(r"semana\s+(\d{1,2})", texto, re.I)]
+    marcadores += [int(n) for n in re.findall(r"^\|\s*(\d{1,2})\s*\|", texto, re.M)]  # coluna "Semana" numérica
     if len(blocos) >= semanas - 1 or (marcadores and max(marcadores) >= semanas):
-        return True, saida
-    return False, (
+        return None
+    return (
         f"O calendário cobre {len(blocos) or 'menos de ' + str(semanas)} semana(s) pelas datas, mas a campanha tem {semanas}. "
         f"Entregue posts distribuídos por todas as {semanas} semanas, com ao menos 3 por semana, datando cada um."
     )
+
+
+def _guardrail_calendario(saida):
+    """O calendário deve cobrir todas as semanas da campanha (por datas ou por marcadores 'Semana N')."""
+    base = _guardrail_producao(saida)
+    if base[0] is False:
+        return base
+    erro = _cobertura_calendario(getattr(saida, "raw", None) or str(saida) or "")
+    return (False, erro) if erro else (True, saida)
+
+
+_CALENDARIO_REEMITIDO = re.compile(r"(pe[çc]a reemitida|reemiss[ãa]o)[^\n]*calend[áa]rio|calend[áa]rio[^\n]*reemitid", re.I)
+
+
+def _trecho_calendario_reemitido(texto):
+    """Da seção reemitida do calendário até a próxima peça reemitida ou o fim; vazio se o calendário não foi reemitido."""
+    m = _CALENDARIO_REEMITIDO.search(texto or "")
+    if not m:
+        return ""
+    resto = texto[m.start():]
+    fim = re.search(r"\n#{1,4}\s*(pe[çc]a reemitida|parte c|lista de vers)", resto[m.end() - m.start():], re.I)
+    return resto[: (m.end() - m.start()) + fim.start()] if fim else resto
+
+
+def _guardrail_brief(saida):
+    """O brief usa o objetivo do briefing literalmente e não cria baselines que ninguém informou."""
+    base = _guardrail_producao(saida)
+    if base[0] is False:
+        return base
+    texto = getattr(saida, "raw", None) or str(saida) or ""
+    objetivo = _normalizar(str(_INPUTS_ATUAIS.get("objetivo", "")))
+    if objetivo and objetivo not in _normalizar(texto):
+        return False, (
+            "O brief não reproduz o objetivo do briefing. Copie o objetivo literalmente, sem trocar a meta, o prazo ou o "
+            f"baseline: \"{_INPUTS_ATUAIS.get('objetivo')}\". Não substitua por outro objetivo (percentuais, ocupação, etc.)."
+        )
+    permitido = _normalizar(_TEXTO_PERMITIDO["texto"])
+    if permitido:
+        inventados = []
+        for linha in texto.splitlines():
+            if "baseline" not in linha.lower() or "[validar" in linha.lower():
+                continue
+            for n in re.findall(r"\d[\d.,]*", linha):
+                n = n.strip(".,")
+                if n and not re.search(rf"(?<![\d.,]){re.escape(n)}(?![\d])", permitido):
+                    inventados.append(n)
+        if inventados:
+            return False, (
+                "O brief traz baseline com números que não constam do briefing nem da base do cliente: "
+                + ", ".join(sorted(set(inventados))) + ". Use só o baseline informado; para o restante escreva "
+                "\"[VALIDAR: baseline não informado]\" e não cite fontes (\"registros internos\", CRM, Analytics) que o briefing não cita."
+            )
+    return True, saida
+
+
+_PECAS_RUBRICA = ("CONTEUDO", "CALENDARIO", "EMAIL", "MIDIA")
+_RESUMO_RUBRICA = re.compile(
+    r"^[\s*`>-]*RESUMO\s*\|\s*(?P<peca>[^|]+?)\s*\|\s*(?P<gates>[^|]+?)\s*\|\s*NOTA\s*=\s*(?P<nota>\d{1,3})\s*/\s*100\s*\|\s*"
+    r"VEREDITO\s*=\s*(?P<ver>APROVAR COM AJUSTES MENORES|APROVAR|DEVOLVER|REFAZER)\s*\|\s*REVIS[ÃA]O\s+(?P<ciclo>[12])\s+DE\s+2[\s*`]*$",
+    re.I | re.M,
+)
+_SEGMENTO_SAUDE = re.compile(r"sa[úu]de|hospital|cl[íi]nica|m[ée]dic|farm[áa]c|drogaria|odont", re.I)
+
+
+def _sem_acento(texto):
+    import unicodedata
+
+    return "".join(c for c in unicodedata.normalize("NFD", texto) if unicodedata.category(c) != "Mn").upper()
+
+
+def _linhas_resumo_rubrica(texto):
+    """Linhas RESUMO | ... da rubrica de qualidade, na forma como foram emitidas."""
+    return [m.group(0).strip(" *`>-\t") for m in _RESUMO_RUBRICA.finditer(texto or "")]
+
+
+def _guardrail_rubrica(saida):
+    """
+    Rubrica de qualidade: quatro peças, cada uma com a linha RESUMO (5 gates, nota, veredito, ciclo) coerente com as regras:
+    gate em FALHA limita a nota a 59 e exige DEVOLVER ou REFAZER; sem falha, o veredito segue a faixa da nota.
+    """
+    base = _guardrail_documento(saida)
+    if base[0] is False:
+        return base
+    texto = getattr(saida, "raw", None) or str(saida) or ""
+    achados = {}
+    for m in _RESUMO_RUBRICA.finditer(texto):
+        peca = _sem_acento(m.group("peca")).replace("-", "").replace(" ", "")
+        achados[peca] = m
+    faltam = [p for p in _PECAS_RUBRICA if p not in achados]
+    if faltam:
+        return False, (
+            "Faltam linhas RESUMO para as peças: " + ", ".join(faltam) + ". Use exatamente: RESUMO | <CONTEÚDO, CALENDÁRIO, E-MAIL "
+            "ou MÍDIA> | G1=OK G2=OK G3=OK G4=NA G5=OK | NOTA=NN/100 | VEREDITO=<APROVAR, APROVAR COM AJUSTES MENORES, DEVOLVER "
+            "ou REFAZER> | REVISÃO 1 DE 2, uma linha por peça."
+        )
+    for peca in _PECAS_RUBRICA:
+        m = achados[peca]
+        gates = dict(re.findall(r"G([1-5])\s*=\s*(OK|FALHA|NA)", m.group("gates"), re.I))
+        if sorted(gates) != ["1", "2", "3", "4", "5"]:
+            return False, f"A linha RESUMO de {peca} precisa dos 5 gates (G1 a G5), cada um OK, FALHA ou NA."
+        nota = int(m.group("nota"))
+        ver = m.group("ver").upper()
+        falhou = any(v.upper() == "FALHA" for v in gates.values())
+        if nota > 100:
+            return False, f"A nota de {peca} ({nota}) passa de 100."
+        if falhou:
+            if nota > 59 or ver not in ("DEVOLVER", "REFAZER"):
+                return False, (
+                    f"{peca} tem gate em FALHA: a nota fica em no máximo 59 e o veredito é DEVOLVER ou REFAZER "
+                    f"(recebeu NOTA={nota}, VEREDITO={ver})."
+                )
+        else:
+            esperado = "APROVAR" if nota >= 90 else "APROVAR COM AJUSTES MENORES" if nota >= 80 else "DEVOLVER" if nota >= 60 else "REFAZER"
+            if ver != esperado:
+                return False, f"{peca}: a nota {nota} corresponde ao veredito {esperado}, não {ver}."
+    if _SEGMENTO_SAUDE.search(str(_INPUTS_ATUAIS.get("segmento", ""))) and "aval m" not in _normalizar(texto):
+        return False, "O segmento é saúde: inclua a marca AVAL MÉDICO PENDENTE em todas as peças e no quadro de notas."
+    return True, saida
 
 
 def _g_doc():
@@ -574,6 +729,14 @@ class MarketingOpsCrew:
         )
 
     @agent
+    def revisor_qualidade(self) -> Agent:
+        return Agent(
+            config=self.agents_config["revisor_qualidade"],
+            llm=MODEL,
+            tools=_tools(brand_book, read_file),
+        )
+
+    @agent
     def coordenador_publicacao(self) -> Agent:
         return Agent(
             config=self.agents_config["coordenador_publicacao"],
@@ -594,7 +757,7 @@ class MarketingOpsCrew:
     @task
     def brief_estrategico(self) -> Task:
         return Task(
-            guardrail=_g_prod(), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_brief), guardrail_max_retries=2,
             config=self.tasks_config["brief_estrategico"],
             context=[self.pesquisa_mercado(), self.mapa_seo()],
         )
@@ -668,11 +831,26 @@ class MarketingOpsCrew:
         )
 
     @task
+    def rubrica_qa(self) -> Task:
+        return Task(
+            guardrail=_com_limite_de_rejeicoes(_guardrail_rubrica), guardrail_max_retries=2,
+            config=self.tasks_config["rubrica_qa"],
+            context=[
+                self.aplicacao_g1(),
+                self.producao_conteudo(),
+                self.calendario_social(),
+                self.fluxos_email(),
+                self.plano_midia_paga(),
+            ],
+        )
+
+    @task
     def revisao_g2(self) -> Task:
         return Task(
             guardrail=_g_doc(), guardrail_max_retries=2,
             config=self.tasks_config["revisao_g2"],
             context=[
+                self.rubrica_qa(),
                 self.producao_conteudo(),
                 self.calendario_social(),
                 self.fluxos_email(),
@@ -684,10 +862,11 @@ class MarketingOpsCrew:
     @task
     def portao_g2(self) -> Task:
         return Task(
-            guardrail=_guardrail_portao_factory(self.revisao_g2()), guardrail_max_retries=2,
+            guardrail=_guardrail_portao_factory(self.revisao_g2(), self.rubrica_qa()), guardrail_max_retries=2,
             config=self.tasks_config["portao_g2"],
             context=[
                 self.revisao_g2(),
+                self.rubrica_qa(),
                 self.producao_conteudo(),
                 self.calendario_social(),
                 self.fluxos_email(),
@@ -704,6 +883,7 @@ class MarketingOpsCrew:
             context=[
                 self.portao_g2(),
                 self.revisao_g2(),
+                self.rubrica_qa(),
                 self.producao_conteudo(),
                 self.calendario_social(),
                 self.fluxos_email(),

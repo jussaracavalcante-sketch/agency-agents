@@ -16,6 +16,7 @@
 | 10 | `plano_midia_paga` | 08 Mídia | 6, 2, 1, 9 | |
 | 11 | `direcao_arte` | 09 Arte | 6, 7, 8, 9, 10 | |
 | 12 | `revisao_g2` | 11 Guardião | 7–11 | |
+| 12b | `rubrica_qa` | 13 Revisor de qualidade | 6, 7–10 | Rubrica: 5 gates, nota de 0 a 100 e veredito por peça |
 | 13 | `portao_g2` | 01 Gerente (+ humano) | 12, 7–11 | **G2 · pedido** |
 | 14 | `aplicacao_g2` | 01 Gerente | 13, 12, 7–11 | **G2 · decisão** (ajustes obrigatórios por entrega) |
 | 15 | `plano_medicao` | 10 Analista | 6, 8, 9, 10 | |
