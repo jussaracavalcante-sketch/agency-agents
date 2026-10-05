@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
 }
 
 
@@ -684,3 +684,45 @@ def test_aplicacao_g1_sem_feedback_mantem_o_brief_original():
     assert g(reescrito)[0] is False and g(reescrito)[0] is False
     ok, texto = g(reescrito)
     assert ok is True and "Ajustes aplicados:** nenhum" in texto and "Linha 7 do brief original" in texto and "removidas garantias" not in texto
+
+
+def test_calendario_sem_coluna_data_e_com_historias_de_pacientes():
+    from datetime import date
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["duracao_semanas"] = "2"
+    sem_data = "| Semana | Plataforma | Formato | Hook |\n|---|---|---|---|\n" + "\n".join(f"| {i // 3 + 1} | Instagram | Post | texto |" for i in range(6))
+    assert G._tabela_sem_coluna_data(sem_data) and "coluna Data" in G._problemas_calendario(sem_data)
+    com_data = _calendario([f"| {i // 3 + 1} | {(date(2026, 11, 1)).strftime('%d/%m/%Y')} | Instagram | Post | a | b | c |" for i in range(6)])
+    assert not G._tabela_sem_coluna_data(com_data)
+    historia = _calendario(["| 2 | 10/11/2026 | Facebook | Story | Humanização | \"Histórias de pacientes no hospital.\" | \"Explore\" [VALIDAR MÉDICO] |"])
+    assert G._historias_de_pacientes(historia) == ["histórias de pacientes"]                     # [VALIDAR] em outra célula não legitima
+    assert G._historias_de_pacientes("Sem depoimentos de pacientes nas peças.") == []
+    assert "histórias de pacientes" in G._problemas_calendario(com_data + "\n" + historia.splitlines()[-1])
+
+
+_REEMISSAO = ("### Parte A\n" + ("registro com a decisão e os ajustes de cada entrega. " * 15) + "\n### Parte B\n#### Peça reemitida: Plano de Mídia Paga\n"
+              "# Plano de Mídia\nGoogle Ads: R$ 11.654 [confirmado]\nVerba R$ 15.000 [VALIDAR]\n### Parte C: Lista de Versões\n- Plano: reemitido\n")
+
+
+def test_reemissao_com_marcador_falso_e_plano_sem_rotina():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = "google ads"
+    r = G._guardrail_aplicacao_g2(_saida(_REEMISSAO))
+    assert r[0] is False and "confirmado" in r[1]
+    sem_falso = _REEMISSAO.replace("[confirmado]", "[VALIDAR]")
+    r2 = G._guardrail_aplicacao_g2(_saida(sem_falso))
+    assert r2[0] is False and "rotina" in r2[1]
+    # saneador: troca o marcador e insere as seções da rotina no plano reemitido
+    portao = _tarefa("## Histórico de feedbacks humanos\nNenhum feedback humano recebido.\n")
+    novo, trocas = G._saneador_aplicacao_g2_factory(portao)(_REEMISSAO)
+    assert "[confirmado]" not in novo and "## Alçadas e autorizações" in novo and "marcador falso [confirmado]" in trocas
+    assert G._faltas_rotina_midia(G._trecho_reemitido(novo, r"m[íi]dia") + novo) == []
+    # a Parte A pode citar o problema sem disparar a trava
+    parte_a = _REEMISSAO.replace("registro com a decisão", "registro: remover [confirmado] com a decisão", 1).replace("[confirmado]\nVerba", "[VALIDAR]\nVerba")
+    assert "confirmado" not in G._a_partir_da_reemissao(parte_a)
+
+
+def test_servicos_nao_informados_para_o_prompt():
+    permitido = G._texto_permitido({"objetivo": "consultas e exames de cardiologia", "servicos_nao_informados": "telemedicina"})
+    assert "telemedicina" not in permitido                                              # a lista não se autoriza
+    lista = G._servicos_nao_informados(permitido)
+    assert "telemedicina" in lista and "cirurgia robótica" in lista and "cardiologia" not in lista
+    assert G._servicos_nao_informados(" ".join(s.lower() for s in G._SERVICOS_LISTA)) == "nenhum"
