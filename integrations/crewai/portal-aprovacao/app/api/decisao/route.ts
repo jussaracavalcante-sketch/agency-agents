@@ -43,9 +43,10 @@ export async function POST(req: Request) {
   };
 
   if (decisao === "reprovar") {
-    // Reprovar não chama a plataforma: a execução fica pausada e nada é publicado.
+    // Reprovar não chama a plataforma (não existe cancelamento): a decisão fica registrada e o portal passa a tratar a
+    // execução como encerrada (ver execucoes.ts), então ela sai de "Aguardando". Nada é publicado.
     await db.from("portal_decisoes").insert({ ...registro, enviado_ao_crewai: false });
-    return NextResponse.json({ ok: true, mensagem: "Reprovado e registrado. A execução permanece pausada." });
+    return NextResponse.json({ ok: true, mensagem: "Reprovado e registrado. A execução foi encerrada no portal e não será retomada." });
   }
 
   const r = await retomar({

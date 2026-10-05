@@ -10,7 +10,8 @@ export type Execucao = {
   inicio: string; ultimo: string;
   eventos: Evento[];
   pendente: Evento | null;  // human_input aguardando decisão
-  concluida: boolean;
+  concluida: boolean;       // fim da crew OU execução encerrada por reprovação humana
+  encerrada: boolean;       // reprovada por um humano: a plataforma segue pausada, mas o portal a trata como fechada
   portao: "G1" | "G2" | "G3" | null;
 };
 
@@ -51,7 +52,8 @@ export async function listarExecucoes(limite = 400): Promise<Execucao[]> {
     const k = chaveDe(e, mapa);
     grupos.set(k, [...(grupos.get(k) || []), e]);
   }
-  return [...grupos.entries()].map(([chave, evs]) => montar(chave, evs.sort((a, b) => a.id - b.id)))
+  const reprovacoes = await reprovacoesPorExecucao();
+  return [...grupos.entries()].map(([chave, evs]) => montar(chave, evs.sort((a, b) => a.id - b.id), reprovacoes.get(chave) || []))
     .sort((a, b) => (a.ultimo < b.ultimo ? 1 : -1));
 }
 
@@ -69,20 +71,33 @@ export async function obterExecucao(chave: string): Promise<Execucao | null> {
     .in("kickoff_id", [...kickoffs])
     .order("id", { ascending: true });
   if (!data?.length) return null;
-  return montar(chave, data as Evento[]);
+  const reprovacoes = await reprovacoesPorExecucao();
+  return montar(chave, data as Evento[], reprovacoes.get(chave) || []);
 }
 
-function montar(chave: string, eventos: Evento[]): Execucao {
+/** Reprovar não chama a plataforma (não há cancelamento): o portal guarda a decisão e usa a data dela para fechar a execução. */
+async function reprovacoesPorExecucao(): Promise<Map<string, string[]>> {
+  const { data } = await admin().from("portal_decisoes").select("execucao_id,criado_em").eq("decisao", "reprovar");
+  const m = new Map<string, string[]>();
+  for (const d of data || []) m.set(d.execucao_id as string, [...(m.get(d.execucao_id as string) || []), d.criado_em as string]);
+  return m;
+}
+
+function montar(chave: string, eventos: Evento[], reprovacoes: string[] = []): Execucao {
   const ultimoEvento = eventos[eventos.length - 1];
-  const pendente = ultimoEvento.tipo === "human_input" ? ultimoEvento : null;
+  const aguardando = ultimoEvento.tipo === "human_input" ? ultimoEvento : null;
+  // Reprovada = há reprovação posterior ao último pedido de decisão. Nada retoma depois dela, então a execução fecha.
+  const encerrada = !!aguardando && reprovacoes.some((r) => new Date(r).getTime() >= new Date(aguardando.recebido_em).getTime());
+  const pendente = encerrada ? null : aguardando;
   return {
     chave,
     inicio: eventos[0].recebido_em,
     ultimo: ultimoEvento.recebido_em,
     eventos,
     pendente,
-    concluida: eventos.some((e) => e.tipo === "crew"),
-    portao: portaoDe(eventos, pendente),
+    concluida: encerrada || eventos.some((e) => e.tipo === "crew"),
+    encerrada,
+    portao: portaoDe(eventos, aguardando),
   };
 }
 
