@@ -118,11 +118,20 @@ _LIMITE_CONTEXTO_CLIENTE = 8000
 
 _SERVICOS_LISTA = ("cirurgia robótica", "telemedicina", "UTI", "cardiologia", "ortopedia", "urologia", "oncologia", "neurologia", "maternidade",
                    "pediatria", "pronto-socorro", "hemodinâmica", "transplante", "centro cirúrgico")
+_MARCA_SERVICOS = "\n\n[SERVIÇOS NÃO INFORMADOS]"
+
+
+def _sem_bloco_servicos(inputs):
+    """Cópia dos inputs com o contexto do cliente sem o bloco de serviços que a própria crew acrescenta (numa retomada ele já vem anexado)."""
+    limpo = dict(inputs)
+    if isinstance(limpo.get("contexto_cliente"), str):
+        limpo["contexto_cliente"] = limpo["contexto_cliente"].split(_MARCA_SERVICOS)[0]
+    return limpo
 
 
 def _texto_permitido(inputs):
-    """Texto que o briefing e a base do cliente permitem citar. Não inclui a lista de serviços não informados, para ela não se autorizar."""
-    return " ".join(str(v) for k, v in inputs.items() if k != "servicos_nao_informados").lower()
+    """Texto que o briefing e a base do cliente permitem citar. Não inclui o bloco de serviços não informados, para ele não se autorizar."""
+    return " ".join(str(v) for v in _sem_bloco_servicos(inputs).values()).lower()
 
 
 def _servicos_nao_informados(permitido):
@@ -133,11 +142,13 @@ def _injetar_contexto_cliente(inputs):
     """
     before_kickoff: carrega a base de conhecimento do cliente informado em inputs['cliente'] e a expõe como
     inputs['contexto_cliente'], usada por todas as tarefas. Determinístico: não depende de o agente decidir
-    consultar a ferramenta. Também expõe inputs['servicos_nao_informados']: serviços e especialidades que o briefing e a base não citam,
-    que as peças não podem usar (o modelo costuma "lembrar" serviços reais do cliente que ninguém informou).
+    consultar a ferramenta. Ao fim do contexto acrescenta o bloco [SERVIÇOS NÃO INFORMADOS]: serviços e especialidades que o briefing e a base
+    não citam e que as peças não podem usar (o modelo costuma "lembrar" serviços reais do cliente que ninguém informou). Vai dentro do
+    contexto, e não como campo novo, porque a plataforma exige todos os campos {...} das tarefas antes de rodar este callback.
     """
     inputs = dict(inputs or {})
     if inputs.get("contexto_cliente"):
+        inputs["contexto_cliente"] = str(inputs["contexto_cliente"]).split(_MARCA_SERVICOS)[0]
         definir_contexto_do_portal(str(inputs.get("cliente") or ""), str(inputs["contexto_cliente"]))
     else:
         cliente = str(inputs.get("cliente") or "").strip()
@@ -147,7 +158,10 @@ def _injetar_contexto_cliente(inputs):
             texto = BrandBookTool()._run(cliente)
             inputs["contexto_cliente"] = texto[:_LIMITE_CONTEXTO_CLIENTE]
     permitido = _texto_permitido(inputs)
-    inputs["servicos_nao_informados"] = _servicos_nao_informados(permitido)
+    inputs["contexto_cliente"] += (
+        f"{_MARCA_SERVICOS} {_servicos_nao_informados(permitido)}. O briefing e a base do cliente não citam esses serviços: não podem ser tema, "
+        "título, exemplo nem copy; só aparecem com [VALIDAR]. Use apenas os serviços que constam do briefing e da base."
+    )
     _TEXTO_PERMITIDO["texto"] = permitido
     _INPUTS_ATUAIS.update(inputs)
     return inputs

@@ -162,7 +162,7 @@ producao_conteudo:
     o guia de marca do cliente (consulte-o com a ferramenta brand_book_lookup). Inclua o cabeçalho de metadados (titulo, title_seo, meta_description, slug,
     kw_principal, persona, etapa_funil, cta_principal, notas_visuais, fontes), 3 variações de
     título e 2 de CTA. Nenhum dado sem fonte. Marque [AVAL ESPECIALISTA] onde couber.
-    SERVIÇOS NÃO INFORMADOS (o briefing e a base do cliente não os citam; não podem ser tema, título, exemplo nem copy; só aparecem com [VALIDAR]): {servicos_nao_informados}. Use apenas os serviços que constam do briefing e da base do cliente.
+    SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
   expected_output: >
     Um bloco Markdown por conteúdo, com cabeçalho de metadados, texto final, variações de título
     e CTA e notas visuais para o Diretor de Arte.
@@ -180,7 +180,7 @@ calendario_social:
     curtas: hashtags por plataforma, guia de engajamento (respostas-padrão, comunidades), posts candidatos a
     impulsionamento e lista consolidada de assets para o Diretor de Arte (formato, dimensões, quantidade). Não escreva
     texto de introdução nem comentários sobre o que você vai fazer: entregue direto o documento.
-    SERVIÇOS NÃO INFORMADOS (o briefing e a base do cliente não os citam; não podem ser tema, título, exemplo nem copy; só aparecem com [VALIDAR]): {servicos_nao_informados}. Use apenas os serviços que constam do briefing e da base do cliente.
+    SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
   expected_output: >
     Documento Markdown: (1) tabela compacta cobrindo todas as semanas; (2) hashtags por plataforma; (3) guia de
     engajamento; (4) posts para impulsionamento; (5) lista consolidada de assets com dimensões e quantidade.
@@ -195,7 +195,7 @@ fluxos_email:
     (espera, condição, e-mail, CTA, saída). Escreva cada e-mail com assunto (+2 variações),
     pré-header, corpo, CTA e alt text. Inclua checklist de entregabilidade. Ferramenta de
     CRM/automação do cliente: {ferramenta_crm}.
-    SERVIÇOS NÃO INFORMADOS (o briefing e a base do cliente não os citam; não podem ser tema, título, exemplo nem copy; só aparecem com [VALIDAR]): {servicos_nao_informados}. Use apenas os serviços que constam do briefing e da base do cliente.
+    SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
   expected_output: >
     Documento Markdown com Segmentação, Fluxos (diagrama em texto + tabelas), E-mails completos,
     Plano de testes e Checklist de entregabilidade.
@@ -211,7 +211,7 @@ plano_midia_paga:
     LinkedIn conforme o mix), orçamento e lances, projeções em 3 cenários com premissas
     declaradas, rotina semanal de otimização e requisitos de rastreamento. Briefe os criativos
     necessários (formato, dimensão, quantidade). NÃO crie nem ative nada em plataforma.
-    SERVIÇOS NÃO INFORMADOS (o briefing e a base do cliente não os citam; não podem ser tema, título, exemplo nem copy; só aparecem com [VALIDAR]): {servicos_nao_informados}. Use apenas os serviços que constam do briefing e da base do cliente.
+    SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
   expected_output: >
     Documento Markdown "Plano de Mídia" com as 9 seções do template, mais "Insumos e pendências", "Rotina operacional (diária, semanal)"
     e "Alçadas e autorizações", tabela de estrutura de campanhas e briefing de criativos.
@@ -241,7 +241,7 @@ direcao_arte:
     Para cada peça: objetivo, mensagem, texto na arte, hierarquia visual, dimensões/duração,
     variações, referências, prompt de geração (se IA), restrições de marca e acessibilidade
     (contraste AA, alt text). Indique quando a peça exige fotografia real ou designer humano.
-    SERVIÇOS NÃO INFORMADOS (o briefing e a base do cliente não os citam; não podem ser tema, título, exemplo nem copy; só aparecem com [VALIDAR]): {servicos_nao_informados}. Use apenas os serviços que constam do briefing e da base do cliente.
+    SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
   expected_output: >
     Documento Markdown com Conceito criativo, Briefings por peça (template padronizado),
     Prompts de imagem e Checklist de specs por plataforma.
