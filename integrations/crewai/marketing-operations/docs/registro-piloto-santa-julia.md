@@ -271,3 +271,14 @@ dos últimos 90 dias), frases de garantia ("A escolha certa") e nota de conformi
 1. Brief: nome próprio na seção Fontes que o briefing e a base do cliente não citam é rejeitado (`_fontes_nao_informadas`); na última tentativa a linha vira `[VALIDAR: fonte]`.
 2. Marcadores que não existem ([confirmado], [validado], [aprovado], [ok]) rejeitados; viram [VALIDAR] na última tentativa.
 3. Autocertificação ampliada ("todos os elementos foram…", "desenvolvidos em conformidade", "respeitando a linguagem de"), inclusive dentro do bloco; a nota é removida na última tentativa (`_sanear_brief`).
+
+# Nono piloto: produção e G2 (execução `b8a53b9b`, retomada `0a44840d`)
+G1 aprovado sem o texto (o portal registrou Aprovar com o texto guardado, não enviado). A `aplicacao_g1` reescreveu o brief mesmo sem feedback, declarou "ajustes aplicados" que ninguém pediu e
+introduziu "tecnologia de ponta". Calendário veio com datas "01-Nov-23" (2023) e três posts no mesmo dia; a rubrica puniu o próprio marcador que o saneador inseriu; o conteúdo longo tratou de
+telemedicina (fora do briefing) e o saneador deixou o artigo sem assunto. Plano de mídia com TikTok Ads e Display (trocados) e as seções da rotina inseridas por código.
+
+## Melhorias
+1. `aplicacao_g1` sem feedback humano: precisa reproduzir o brief original (≥ 70% das linhas); ao esgotar, o brief original saneado segue com "Ajustes aplicados: nenhum".
+2. Calendário: datas em formato dd-Mon-aa reconhecidas (e 2023 acusado como passado); tabela com menos de metade das datas legíveis é rejeitada.
+3. "Segurança em cada diagnóstico" entra nos claims; "Garantir …" em item de checklist deixa de ser tratado como promessa.
+4. Portal: Aprovar fica bloqueado quando há texto de ajustes escrito (evita Aprovar com o texto perdido).

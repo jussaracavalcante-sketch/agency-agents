@@ -520,14 +520,14 @@ _CLAIMS_PROIBIDOS = re.compile(
     r"o melhor hospital|n[º°o] ?1\b|\bmelhor do (estado|brasil|norte)\b|"
     r"\b(o|a|os|as|ao|do|da|pelo|no|na|nos|nas) melhor(es)?\b|melhor (pra|para) voc[êe]|\bmelhor (atendimento|cuidado|experi[êe]ncia|hospital|cl[íi]nica|estrutura)\b|"
     r"tecnologia de ponta|tecnologias? de ponta|equipamentos? de [úu]ltima gera[çc][ãa]o|[úu]ltima gera[çc][ãa]o|estado da arte|"
-    r"diagn[óo]sticos? precis\w+|tratamentos? eficaz\w*|confian[çc]a em cada diagn[óo]stico|seguran[çc]a em cada tratamento|"
+    r"diagn[óo]sticos? precis\w+|tratamentos? eficaz\w*|(confian[çc]a|seguran[çc]a) em cada (diagn[óo]stico|tratamento)|"
     r"\bde ponta\b(?! a ponta)|melhor escolha|escolha preferencial|escolha segura|precis[ãa]o e seguran[çc]a|"
     r"certifica[çc][õo]es? reconhecid\w+|"
     r"garant\w+[^.\n]{0,60}(precis[ãa]o|seguran[çc]a|excel[êe]ncia|qualidade|efici[êe]ncia|resultados?|cura|"
     r"recupera[çc][ãa]o|lgpd|conformidade|ader[êe]ncia|atendimento|cuidado|diagn[óo]stico|tratamento)",
     re.I,
 )
-_LINHA_NEUTRA = re.compile(r"\[VALIDAR|\bsem (usar )?depoimento|proibid|n[ãa]o (use|usar|incluir|propor|citar)|evitar", re.I)
+_LINHA_NEUTRA = re.compile(r"\[VALIDAR|\bsem (usar )?depoimento|proibid|n[ãa]o (use|usar|incluir|propor|citar)|evitar|^\s*[-*]\s*(\[[ xX]\]\s*)?garantir\b", re.I)
 
 
 _PLACEHOLDERS = re.compile(
@@ -678,6 +678,12 @@ def _extrair_datas(texto):
     ano = str(_hoje().year)
     for d, mth in re.findall(r"(?<![\d/])(\d{2})/(\d{2})(?![\d/])", texto or ""):
         achadas.append((ano, mth, d))
+    meses = {"jan": 1, "fev": 2, "feb": 2, "mar": 3, "abr": 4, "apr": 4, "mai": 5, "may": 5, "jun": 6, "jul": 7, "ago": 8, "aug": 8,
+             "set": 9, "sep": 9, "out": 10, "oct": 10, "nov": 11, "dez": 12, "dec": 12}
+    for d, nome, a in re.findall(r"\b(\d{1,2})[-/ ]([A-Za-zç]{3,9})\.?[-/ ](\d{2,4})\b", texto or ""):
+        mes = meses.get(nome[:3].lower())
+        if mes:
+            achadas.append(((("20" + a) if len(a) == 2 else a), f"{mes:02d}", f"{int(d):02d}"))
     saida = []
     for a, mth, d in achadas:
         try:
@@ -752,6 +758,12 @@ def _linha_solta_na_tabela(texto):
 
 def _problemas_calendario(texto):
     """Erro do calendário (cobertura, data passada, linha solta na tabela) ou None."""
+    linhas_tabela = len(re.findall(r"^\|\s*\d{1,2}\s*\|", _sem_alerta(texto), re.M | re.I))
+    if linhas_tabela >= 6 and len(_extrair_datas(_sem_alerta(texto))) < linhas_tabela * 0.5:
+        return (
+            f"A tabela tem {linhas_tabela} posts, mas só {len(_extrair_datas(_sem_alerta(texto)))} datas legíveis. Escreva a data de cada post como dd/mm/aaaa "
+            "(por exemplo 06/10/2026), uma data por linha, sem formatos como 01-Nov-23."
+        )
     erro = _cobertura_calendario(texto)
     if erro:
         return erro
@@ -1391,6 +1403,23 @@ def _guardrail_parecer_factory(fontes):
     return guardrail
 
 
+def _saneador_aplicacao_g1_factory(brief_task, portao_task):
+    """Última barreira da aplicação do G1: sem feedback humano escrito, o brief original (saneado) segue, com o registro "ajustes aplicados: nenhum"."""
+
+    def saneador(texto):
+        original = _sem_alerta(getattr(getattr(brief_task, "output", None), "raw", None) or "")
+        portao = getattr(getattr(portao_task, "output", None), "raw", None) or ""
+        sem_feedback = (not portao) or "nenhum feedback humano" in _normalizar(portao)
+        if original and sem_feedback:
+            limpo, trocas = _sanear_brief(original)
+            cab = ("# Registro de decisão G1\n\n**Status:** Aprovado sem feedback escrito.\n**Ajustes aplicados:** nenhum.\n"
+                   "**Ajustes não aplicados e por quê:** não houve feedback humano; o brief original foi mantido.\n\n---\n\n")
+            return cab + limpo, trocas + ["brief original mantido (sem feedback humano)"]
+        return _sanear_brief(texto)
+
+    return saneador
+
+
 def _guardrail_aplicacao_g1_factory(brief_task, portao_task):
     """Reemissão do brief: passa pela trava do brief e não pode perder [VALIDAR] do original quando o humano não deu feedback escrito."""
 
@@ -1402,6 +1431,13 @@ def _guardrail_aplicacao_g1_factory(brief_task, portao_task):
         portao = getattr(getattr(portao_task, "output", None), "raw", None) or ""
         sem_feedback = (not portao) or "nenhum feedback humano" in _normalizar(portao)
         if original and sem_feedback:
+            linhas = _linhas_significativas(_sem_alerta(original))
+            norm = _normalizar(getattr(saida, "raw", None) or str(saida) or "")
+            if linhas and sum(1 for l in linhas if l in norm) / len(linhas) < 0.7:
+                return False, (
+                    "Não houve feedback humano escrito: a aprovação foi só \"Aprovado.\". A reemissão deve ser o brief original, sem reescrever, "
+                    "sem acrescentar afirmações e sem declarar ajustes que ninguém pediu. Copie o brief original integralmente e registre \"Ajustes aplicados: nenhum\"."
+                )
             antes = _sem_alerta(original).lower().count("[validar")
             depois = _sem_alerta(getattr(saida, "raw", None) or str(saida) or "").lower().count("[validar")
             if depois < antes:
@@ -1753,7 +1789,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g1(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g1_factory(self.brief_estrategico(), self.portao_g1()), saneador=_sanear_brief), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g1_factory(self.brief_estrategico(), self.portao_g1()), saneador=_saneador_aplicacao_g1_factory(self.brief_estrategico(), self.portao_g1())), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g1"],
             context=[self.brief_estrategico(), self.revisao_g1(), self.portao_g1()],
         )

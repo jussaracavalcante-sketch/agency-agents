@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
 }
 
 
@@ -652,3 +652,35 @@ def test_brief_trava_rejeita_fonte_inventada_e_marcador_falso():
     assert r[0] is False and ("confirmado" in r[1] or "Anahp" in r[1])
     r2 = G._guardrail_brief(_saida(corpo.replace("[confirmado]", "[VALIDAR]")))
     assert r2[0] is False and "Anahp" in r2[1]
+
+
+def test_calendario_com_data_em_formato_estranho():
+    from datetime import date
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["duracao_semanas"] = "2"
+    G._ns["_hoje"] = lambda: date(2026, 10, 5)
+    try:
+        estranho = _calendario([f"| {i // 3 + 1} | 01-Nov-23 | Instagram | Post | a | b | c |" for i in range(6)])
+        assert [d.year for d in G._extrair_datas(estranho)] == [2023] * 6
+        assert "já passaram" in G._problemas_calendario(estranho)
+        ilegivel = _calendario([f"| {i // 3 + 1} | em breve | Instagram | Post | a | b | c |" for i in range(6)])
+        assert "datas legíveis" in G._problemas_calendario(ilegivel)
+    finally:
+        G._ns["_hoje"] = lambda: date(2026, 9, 1)
+
+
+def test_claim_seguranca_em_cada_diagnostico_e_garantir_em_checklist():
+    assert G._claims_proibidos("Segurança em cada diagnóstico.")
+    assert not G._claims_proibidos("- [ ] Garantir conformidade com LGPD no opt-in")
+    assert G._claims_proibidos("Garantimos conformidade com LGPD em todas as peças")
+
+
+def test_aplicacao_g1_sem_feedback_mantem_o_brief_original():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+    original = "# Brief Estratégico\n" + "\n".join(f"Linha {i} do brief original com conteúdo suficiente para contar como significativa." for i in range(30)) + "\n"
+    portao = "## Histórico de feedbacks humanos\nNenhum feedback humano recebido.\n\"Aprovado.\""
+    brief, port = _tarefa(original), _tarefa(portao)
+    reescrito = _saida("# Registro\n**Ajustes aplicados:** removidas garantias.\n# Brief reescrito\n" + "Texto totalmente novo sem relação com o original, escrito pelo modelo. " * 15)
+    g = G._com_limite_de_rejeicoes(G._guardrail_aplicacao_g1_factory(brief, port), saneador=G._saneador_aplicacao_g1_factory(brief, port))
+    assert g(reescrito)[0] is False and g(reescrito)[0] is False
+    ok, texto = g(reescrito)
+    assert ok is True and "Ajustes aplicados:** nenhum" in texto and "Linha 7 do brief original" in texto and "removidas garantias" not in texto
