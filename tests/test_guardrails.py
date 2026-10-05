@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto",
 }
 
 
@@ -82,7 +82,8 @@ def test_calendario_reemitido_incompleto_e_completo():
     G._TEXTO_PERMITIDO["texto"] = ""
     base = "### Parte A\n" + ("a" * 800) + "\n### Parte B\n#### Peça Reemitida: Calendário Social\n"
     curto = base + "| Semana | Data | Plataforma |\n|---|---|---|\n| 1 | 2026-10-03 | Instagram |\n| 1 | 2026-10-05 | LinkedIn |\n\n### Parte C: Lista de Versões\n"
-    linhas = "".join(f"| {w} | 2026-10-{3 + 7 * (w - 1):02d} | Instagram |\n" for w in range(1, 9)).replace("2026-10-31", "2026-10-31")
+    from datetime import date, timedelta
+    linhas = "".join(f"| {i // 3 + 1} | {(date(2026, 10, 3) + timedelta(days=i * 2 + 1)).isoformat()} | Instagram |\n" for i in range(24))   # 3 posts por semana
     completo = base + "| Semana | Data | Plataforma |\n|---|---|---|\n" + linhas + "\n### Parte C: Lista de Versões\n"
     assert G._guardrail_aplicacao_g2(types.SimpleNamespace(raw=curto))[0] is False
     assert G._guardrail_aplicacao_g2(types.SimpleNamespace(raw=completo))[0] is True
@@ -397,3 +398,83 @@ def test_auditoria_do_supervisor():
     g2 = G._guardrail_auditoria_factory(ruim, brief)
     r = g2(_aud(_AUD, lib))                                                                          # a varredura achou canal fora do brief e o parecer liberou
     assert r[0] is False and "varredura" in r[1]
+
+
+def _saida(txt):
+    return types.SimpleNamespace(raw=txt)
+
+
+def test_frase_em_ingles_e_barrada():
+    doc = "# Registro\n" + "texto em português do Brasil com bastante conteúdo útil para o leitor. " * 12
+    G._INPUTS_ATUAIS.clear()
+    assert G._guardrail_documento(_saida(doc))[0] is True
+    ruim = doc + "\nThe document has been processed as per the requirements, with all decisions documented."
+    r = G._guardrail_documento(_saida(ruim))
+    assert r[0] is False and "inglês" in r[1]
+    abertura = "I'll handle the application of decision G2 and its associated tasks for the team.\n" + doc
+    assert G._guardrail_documento(_saida(abertura))[0] is False
+    assert G._linha_em_ingles("| Hook | Descubra como a tecnologia transforma sua saúde |") == ""      # tabela e português passam
+    assert G._linha_em_ingles("Use o Google Analytics com a tag do Meta Pixel para medir cada conversão do funil.") == ""
+
+
+def _calendario(linhas):
+    cab = "| Semana | Data | Plataforma | Formato | Pilar | Hook | CTA |\n|---|---|---|---|---|---|---|\n"
+    return cab + "\n".join(linhas)
+
+
+def test_calendario_so_com_a_ultima_semana_nao_cobre():
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["duracao_semanas"] = "8"
+    tres = _calendario(["| 1 | 01/11/2026 | Instagram | Carrossel | a | b | c |", "| 1 | 03/11/2026 | Facebook | Vídeo | a | b | c |", "| 8 | 20/12/2026 | Instagram | Vídeo | a | b | c |"])
+    assert G._cobertura_calendario(tres)
+    from datetime import date, timedelta
+    completo = _calendario([f"| {i // 3 + 1} | {(date(2026, 11, 1) + timedelta(days=i * 2)).strftime('%d/%m/%Y')} | Instagram | Post | a | b | c |" for i in range(24)])
+    assert G._cobertura_calendario(completo) is None
+
+
+def _tarefa(txt):
+    return types.SimpleNamespace(output=types.SimpleNamespace(raw=txt))
+
+
+_RUB = "\n".join([
+    "RESUMO | CONTEÚDO | G1=FALHA G2=OK G3=FALHA G4=NA G5=OK | NOTA=59/100 | VEREDITO=REFAZER | REVISÃO 1 DE 2",
+    "RESUMO | CALENDÁRIO | G1=OK G2=OK G3=OK G4=NA G5=OK | NOTA=94/100 | VEREDITO=APROVAR | REVISÃO 1 DE 2",
+    "RESUMO | E-MAIL | G1=OK G2=OK G3=FALHA G4=NA G5=OK | NOTA=59/100 | VEREDITO=REFAZER | REVISÃO 1 DE 2",
+    "RESUMO | MÍDIA | G1=FALHA G2=OK G3=FALHA G4=NA G5=OK | NOTA=59/100 | VEREDITO=REFAZER | REVISÃO 1 DE 2",
+])
+
+
+def _aplicacao(bloqueadas):
+    return _saida("# Parte A: Registro de decisão G2\n" + ("conteúdo registrado com a decisão e os ajustes pedidos pelo Guardião para cada entrega. " * 10)
+                  + f"\n- **Liberadas**: Calendário Social\n- **Bloqueadas**: {bloqueadas}\n")
+
+
+def test_aprovado_sem_texto_nao_libera_peca_refazer():
+    G._INPUTS_ATUAIS.clear()
+    g = G._guardrail_aplicacao_g2_factory(_tarefa(_RUB), _tarefa("Histórico de feedbacks humanos\nNenhum feedback humano recebido\n\"Aprovado.\""))
+    r = g(_aplicacao("Produção de Conteúdo, Plano de Mídia Paga"))                      # e-mail REFAZER ficou liberado
+    assert r[0] is False and "EMAIL" in r[1]
+    assert g(_aplicacao("Produção de Conteúdo, Fluxos de E-mail, Plano de Mídia Paga"))[0] is True
+    devolvido = _tarefa("DECISÃO G2: DEVOLVIDO COM FEEDBACK por X. Ajustes pedidos: refazer o e-mail")
+    assert G._guardrail_aplicacao_g2_factory(_tarefa(_RUB), devolvido)(_aplicacao("Plano de Mídia Paga"))[0] is True
+
+
+_CAL_ORIG = _calendario(["| 1 | 02/11/2026 | Instagram | Carrossel | a | b | c |", "| 2 | 09/11/2026 | Facebook | Vídeo | a | b | c |"])
+_CAL_REEMIT = "### Peça reemitida: Calendário Social\n" + _calendario(["| 1 | 01/11/2026 | Instagram | Carrossel | a | b | c |", "| 1 | 03/11/2026 | Facebook | Vídeo | a | b | c |"])
+
+
+def _pacote(linhas):
+    return _saida("# Índice do Pacote\n" + ("peça listada no índice com o status de liberação e o nome padronizado do arquivo. " * 10)
+                  + "\n# Cronograma\n| Semana | Data | Canal | Peça |\n|---|---|---|---|\n" + "\n".join(linhas) + "\n")
+
+
+def test_pacote_usa_o_calendario_vigente():
+    G._INPUTS_ATUAIS.clear()                                                                # sem duracao_semanas: só confere datas
+    g = G._guardrail_pacote_factory(_tarefa(_CAL_ORIG), _tarefa(_CAL_REEMIT))
+    ok = _pacote(["| 1 | 01/11/2026 | Instagram | Carrossel |", "| 1 | 03/11/2026 | Facebook | Vídeo |"])
+    assert g(ok)[0] is True
+    antigo = _pacote(["| 1 | 02/11/2026 | Instagram | Carrossel |"])                       # data do calendário substituído
+    r = g(antigo)
+    assert r[0] is False and "02/11/2026" in r[1]
+    pendente = _pacote(["| 1 | a definir | Instagram | Carrossel |"])
+    assert g(pendente)[0] is False
+    assert g(_pacote(["| 1 | 15/11/2026 | E-mail | Boas-vindas |"]))[0] is True            # data de e-mail não é checada contra o calendário social
