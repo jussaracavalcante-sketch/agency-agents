@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
 }
 
 
@@ -495,7 +495,7 @@ def test_saneador_troca_servico_e_claim_ao_esgotar_a_trava():
     ok, texto = g(s)                                                                  # 3ª rejeição: aceita já saneada
     assert ok is True and "ALERTA DE QUALIDADE" in texto
     corpo = texto.split("\n\n", 1)[1]
-    assert "cirurgia robótica" not in corpo and "[VALIDAR: serviço fora do briefing]" in corpo
+    assert "cirurgia robótica" not in corpo and "O serviço [VALIDAR: confirmar com o hospital]" not in corpo and "serviço [VALIDAR: confirmar com o hospital]" in corpo
     assert "tecnologia de ponta cuida de você. [VALIDAR MÉDICO]" in corpo
     assert "| Site | tecnologia de ponta [VALIDAR MÉDICO] |" in corpo                  # tabela continua íntegra
     assert G._guardrail_producao(_saida(corpo))[0] is True                           # o texto saneado passa na própria trava
@@ -529,3 +529,86 @@ def test_calendario_com_data_passada_e_linha_solta():
         assert "fora do formato" in (G._problemas_calendario(solta) or "")
     finally:
         G._ns["_hoje"] = lambda: date(2026, 9, 1)
+
+
+def test_calendario_com_datas_sem_ano():
+    from datetime import date
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["duracao_semanas"] = "8"
+    sem_ano = _calendario(["| 1 | 02/10 | Instagram | Carrossel | a | b | c |", "| 1 | 04/10 | Facebook | Vídeo | a | b | c |", "| 2 | 09/10 | Instagram | Reels | a | b | c |"])
+    G._ns["_hoje"] = lambda: date(2026, 10, 5)
+    try:
+        assert [d.day for d in G._extrair_datas(sem_ano)] == [2, 4, 9]
+        assert G._datas_passadas(sem_ano) == ["02/10/2026", "04/10/2026"]
+        assert "já passaram" in (G._problemas_calendario(sem_ano) or "") or "cobre" in (G._problemas_calendario(sem_ano) or "")
+        assert G._extrair_datas("Período 10/2026 e 12/2026, razão 10/20") == []                        # mês/ano e frações não são datas
+        assert [d.day for d in G._extrair_datas("01/11/2026 e 2026-11-02")] == [1, 2]
+    finally:
+        G._ns["_hoje"] = lambda: date(2026, 9, 1)
+
+
+def test_dimensao_sem_problema_reconhece_nao_ha_necessidade():
+    assert G._SEM_PROBLEMA.search("Não há necessidade de alteração imediata; mantimento do objetivo literal")
+    assert G._SEM_PROBLEMA.search("O objetivo do brief estratégico não apresenta alterações em relação ao briefing")
+    assert not G._SEM_PROBLEMA.search("Faltou citar a verba de mídia do briefing")
+
+
+_PORTAO = ("```markdown\n## Histórico de feedbacks humanos\nDECISÃO G2: DEVOLVIDO COM FEEDBACK por X em 2026-10-05. Ajustes pedidos: 1. Calendário a partir de 06/10/2026.\n\nAprovado.\n\n"
+           "## Parecer do Guardião (cópia literal)\nReprovado\n")
+
+
+def test_aplicacao_g2_que_nao_leu_o_feedback_vira_registro_de_bloqueio():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = "hospital"
+    recusa = _saida("Parece que não consegui obter o feedback necessário do portão G2. Recomendo verificar o acesso aos documentos com a equipe de TI.")
+    assert G._guardrail_documento(recusa)[0] is False
+    g = G._com_limite_de_rejeicoes(G._guardrail_aplicacao_g2_factory(_tarefa(_RUB), _tarefa(_PORTAO)), saneador=G._saneador_aplicacao_g2_factory(_tarefa(_PORTAO)))
+    assert g(recusa)[0] is False and g(recusa)[0] is False
+    ok, texto = g(recusa)
+    assert ok is True and "ALERTA DE QUALIDADE" in texto
+    corpo = texto.split("\n\n", 1)[1]
+    assert "NÃO EXECUTADA" in corpo and "Nenhuma peça foi reemitida" in corpo and "Calendário a partir de 06/10/2026" in corpo
+    assert "Entregas liberadas\n- Nenhuma." in corpo and "não consegui obter" not in corpo.lower()
+
+
+def test_pacote_nao_lista_posts_quando_a_aplicacao_nao_foi_executada():
+    G._INPUTS_ATUAIS.clear()
+    apl = _tarefa("# Aplicação da decisão G2: NÃO EXECUTADA\nNenhuma peça foi reemitida.\n## Entregas liberadas\n- Nenhuma.")
+    g = G._guardrail_pacote_factory(_tarefa(_CAL_ORIG), apl)
+    assert g(_pacote(["| 1 | 02/11/2026 | Instagram | Carrossel |"]))[0] is False
+    assert g(_pacote(["| E-mail | a definir | Boas-vindas |"]))[0] is True
+
+
+def test_saneador_mantem_a_frase_legivel():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = "hospital consultas exames"
+    texto, trocas = G._sanear_claims("A telemedicina proporciona conveniência.\nConheça a cirurgia robótica do hospital.\nAgende consultas e exames.\nNa maternidade, tudo é simples.")
+    assert "O serviço [VALIDAR: confirmar com o hospital] proporciona conveniência." in texto
+    assert "Conheça o serviço [VALIDAR: confirmar com o hospital] do hospital." in texto                  # "a cirurgia robótica" vira "o serviço ..."
+    assert "No serviço [VALIDAR: confirmar com o hospital], tudo é simples." in texto
+    assert "Agende consultas e exames." in texto and sorted(trocas) == ["cirurgia robótica", "maternidade", "telemedicina"]
+
+
+_PLANO_SEM_ROTINA = "# Plano de Mídia\nGoogle Ads: R$ 15.000 [VALIDAR]\n" + ("Campanhas de busca com palavras-chave do mapa de SEO e anúncios responsivos. " * 12)
+
+
+def test_secoes_da_rotina_sao_inseridas_quando_o_plano_as_omite():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = "google ads"
+    assert G._faltas_rotina_midia(_PLANO_SEM_ROTINA)
+    texto, trocas = G._sanear_midia(_PLANO_SEM_ROTINA)
+    assert "## Insumos e pendências" in texto and "## Rotina operacional (diária, semanal)" in texto and "## Alçadas e autorizações" in texto
+    assert "budget pace" in texto.lower() and "90%" in texto and "UTM" in texto
+    assert G._faltas_rotina_midia(texto) == [] and "seções da rotina de mídia" in trocas
+    assert G._secoes_rotina_midia(texto) == ""                                       # idempotente: plano completo não recebe nada
+
+
+_RUB_LINHAS_OK = "\n".join([
+    "- **G3 Fato falso ou sem fonte:** OK",
+    "- **Compliance e precisão (14/20):** Há afirmações marcadas [VALIDAR], tratadas como pendência humana.",
+])
+
+
+def test_rubrica_nao_pune_validar():
+    assert G._validar_punido_pela_rubrica(_RUB_LINHAS_OK) is None
+    assert G._validar_punido_pela_rubrica('- **G3 Fato falso ou Sem Fonte:** FALHA ("A [VALIDAR: serviço fora do briefing]" sem fontes)')
+    assert G._validar_punido_pela_rubrica('1. **G3 FALHA:** "Novidades tecnológicas em diagnósticos. [VALIDAR MÉDICO]" - Assegure a revisão')
+    assert G._validar_punido_pela_rubrica("- **Compliance e precisão (0/20):** Dados marcados [VALIDAR] sem fontes afetam a precisão.")
+    assert G._validar_punido_pela_rubrica('- **G1 Compliance CFM/CDC:** FALHA ("Experiência segura e diferenciada" é promessa sem fonte)') is None   # falha real, sem marcador
+    assert G._validar_punido_pela_rubrica("RESUMO | CONTEÚDO | G1=OK G2=OK G3=FALHA G4=NA G5=OK | NOTA=59/100 | VEREDITO=REFAZER | REVISÃO 1 DE 2") is None
