@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_extrair_datas", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
 }
 
 
@@ -550,3 +550,28 @@ def test_dimensao_sem_problema_reconhece_nao_ha_necessidade():
     assert G._SEM_PROBLEMA.search("Não há necessidade de alteração imediata; mantimento do objetivo literal")
     assert G._SEM_PROBLEMA.search("O objetivo do brief estratégico não apresenta alterações em relação ao briefing")
     assert not G._SEM_PROBLEMA.search("Faltou citar a verba de mídia do briefing")
+
+
+_PORTAO = ("```markdown\n## Histórico de feedbacks humanos\nDECISÃO G2: DEVOLVIDO COM FEEDBACK por X em 2026-10-05. Ajustes pedidos: 1. Calendário a partir de 06/10/2026.\n\nAprovado.\n\n"
+           "## Parecer do Guardião (cópia literal)\nReprovado\n")
+
+
+def test_aplicacao_g2_que_nao_leu_o_feedback_vira_registro_de_bloqueio():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = "hospital"
+    recusa = _saida("Parece que não consegui obter o feedback necessário do portão G2. Recomendo verificar o acesso aos documentos com a equipe de TI.")
+    assert G._guardrail_documento(recusa)[0] is False
+    g = G._com_limite_de_rejeicoes(G._guardrail_aplicacao_g2_factory(_tarefa(_RUB), _tarefa(_PORTAO)), saneador=G._saneador_aplicacao_g2_factory(_tarefa(_PORTAO)))
+    assert g(recusa)[0] is False and g(recusa)[0] is False
+    ok, texto = g(recusa)
+    assert ok is True and "ALERTA DE QUALIDADE" in texto
+    corpo = texto.split("\n\n", 1)[1]
+    assert "NÃO EXECUTADA" in corpo and "Nenhuma peça foi reemitida" in corpo and "Calendário a partir de 06/10/2026" in corpo
+    assert "Entregas liberadas\n- Nenhuma." in corpo and "não consegui obter" not in corpo.lower()
+
+
+def test_pacote_nao_lista_posts_quando_a_aplicacao_nao_foi_executada():
+    G._INPUTS_ATUAIS.clear()
+    apl = _tarefa("# Aplicação da decisão G2: NÃO EXECUTADA\nNenhuma peça foi reemitida.\n## Entregas liberadas\n- Nenhuma.")
+    g = G._guardrail_pacote_factory(_tarefa(_CAL_ORIG), apl)
+    assert g(_pacote(["| 1 | 02/11/2026 | Instagram | Carrossel |"]))[0] is False
+    assert g(_pacote(["| E-mail | a definir | Boas-vindas |"]))[0] is True

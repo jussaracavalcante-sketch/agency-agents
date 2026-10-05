@@ -155,6 +155,10 @@ _FRASES_DE_FALHA = (
     "erro ao tentar acessar",
     "não consigo acessar",
     "não consegui acessar",
+    "não consegui obter",
+    "não consigo obter",
+    "recomendo verificar o acesso",
+    "entre em contato com a equipe de ti",
     "não tenho acesso",
     "não poderei completar",
     "forneça acesso",
@@ -385,6 +389,48 @@ def _guardrail_aplicacao_g2_factory(rubrica_task, portao_task):
         return True, saida
 
     return guardrail
+
+
+_PECAS_G2 = ("Conteúdo longo", "Calendário social", "Fluxos de e-mail", "Plano de mídia paga", "Direção de arte / conceito criativo")
+
+
+def _feedback_do_portao(portao_texto):
+    """Seção "Histórico de feedbacks humanos" do pedido do portão (cópia literal), sem o parecer; vazio se não houver."""
+    t = _sem_alerta(portao_texto or "")
+    m = re.search(r"hist[óo]rico de feedbacks[^\n]*\n(.*?)(?=\n#+\s*parecer|\Z)", t, re.I | re.S)
+    return (m.group(1).strip() if m else "")[:3000]
+
+
+def _saneador_aplicacao_g2_factory(portao_task):
+    """
+    Última barreira da aplicação do G2. Saída curta ou que "não conseguiu ler o feedback" não pode seguir adiante como se as peças tivessem
+    sido ajustadas (o pacote de publicação usaria as peças antigas). Nesse caso a saída vira um registro honesto: aplicação NÃO executada, nenhuma
+    peça reemitida, todas bloqueadas, com o feedback humano copiado. Saída válida segue só com o saneamento do trecho reemitido.
+    """
+
+    def saneador(texto):
+        invalida = len(texto.strip()) < _MIN_CARACTERES_DOCUMENTO or any(f in texto.lower()[:900] for f in _FRASES_DE_FALHA)
+        if not invalida:
+            return _sanear_reemissao(texto)
+        feedback = _feedback_do_portao(getattr(getattr(portao_task, "output", None), "raw", None) or "")
+        linhas = [
+            "# Aplicação da decisão G2: NÃO EXECUTADA",
+            "",
+            "A tarefa não conseguiu aplicar os ajustes depois de três tentativas. **Nenhuma peça foi reemitida.** Todas as entregas permanecem na versão original, "
+            "com os ajustes pendentes, e estão **BLOQUEADAS** até uma nova rodada de aplicação.",
+            "",
+            "## Feedback humano recebido (cópia literal)",
+            feedback or "Nenhum feedback humano recebido.",
+            "",
+            "## Entregas bloqueadas",
+        ] + [f"- {p}: versão original, ajustes pendentes." for p in _PECAS_G2] + [
+            "",
+            "## Entregas liberadas",
+            "- Nenhuma.",
+        ]
+        return "\n".join(linhas), ["aplicação não executada: saída inválida substituída por registro de bloqueio"]
+
+    return saneador
 
 
 _TAG_ALERTA = "ALERTA DE QUALIDADE"
@@ -748,6 +794,11 @@ def _guardrail_pacote_factory(calendario_task, aplicacao_task):
         texto = _sem_alerta(getattr(saida, "raw", None) or str(saida) or "")
         aplicacao = _sem_alerta(getattr(getattr(aplicacao_task, "output", None), "raw", None) or "")
         original = _sem_alerta(getattr(getattr(calendario_task, "output", None), "raw", None) or "")
+        if "não executada" in aplicacao.lower() and "nenhuma peça foi reemitida" in aplicacao.lower() and _linhas_social(texto):
+            return False, (
+                "A aplicação do G2 não foi executada e nenhuma entrega foi liberada. O cronograma não pode listar posts: escreva que não há peça liberada "
+                "para publicação (cronograma vazio) e mantenha só o índice e o checklist."
+            )
         vigente = _trecho_calendario_reemitido(aplicacao) or original
         datas_vigentes = _datas_do_texto(vigente)
         sociais = "\n".join(_linhas_social(texto))
@@ -1697,7 +1748,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g2(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g2_factory(self.rubrica_qa(), self.portao_g2()), saneador=_sanear_reemissao), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g2_factory(self.rubrica_qa(), self.portao_g2()), saneador=_saneador_aplicacao_g2_factory(self.portao_g2())), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g2"],
             context=[
                 self.portao_g2(),
