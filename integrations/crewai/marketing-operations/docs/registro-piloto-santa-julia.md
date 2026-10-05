@@ -317,3 +317,10 @@ o pacote cobriu 2 das 8 semanas, com posts inventados ("Mês da Saúde") e horá
 Brief sem alerta, mas com a seção Fontes listando Conselho Federal de Medicina, ANVISA e CONAR com links (cfm.org.br, gov.br/anvisa, conar.org.br) que o briefing não traz (órgãos reguladores são regras do setor, não fontes de dados);
 Guardião reprovou "Coerência" citando um objetivo idêntico ao do briefing. Melhorias: link ou domínio na seção Fontes que o briefing e a base não trazem e órgão regulador citado como fonte são rejeitados;
 dimensão de coerência reprovada que cita trecho idêntico ao objetivo do briefing é tratada como incoerente.
+
+## Décimo terceiro disparo (execução 53876f22): G2 aplicado e G3
+
+- G2 devolvido (nº 44) e aprovado (nº 45): a aplicação seguiu o texto do usuário no calendário e no título do conteúdo; o plano de mídia ficou "Bloqueada" (UTM e ritmo de verba não reemitidos) e o brief não foi alterado.
+- G3: o pacote de publicação saiu com alerta de qualidade e cronograma inventado (9 posts, 02–10/11) contra 24 posts do calendário vigente; revisão do G3: Reprovado.
+- Correção: `_saneador_pacote_factory` refaz o cronograma por código (uma linha por post do calendário vigente, hora "a definir", fuso America/Manaus, UTM padrão) quando a trava de rejeições se esgota. Não atua se o calendário ou a aplicação estiverem bloqueados. Teste de regressão incluído (58 testes).
+- Pendente: reemissão do plano de mídia pela aplicação do G2 quando o feedback pedir; "Guia Definitivo"/"Conheça histórias" no calendário; rubrica severa.

@@ -1015,6 +1015,76 @@ def _linhas_social(texto):
     return [l for l in (texto or "").splitlines() if l.strip().startswith("|") and re.search(r"instagram|facebook|linkedin|tiktok|youtube", l, re.I)]
 
 
+def _linhas_do_calendario(texto):
+    """Linhas de post do calendário (tabela com colunas Data e Plataforma/Canal): dicts com data dd/mm/aaaa, rede, formato e texto do post."""
+    linhas = _sem_alerta(texto or "").splitlines()
+    saida, cab = [], None
+    for i, linha in enumerate(linhas):
+        l = linha.strip()
+        if not l.startswith("|"):
+            cab = None
+            continue
+        if re.fullmatch(r"\|[\s:|-]+\|?", l):
+            continue
+        celulas = [c.strip() for c in l.strip("|").split("|")]
+        baixo = [c.lower() for c in celulas]
+        if cab is None and i + 1 < len(linhas) and re.fullmatch(r"\|[\s:|-]+\|?", linhas[i + 1].strip()):
+            idx = lambda *nomes: next((k for k, c in enumerate(baixo) if c.startswith(nomes)), None)  # noqa: E731
+            d, r = idx("data"), idx("plataforma", "canal")
+            cab = {"data": d, "rede": r, "formato": idx("formato"), "hook": idx("hook", "copy")} if d is not None and r is not None else ()
+            continue
+        if cab:
+            def cel(k):
+                return celulas[cab[k]] if cab[k] is not None and cab[k] < len(celulas) else ""
+            datas = _extrair_datas(cel("data"))
+            rede = next((x for x in _REDES if x in cel("rede").lower()), None)
+            if datas and rede:
+                saida.append({"data": datas[0].strftime("%d/%m/%Y"), "rede": rede, "formato": cel("formato"), "hook": cel("hook")})
+    return saida
+
+
+def _saneador_pacote_factory(calendario_task, aplicacao_task):
+    """
+    Última barreira do pacote: o cronograma de redes sociais é DADO do calendário, não texto livre. Se a trava esgotou, a tabela do cronograma é refeita por código
+    a partir do calendário vigente (uma linha por post, data e rede dele; hora, link e responsável "a definir"; UTM padronizada).
+    """
+
+    def saneador(texto):
+        aplicacao = _sem_alerta(getattr(getattr(aplicacao_task, "output", None), "raw", None) or "")
+        original = _sem_alerta(getattr(getattr(calendario_task, "output", None), "raw", None) or "")
+        nao_executada = "não executada" in aplicacao.lower() and "nenhuma peça foi reemitida" in aplicacao.lower()
+        if nao_executada or re.search(r"calend", _bloqueadas_do_g2(aplicacao), re.I):
+            return texto, []
+        posts = _linhas_do_calendario(_trecho_calendario_reemitido(aplicacao) or original)
+        if not posts:
+            return texto, []
+        linhas = ["| Data | Hora | Fuso | Canal | Peça | Link | UTM | Responsável | Status |", "|---|---|---|---|---|---|---|---|---|"]
+        for p in posts:
+            peca = " – ".join(x for x in (p["formato"], re.sub(r"\s+", " ", p["hook"])[:70]) if x) or "post do calendário"
+            utm = f"utm_source={p['rede']}&utm_medium=social&utm_campaign=calendario_social"
+            linhas.append(f"| {p['data']} | a definir | America/Manaus | {p['rede'].capitalize()} | {peca} | a definir após a publicação | {utm} | a definir | A definir |")
+        tabela = "\n".join(linhas)
+        corpo = texto.splitlines()
+        # substitui a primeira tabela depois de um título "cronograma"; sem título, acrescenta a seção
+        for i, l in enumerate(corpo):
+            if re.match(r"\s*#{1,4}\s*.*cronograma", l, re.I):
+                j = i + 1
+                while j < len(corpo) and not corpo[j].strip().startswith("|"):
+                    j += 1
+                k = j
+                while k < len(corpo) and corpo[k].strip().startswith("|"):
+                    k += 1
+                if j < len(corpo):
+                    novo = "\n".join(corpo[:j] + [tabela] + corpo[k:])
+                    return novo, ["cronograma refeito a partir do calendário vigente"]
+        fecha = texto.rstrip().endswith("```")
+        base = texto.rstrip()[:-3].rstrip() if fecha else texto.rstrip()
+        novo = base + "\n\n## Cronograma de Publicação\n\n" + tabela + ("\n```\n" if fecha else "\n")
+        return novo, ["cronograma refeito a partir do calendário vigente"]
+
+    return saneador
+
+
 def _guardrail_pacote_factory(calendario_task, aplicacao_task):
     """
     O cronograma do pacote usa o calendário VIGENTE (a versão reemitida em aplicacao_g2, se houver; senão o original): as linhas de rede social não
@@ -2194,7 +2264,7 @@ class MarketingOpsCrew:
     @task
     def pacote_publicacao(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_pacote_factory(self.calendario_social(), self.aplicacao_g2())), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_pacote_factory(self.calendario_social(), self.aplicacao_g2()), saneador=_saneador_pacote_factory(self.calendario_social(), self.aplicacao_g2())), guardrail_max_retries=2,
             config=self.tasks_config["pacote_publicacao"],
             context=[
                 self.aplicacao_g2(),
