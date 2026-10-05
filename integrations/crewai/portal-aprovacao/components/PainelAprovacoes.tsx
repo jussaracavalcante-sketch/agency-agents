@@ -42,7 +42,7 @@ export default async function PainelAprovacoes({ u, selecionada, aba }: { u: Usu
               <div className="row" style={{ flexWrap: "nowrap" }}>
                 <div className="item" style={{ padding: 0, border: 0 }}>
                   <span className={`bola ${e.pendente ? "w" : e.concluida ? "o" : ""}`}>{e.portao ?? (e.concluida ? "✔" : "…")}</span>
-                  <div className="grow"><strong>{nome(e.chave)}</strong><div className="mut">{e.pendente ? `Portão ${e.portao ?? "?"} pendente` : e.concluida ? "Concluída" : "Em andamento"}{contaAlertas(e.eventos) > 0 && <> · <span style={{ color: "var(--err)" }}>⚠ {contaAlertas(e.eventos)} alerta(s)</span></>}</div></div>
+                  <div className="grow"><strong>{nome(e.chave)}</strong><div className="mut">{e.pendente ? `Portão ${e.portao ?? "?"} pendente` : e.encerrada ? "Encerrada (reprovada)" : e.concluida ? "Concluída" : "Em andamento"}{contaAlertas(e.eventos) > 0 && <> · <span style={{ color: "var(--err)" }}>⚠ {contaAlertas(e.eventos)} alerta(s)</span></>}</div></div>
                 </div>
                 <span className="mut" style={{ whiteSpace: "nowrap" }}>{haQuanto(e.ultimo)}</span>
               </div>
@@ -56,7 +56,7 @@ export default async function PainelAprovacoes({ u, selecionada, aba }: { u: Usu
               <div className="card">
                 <div className="row">
                   <h2 style={{ margin: 0 }}>{nome(exec.chave)}</h2>
-                  {exec.pendente ? <span className="st warn">Portão {exec.portao ?? "?"} aguardando decisão</span> : exec.concluida ? <span className="st ok">Concluída</span> : <span className="st ac">Em andamento</span>}
+                  {exec.pendente ? <span className="st warn">Portão {exec.portao ?? "?"} aguardando decisão</span> : exec.encerrada ? <span className="st err">Encerrada · reprovada</span> : exec.concluida ? <span className="st ok">Concluída</span> : <span className="st ac">Em andamento</span>}
                 </div>
                 <p className="mut">Execução {exec.chave.slice(0, 8)} · {feitas} de {TOTAL_TAREFAS} tarefas entregues · última atividade {fmt(exec.ultimo)}</p>
                 {alertas.length > 0 && (

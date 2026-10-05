@@ -1,28 +1,69 @@
 "use client";
 import { useState } from "react";
 
+type Decisao = "aprovar" | "devolver" | "reprovar";
+
+/** O que cada botão faz, dito antes de enviar. O texto "enviado" é o que a pessoa verá registrado. */
+function resumo(d: Decisao, portao: string | null, instrucoes: string) {
+  const g = portao ?? "do portão";
+  if (d === "aprovar") return {
+    titulo: `Aprovar o portão ${g}`,
+    efeito: "A execução é retomada e segue para a próxima etapa. Nenhuma correção é enviada.",
+    enviado: "Aprovado.",
+    aviso: instrucoes.trim() ? "Você escreveu instruções, mas Aprovar NÃO as envia. Para que sejam aplicadas, cancele e use Devolver com ajustes." : null,
+  };
+  if (d === "devolver") return {
+    titulo: `Devolver o portão ${g} com ajustes`,
+    efeito: "A etapa de aplicação reescreve as peças com o seu texto e o portão volta a pedir decisão.",
+    enviado: instrucoes.trim(),
+    aviso: null,
+  };
+  return {
+    titulo: `Reprovar o portão ${g}`,
+    efeito: "A execução é encerrada no portal e não será retomada. Nada é enviado à plataforma e não há como desfazer.",
+    enviado: "(nada é enviado à plataforma)",
+    aviso: instrucoes.trim() ? "O texto que você escreveu fica só neste rascunho: Reprovar não o registra nem o envia." : null,
+  };
+}
+
 export default function Decisao({ execucaoId, portao, podeDecidir }: { execucaoId: string; portao: string | null; podeDecidir: boolean }) {
   const [instrucoes, setInstrucoes] = useState(""); const [busy, setBusy] = useState(false); const [msg, setMsg] = useState<{ t: string; ok: boolean } | null>(null);
-  async function enviar(decisao: "aprovar" | "devolver" | "reprovar") {
-    if (decisao === "reprovar" && !confirm("Reprovar encerra o fluxo desta execução. Confirmar?")) return;
+  const [escolha, setEscolha] = useState<Decisao | null>(null);
+  async function enviar(decisao: Decisao) {
     setBusy(true); setMsg(null);
     const r = await fetch("/api/decisao", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ execucaoId, decisao, instrucoes }) });
-    const j = await r.json(); setBusy(false);
+    const j = await r.json(); setBusy(false); setEscolha(null);
     setMsg({ t: j.mensagem || j.erro || "Erro", ok: r.ok });
     if (r.ok) setTimeout(() => window.location.reload(), 1500);
   }
   if (!podeDecidir) return <div className="card"><strong>Decisão</strong><p className="mut">Seu papel não permite decidir. Peça a um aprovador.</p></div>;
+  const r = escolha ? resumo(escolha, portao, instrucoes) : null;
   return (
     <div className="card">
       <strong>Decisão do portão {portao ?? ""}</strong>
       <p className="mut">Para devolver, escreva instruções claras. O texto vai literalmente para a execução.</p>
-      <textarea rows={7} value={instrucoes} onChange={(e) => setInstrucoes(e.target.value)} placeholder="Ex.: remover o depoimento do calendário; marcar a paleta como [VALIDAR]…" />
-      <p className="row" style={{ justifyContent: "flex-start" }}>
-        <button className="p" disabled={busy} onClick={() => enviar("aprovar")}>Aprovar</button>
-        <button disabled={busy || !instrucoes.trim()} onClick={() => enviar("devolver")}>Devolver com ajustes</button>
-        <button className="d" disabled={busy} onClick={() => enviar("reprovar")}>Reprovar</button>
-      </p>
-      <p className="mut">“Aprovar” libera o portão; o aplicador usa as instruções de devoluções anteriores. Se você quer que algo seja corrigido, devolva primeiro.</p>
+      <textarea rows={7} value={instrucoes} onChange={(e) => setInstrucoes(e.target.value)} disabled={!!escolha} placeholder="Ex.: remover o depoimento do calendário; marcar a paleta como [VALIDAR]…" />
+      {!escolha && (
+        <p className="row" style={{ justifyContent: "flex-start" }}>
+          <button className="p" disabled={busy} onClick={() => setEscolha("aprovar")}>Aprovar</button>
+          <button disabled={busy || !instrucoes.trim()} onClick={() => setEscolha("devolver")}>Devolver com ajustes</button>
+          <button className="d" disabled={busy} onClick={() => setEscolha("reprovar")}>Reprovar</button>
+        </p>
+      )}
+      {escolha && r && (
+        <div role="alertdialog" aria-label="Confirmar decisão" style={{ border: `2px solid ${escolha === "reprovar" ? "var(--err)" : "var(--ac)"}`, borderRadius: 10, padding: 12, margin: "10px 0" }}>
+          <strong>{r.titulo}</strong>
+          <p>{r.efeito}</p>
+          <p className="mut">Texto que será enviado:</p>
+          <pre className="doc" style={{ maxHeight: 160, overflow: "auto" }}>{r.enviado}</pre>
+          {r.aviso && <p style={{ color: "var(--err)" }}>⚠ {r.aviso}</p>}
+          <p className="row" style={{ justifyContent: "flex-start" }}>
+            <button className={escolha === "reprovar" ? "d" : "p"} disabled={busy} onClick={() => enviar(escolha)}>Confirmar: {escolha === "aprovar" ? "Aprovar" : escolha === "devolver" ? "Devolver com ajustes" : "Reprovar"}</button>
+            <button disabled={busy} onClick={() => setEscolha(null)}>Cancelar</button>
+          </p>
+        </div>
+      )}
+      <p className="mut">“Aprovar” libera o portão sem correções. Se você quer que algo seja corrigido, devolva. “Reprovar” encerra a execução.</p>
       {msg && <p className="msg" style={{ color: msg.ok ? "var(--ok)" : "var(--err)" }}>{msg.t}</p>}
     </div>
   );
