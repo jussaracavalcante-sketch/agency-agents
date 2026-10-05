@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
 }
 
 
@@ -23,7 +23,12 @@ def _carregar():
         nome = getattr(no, "name", None) or (no.targets[0].id if isinstance(no, ast.Assign) and isinstance(no.targets[0], ast.Name) else None)
         if nome in _NOMES:
             exec(compile(ast.Module([no], []), str(_FONTE), "exec"), ns)
-    return types.SimpleNamespace(**ns)
+    from datetime import date
+
+    ns["_hoje"] = lambda: date(2026, 9, 1)   # data fixa: os calendários dos testes não podem "envelhecer"
+    g = types.SimpleNamespace(**ns)
+    g._ns = ns
+    return g
 
 
 G = _carregar()
@@ -478,3 +483,49 @@ def test_pacote_usa_o_calendario_vigente():
     pendente = _pacote(["| 1 | a definir | Instagram | Carrossel |"])
     assert g(pendente)[0] is False
     assert g(_pacote(["| 1 | 15/11/2026 | E-mail | Boas-vindas |"]))[0] is True            # data de e-mail não é checada contra o calendário social
+
+
+def test_saneador_troca_servico_e_claim_ao_esgotar_a_trava():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = "hospital santa júlia manaus agendamentos"
+    doc = ("# Brief\n" + "Contexto do hospital em Manaus com bastante texto útil para atingir o tamanho mínimo exigido do documento. " * 10
+           + "\nConheça a cirurgia robótica no hospital.\nNossa tecnologia de ponta cuida de você.\n| Canal | Nota |\n|---|---|\n| Site | tecnologia de ponta |\n")
+    g = G._com_limite_de_rejeicoes(G._guardrail_producao, saneador=G._sanear_producao)
+    s = _saida(doc)
+    assert g(s)[0] is False and g(s)[0] is False
+    ok, texto = g(s)                                                                  # 3ª rejeição: aceita já saneada
+    assert ok is True and "ALERTA DE QUALIDADE" in texto
+    corpo = texto.split("\n\n", 1)[1]
+    assert "cirurgia robótica" not in corpo and "[VALIDAR: serviço fora do briefing]" in corpo
+    assert "tecnologia de ponta cuida de você. [VALIDAR MÉDICO]" in corpo
+    assert "| Site | tecnologia de ponta [VALIDAR MÉDICO] |" in corpo                  # tabela continua íntegra
+    assert G._guardrail_producao(_saida(corpo))[0] is True                           # o texto saneado passa na própria trava
+
+
+def test_saneador_de_midia_marca_canal_fora_do_brief():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = "google ads"
+    texto, trocas = G._sanear_midia("Google Ads: R$ 15.000\nYouTube Ads e Display: R$ 3.000")
+    assert "Google Ads" in texto and "YouTube Ads" not in texto and "Display" not in texto and trocas
+
+
+def test_saneador_de_reemissao_nao_mexe_no_registro():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = "hospital"
+    texto = "### Parte A\n| Conteúdo | Remover tecnologia de ponta | Guardião |\n### Parte B\n#### Peça reemitida: Conteúdo\nA tecnologia de ponta do hospital.\n"
+    novo, trocas = G._sanear_reemissao(texto)
+    assert "Remover tecnologia de ponta | Guardião |" in novo and "hospital. [VALIDAR MÉDICO]" in novo and trocas
+
+
+def test_calendario_com_data_passada_e_linha_solta():
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["duracao_semanas"] = "2"
+    from datetime import date, timedelta
+    def cal(inicio, extra=""):
+        linhas = [f"| {i // 3 + 1} | {(inicio + timedelta(days=i * 2)).strftime('%d/%m/%Y')} | Instagram | Post | a | b | c |" for i in range(6)]
+        return _calendario(linhas) + extra
+    G._ns["_hoje"] = lambda: date(2026, 10, 5)
+    try:
+        assert G._problemas_calendario(cal(date(2026, 10, 6))) is None
+        r = G._problemas_calendario(cal(date(2026, 10, 2)))
+        assert r and "já passaram" in r and "02/10/2026" in r
+        solta = cal(date(2026, 10, 6)).replace("| 1 | 08/10/2026", "| Pode usar [VALIDAR MÉDICO] para algo |\n| 1 | 08/10/2026", 1)
+        assert "fora do formato" in (G._problemas_calendario(solta) or "")
+    finally:
+        G._ns["_hoje"] = lambda: date(2026, 9, 1)

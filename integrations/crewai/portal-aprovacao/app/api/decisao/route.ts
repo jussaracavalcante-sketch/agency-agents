@@ -10,12 +10,18 @@ export async function POST(req: Request) {
   if (!usuario) return NextResponse.json({ erro: "Sessão inválida" }, { status: 401 });
   if (usuario.papel !== "aprovador") return NextResponse.json({ erro: "Apenas aprovadores decidem" }, { status: 403 });
 
-  const { execucaoId, decisao, instrucoes } = (await req.json()) as {
-    execucaoId: string; decisao: "aprovar" | "devolver" | "reprovar"; instrucoes?: string;
+  const { execucaoId, decisao, instrucoes, ignorarTexto } = (await req.json()) as {
+    execucaoId: string; decisao: "aprovar" | "devolver" | "reprovar"; instrucoes?: string; ignorarTexto?: boolean;
   };
   if (!["aprovar", "devolver", "reprovar"].includes(decisao)) return NextResponse.json({ erro: "Decisão inválida" }, { status: 400 });
   if (decisao === "devolver" && !(instrucoes || "").trim()) {
     return NextResponse.json({ erro: "Informe as instruções ao devolver" }, { status: 400 });
+  }
+
+  // Texto escrito + Aprovar/Reprovar: o texto não vai à plataforma. Foi a causa de decisões registradas diferentes da pretendida;
+  // o servidor só aceita quando a pessoa confirmou que sabe disso.
+  if (decisao !== "devolver" && (instrucoes || "").trim() && !ignorarTexto) {
+    return NextResponse.json({ erro: "Há instruções escritas, mas esta decisão não as envia. Use Devolver com ajustes ou confirme que o texto será ignorado." }, { status: 409 });
   }
 
   // O servidor decide qual é o portão pendente: o navegador não escolhe o taskId.
