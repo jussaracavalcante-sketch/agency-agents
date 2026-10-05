@@ -297,3 +297,8 @@ briefing; o campo novo do item "serviços não informados" quebrou o kickoff (ne
 Brief sem alerta, objetivo literal, fontes só as do briefing, sem "[confirmado]", sem nota de conformidade e sem serviços fora do briefing. Pendências do brief: "visitas guiadas" e "pacotes personalizados de saúde"
 sem [VALIDAR]; "exemplos de experiências de pacientes [VALIDAR]" (risco de testemunho); divisão R$ 7.000 / R$ 3.000 em [VALIDAR]. O Guardião reprovou "Coerência" escrevendo que o objetivo está coerente: a trava
 `_dimensoes_incoerentes` só reconhecia títulos numerados. Corrigido: qualquer título de seção conta como dimensão.
+
+## Undécimo disparo: produção e G2 (execução `179fec0f`)
+G1 devolvido duas vezes (a primeira com o texto "devolver") e aprovado na terceira; a `aplicacao_g1` aplicou as ressalvas. Produção com 3 alertas (conteúdo, mídia, direção de arte), contra 7 na rodada anterior.
+Calendário com coluna Data e datas posteriores a hoje, sem histórias de pacientes; plano de mídia com a rotina. Falha restante: frase em inglês numa célula de tabela do calendário ("Techniques for building trust…") que a
+trava de idioma não via (ela pulava linhas de tabela): corrigido, agora cada célula é conferida. Rubrica deu 100/100 ao calendário e 97 ao e-mail enquanto o Guardião pediu ajustes.

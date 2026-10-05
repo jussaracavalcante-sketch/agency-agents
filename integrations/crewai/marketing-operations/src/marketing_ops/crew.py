@@ -218,18 +218,27 @@ _PALAVRAS_EN = frozenset("the and with has have been will is are was were as per
 _PALAVRAS_PT = frozenset("o a os as de do da dos das e que para com um uma em no na nos nas por se ao à são é não ou mais como sua seu suas seus foi ser".split())
 
 
+def _trecho_em_ingles(trecho):
+    palavras = re.findall(r"[a-zA-Zà-úÀ-Ú']+", trecho.lower())
+    if len(palavras) < 6:
+        return False
+    en = sum(1 for p in palavras if p in _PALAVRAS_EN)
+    pt = sum(1 for p in palavras if p in _PALAVRAS_PT)
+    return en / len(palavras) >= 0.28 and pt / len(palavras) <= 0.1
+
+
 def _linha_em_ingles(texto):
-    """Primeira frase em inglês fora de blocos de tabela/código (a crew escreve em português do Brasil); vazio se não houver."""
+    """Primeira frase em inglês (inclusive numa célula de tabela; a crew escreve em português do Brasil); vazio se não houver."""
     for linha in _sem_alerta(texto or "").splitlines():
         l = linha.strip()
-        if not l or l.startswith(("|", "```", "#")) or l.count(" ") < 5:
+        if not l or l.startswith(("```", "#")):
             continue
-        palavras = re.findall(r"[a-zA-Zà-úÀ-Ú']+", l.lower())
-        if len(palavras) < 6:
-            continue
-        en = sum(1 for p in palavras if p in _PALAVRAS_EN)
-        pt = sum(1 for p in palavras if p in _PALAVRAS_PT)
-        if en / len(palavras) >= 0.28 and pt / len(palavras) <= 0.1:
+        if l.startswith("|"):
+            for celula in l.strip("|").split("|"):
+                c = celula.strip()
+                if c.count(" ") >= 4 and _trecho_em_ingles(c):
+                    return c[:80]
+        elif l.count(" ") >= 5 and _trecho_em_ingles(l):
             return l[:80]
     return ""
 
