@@ -166,6 +166,11 @@ _FRASES_DE_FALHA = (
     "please provide the",
 )
 _MIN_CARACTERES_DOCUMENTO = 700
+_ABERTURA_DE_CONVERSA = re.compile(
+    r"^(para (proceder|aplicar|atender|seguir)|vou |a seguir|abaixo (est[aá]|segue|apresento)|segue |com base n[oa]s?|claro[,!.]|certo[,!.]|entendi|aqui est[aá]|ok[,!.]|"
+    r"prezad[oa]s?)\b",
+    re.I,
+)
 
 
 def _guardrail_documento(saida):  # sem anotação de retorno: o validador do CrewAI a compara com tipos reais
@@ -175,6 +180,12 @@ def _guardrail_documento(saida):  # sem anotação de retorno: o validador do Cr
     """
     texto = (getattr(saida, "raw", None) or str(saida) or "").strip()
     baixo = texto.lower()
+    primeira = next((l.strip() for l in texto.splitlines() if l.strip() and not l.strip().startswith(("```", ">"))), "")
+    if _ABERTURA_DE_CONVERSA.match(primeira):
+        return False, (
+            f"A saída abre com comentário do agente (\"{primeira[:70]}\"). Entregue só o documento, começando pelo título ou pela primeira "
+            "seção, sem introdução, sem explicar o que você vai fazer nem o que mudou."
+        )
     if len(texto) < _MIN_CARACTERES_DOCUMENTO:
         return False, (
             "Saída curta demais para um documento. Entregue o documento completo usando os insumos que estão no "
@@ -285,8 +296,28 @@ def _guardrail_aplicacao_g2(saida):
     return True, saida
 
 
+_TAG_ALERTA = "ALERTA DE QUALIDADE"
+
+
+def _sem_alerta(texto):
+    """Remove as linhas de alerta que as próprias travas inserem: elas citam o problema e não podem ser varridas como se fossem texto da peça."""
+    return "\n".join(l for l in (texto or "").splitlines() if _TAG_ALERTA not in l)
+
+
+def _com_alerta(saida, motivo):
+    """Saída aceita sem correção: devolve o texto com uma linha de alerta no topo, para que o humano veja o que a trava não resolveu."""
+    raw = getattr(saida, "raw", None) or str(saida) or ""
+    rotulo = getattr(saida, "name", None) or ""
+    detalhe = re.sub(r"\s+", " ", str(motivo or "")).strip()[:600]
+    linha = f"> ⚠ {_TAG_ALERTA}{' (' + rotulo + ')' if rotulo else ''}: a trava automática reprovou esta saída e ela foi aceita sem correção. Pendência: {detalhe}"
+    return linha + "\n\n" + raw
+
+
 def _com_limite_de_rejeicoes(guardrail, maximo=2):
-    """Aceita a saída depois de `maximo` rejeições: guardrail esgotado derruba a execução inteira na plataforma."""
+    """
+    Aceita a saída depois de `maximo` rejeições, porque guardrail esgotado derruba a execução inteira na plataforma. A saída aceita
+    leva uma linha "ALERTA DE QUALIDADE" no topo com a pendência que a trava não conseguiu corrigir.
+    """
     estado = {"n": 0}
 
     def envelope(saida):  # sem anotação de retorno (ver _guardrail_documento)
@@ -294,7 +325,7 @@ def _com_limite_de_rejeicoes(guardrail, maximo=2):
         if veredito[0] is False:
             estado["n"] += 1
             if estado["n"] > maximo:
-                return True, saida
+                return True, _com_alerta(saida, veredito[1])
         return veredito
 
     return envelope
@@ -337,7 +368,7 @@ _CLAIMS_PROIBIDOS = re.compile(
     r"depoimento|testemunho|hist[óo]rias? de (pacientes?|recupera[çc][ãa]o|sucesso)|casos? de sucesso|"
     r"paciente real|pacientes? satisfeit|\blidera\b|\bl[íi]der(es)?\b|refer[êe]ncia em|\bpremiad[oa]s?\b|"
     r"o melhor hospital|n[º°o] ?1\b|\bmelhor do (estado|brasil|norte)\b|"
-    r"\b(o|a|os|as|ao|do|pelo) melhor(es)?\b|\bmelhor (atendimento|cuidado|experi[êe]ncia|hospital|cl[íi]nica|estrutura)\b|"
+    r"\b(o|a|os|as|ao|do|da|pelo|no|na|nos|nas) melhor(es)?\b|melhor (pra|para) voc[êe]|\bmelhor (atendimento|cuidado|experi[êe]ncia|hospital|cl[íi]nica|estrutura)\b|"
     r"tecnologia de ponta|tecnologias? de ponta|equipamentos? de [úu]ltima gera[çc][ãa]o|[úu]ltima gera[çc][ãa]o|estado da arte|"
     r"diagn[óo]sticos? precis\w+|tratamentos? eficaz\w*|confian[çc]a em cada diagn[óo]stico|seguran[çc]a em cada tratamento|"
     r"\bde ponta\b(?! a ponta)|melhor escolha|escolha preferencial|escolha segura|precis[ãa]o e seguran[çc]a|"
@@ -360,11 +391,13 @@ _PLACEHOLDERS = re.compile(
 
 def _placeholders(texto):
     """Link ou texto de exemplo que iria para publicação como se fosse real."""
+    texto = _sem_alerta(texto)
     return sorted({m.group(0).lower() for m in _PLACEHOLDERS.finditer(texto or "")})
 
 
 def _claims_proibidos(texto):
     """Linhas com depoimento/testemunho/superlativo sem [VALIDAR] nem aviso de que o item é proibido."""
+    texto = _sem_alerta(texto)
     achados = []
     for linha in (texto or "").splitlines():
         if _CLAIMS_PROIBIDOS.search(linha) and not _LINHA_NEUTRA.search(linha):
@@ -405,6 +438,7 @@ def _cobertura_calendario(texto):
         semanas = int(str(_INPUTS_ATUAIS.get("duracao_semanas", "")).strip())
     except ValueError:
         return None
+    texto = _sem_alerta(texto)
     from datetime import datetime
 
     datas = []
@@ -459,7 +493,7 @@ def _guardrail_brief(saida):
     base = _guardrail_producao(saida)
     if base[0] is False:
         return base
-    texto = getattr(saida, "raw", None) or str(saida) or ""
+    texto = _sem_alerta(getattr(saida, "raw", None) or str(saida) or "")
     objetivo = _normalizar(str(_INPUTS_ATUAIS.get("objetivo", "")))
     if objetivo and objetivo not in _normalizar(texto):
         return False, (
@@ -564,6 +598,13 @@ _LINHA_PROJECAO = re.compile(
 )
 
 
+_LINHA_PROJECAO_LISTA = re.compile(
+    r"(?P<nome>[^\n:|]{0,40})[:\-]\s*\**\s*CPC\s*:?\s*\**\s*R\$\s*(?P<cpc>[\d.]+(?:,\d+)?)\s*[,;]\s*\**\s*CTR\s*:?\s*\**\s*(?P<ctr>[\d.,]+)\s*%\s*[,;]\s*"
+    r"\**\s*CVR\s*:?\s*\**\s*(?P<cvr>[\d.,]+)\s*%",
+    re.I,
+)
+
+
 def _num(txt):
     t = str(txt).strip()
     if "," in t:
@@ -578,6 +619,7 @@ def _num(txt):
 
 def _problemas_midia(texto, brief_texto=""):
     """Mensagem de erro do plano de mídia (canal fora do brief, projeção sem fonte, conversões que não fecham) ou None."""
+    texto = _sem_alerta(texto)
     baixo = (texto or "").lower()
     base = _normalizar((brief_texto or "") + " " + _TEXTO_PERMITIDO["texto"])
     if brief_texto:
@@ -588,9 +630,11 @@ def _problemas_midia(texto, brief_texto=""):
                 "do brief aprovado; para outro canal, escreva [VALIDAR: canal fora do brief] e não aloque verba."
             )
     linhas = list(_LINHA_PROJECAO.finditer(texto or ""))
-    if linhas:
-        i0 = max(0, texto.rfind("\n", 0, max(0, linhas[0].start() - 200)))
-        bloco = (texto[i0: linhas[-1].end()]).lower()
+    lista = list(_LINHA_PROJECAO_LISTA.finditer(texto or ""))
+    if linhas or lista:
+        todas = linhas + lista
+        i0 = max(0, min(m.start() for m in todas) - 300)
+        bloco = (texto[i0: max(m.end() for m in todas) + 150]).lower()
         if "[validar" not in bloco:
             return (
                 "As projeções de CPC, CTR e CVR não têm fonte nos dados do briefing. Marque a tabela inteira como [VALIDAR] "
@@ -626,6 +670,7 @@ def _guardrail_midia_factory(brief_task):
 
 def _ocorrencias_proibidas(texto):
     """(termo, trecho) de superlativo, garantia, placeholder ou nota interna, sem contar linhas com [VALIDAR] ou aviso de proibição."""
+    texto = _sem_alerta(texto)
     achados = []
     for linha in (texto or "").splitlines():
         m = _PLACEHOLDERS.search(linha)  # nota interna e placeholder valem mesmo em linha com [VALIDAR] ou "evitar"
@@ -677,6 +722,54 @@ def _guardrail_rubrica_factory(pecas):
         return True, saida
 
     return guardrail
+
+
+def _rank_status(txt):
+    n = _normalizar(txt)
+    if "reprovad" in n:
+        return 3
+    if re.search(r"aprovad[oa] com ajustes", n):
+        return 2
+    return 1 if "aprovad" in n else 0
+
+
+def _guardrail_parecer_geral(saida):
+    """O 'Resultado Geral' do parecer é o pior resultado entre as dimensões: uma dimensão Reprovada torna o parecer Reprovado."""
+    base = _guardrail_documento(saida)
+    if base[0] is False:
+        return base
+    linhas = _sem_alerta(getattr(saida, "raw", None) or str(saida) or "").splitlines()
+    geral, pior, ref = None, 0, ""
+    esperando_geral = False
+    for l in linhas:
+        n = _normalizar(l)
+        if not n:
+            continue
+        if "resultado geral" in n:
+            r = _rank_status(n.split("resultado geral", 1)[1])
+            if r:
+                geral = geral or r
+            else:
+                esperando_geral = True
+            continue
+        if esperando_geral:
+            esperando_geral = False
+            r = _rank_status(n)
+            if r:
+                geral = geral or r
+                continue
+        dimensao = re.match(r"\s*#{2,4}\s*\d+\.", l) or n.startswith("status")
+        if dimensao:
+            r = _rank_status(l.rsplit(":", 1)[-1] if ":" in l else l)
+            if r > pior:
+                pior, ref = r, l.strip()[:120]
+    if geral and pior and geral < pior:
+        nome = {1: "Aprovado", 2: "Aprovado com ajustes", 3: "Reprovado"}
+        return False, (
+            f"O Resultado Geral do parecer é '{nome[geral]}', mas há dimensão '{nome[pior]}' ({ref}). O resultado geral é o PIOR resultado entre "
+            "as dimensões: corrija o Resultado Geral (ou a dimensão, se estiver errada) e reemita o parecer completo."
+        )
+    return True, saida
 
 
 def _g_doc():
@@ -907,7 +1000,7 @@ class MarketingOpsCrew:
 
     @task
     def revisao_g1(self) -> Task:
-        return Task(guardrail=_g_doc(), guardrail_max_retries=2, config=self.tasks_config["revisao_g1"], context=[self.brief_estrategico()])
+        return Task(guardrail=_com_limite_de_rejeicoes(_guardrail_parecer_geral), guardrail_max_retries=2, config=self.tasks_config["revisao_g1"], context=[self.brief_estrategico()])
 
     @task
     def portao_g1(self) -> Task:
