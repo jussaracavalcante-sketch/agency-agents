@@ -292,3 +292,8 @@ telemedicina (fora do briefing) e o saneador deixou o artigo sem assunto. Plano 
 O disparo de 17:58 foi recusado com `Missing inputs: servicos_nao_informados`. A plataforma exige todos os campos `{...}` das tarefas antes de rodar o `before_kickoff`, e o portal só envia os 17 campos do
 briefing; o campo novo do item "serviços não informados" quebrou o kickoff (nenhuma execução criada, sem custo). Correção: o bloco `[SERVIÇOS NÃO INFORMADOS]` passa a ir no fim de `contexto_cliente`
 (que toda tarefa já recebe), fora do texto permitido e sem duplicar em retomadas. Teste de regressão: os placeholders das tarefas e agentes só podem ser os 17 campos do briefing.
+
+# Undécimo disparo (05/10, execução `179fec0f`, build `2048fbd`): G1
+Brief sem alerta, objetivo literal, fontes só as do briefing, sem "[confirmado]", sem nota de conformidade e sem serviços fora do briefing. Pendências do brief: "visitas guiadas" e "pacotes personalizados de saúde"
+sem [VALIDAR]; "exemplos de experiências de pacientes [VALIDAR]" (risco de testemunho); divisão R$ 7.000 / R$ 3.000 em [VALIDAR]. O Guardião reprovou "Coerência" escrevendo que o objetivo está coerente: a trava
+`_dimensoes_incoerentes` só reconhecia títulos numerados. Corrigido: qualquer título de seção conta como dimensão.

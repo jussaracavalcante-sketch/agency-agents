@@ -1464,7 +1464,7 @@ def _dimensoes_incoerentes(parecer):
     """Dimensão marcada Reprovada cujo próprio texto diz que está correta (nenhuma correção necessária, está coerente)."""
     blocos, atual = [], None
     for l in _sem_alerta(parecer).splitlines():
-        if re.match(r"\s*#{2,4}\s*\d+\.", l):
+        if re.match(r"\s*#{2,4}\s*\S", l):  # qualquer título de seção, numerado ou não ("### Coerência com o Briefing")
             atual = [l, []]
             blocos.append(atual)
         elif atual is not None:

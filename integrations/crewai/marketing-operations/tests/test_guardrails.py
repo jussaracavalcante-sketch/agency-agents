@@ -749,3 +749,12 @@ def test_placeholders_das_tarefas_sao_so_os_campos_do_briefing():
                 if isinstance(v.get(k), str):
                     usados |= set(re.findall(r"\{(\w+)\}", v[k]))
     assert usados <= permitidos, sorted(usados - permitidos)
+
+
+def test_dimensao_reprovada_com_titulo_sem_numero():
+    parecer = ("# Parecer\n\n## Resultado Geral: Reprovado\n\n### Coerência com o Briefing\n- **Status**: Reprovado\n- **Apontamento**: O objetivo no brief \"Gerar 400\" "
+               "está coerente com o briefing. Não foram encontrados desvios.\n- **Correção Sugerida**: Sem correção necessária neste trecho.\n\n"
+               "### Aderência ao Guia de Marca\n- **Status**: Aprovado\n- **Apontamento**: Conforme.\n\n### Riscos Residuais\n- Alterações regulatórias.\n")
+    achados = G._dimensoes_incoerentes(parecer)
+    assert len(achados) == 1 and "Coerência" in achados[0]
+    assert G._dimensoes_incoerentes(parecer.replace("Reprovado\n- **Apontamento**: O objetivo", "Aprovado\n- **Apontamento**: O objetivo")) == []
