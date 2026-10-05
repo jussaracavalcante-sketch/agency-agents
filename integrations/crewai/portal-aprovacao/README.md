@@ -67,3 +67,13 @@ No Supabase, em Authentication, habilitar o provedor de e-mail com link mágico 
   um disparo do portal feito há menos de 10 min ainda não produziu evento. Cada disparo fica em `portal_disparos`.
 - **Retomadas:** cada retomada ganha um `kickoff_id` novo e só o evento de pausa traz o `execution_id`. O portal liga as retomadas
   pelo `novo_kickoff_id` gravado em `portal_decisoes`. Decisões tomadas fora do portal (por API) não têm esse vínculo.
+
+## Login e saída
+- `/login`: e-mail e senha, "Manter conectado", "Esqueci minha senha" e, como alternativa, link de acesso por e-mail (o método usado até aqui). O botão
+  "Continuar com Google" só aparece com `NEXT_PUBLIC_LOGIN_GOOGLE=true`, depois de ativar o provedor Google no Supabase.
+- `/recuperar` e `/definir-senha`: quem entrou só por link cria uma senha pelo e-mail de recuperação (ou pelo atalho "senha" no menu lateral).
+- `/saiu`: tela exibida depois de sair (botão ⏻ no menu lateral, que faz POST em `/auth/sair`).
+- Acesso continua por convite (`portal_convites`): e-mail sem convite entra no Supabase, mas o portal avisa que falta acesso.
+- "Manter conectado" desmarcado encerra a sessão quando o navegador é reaberto (conferido no próprio navegador).
+- Supabase > Authentication > URL Configuration: em Redirect URLs use `https://marketing-operationsagents.vercel.app/**`
+  (cobre `/auth/callback` e `/auth/callback?next=/definir-senha`).
