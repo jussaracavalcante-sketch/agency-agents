@@ -604,6 +604,27 @@ def _sanear_midia(texto):
 _INPUTS_ATUAIS = {}
 
 
+def _extrair_datas(texto):
+    """Datas do texto como datetime: dd/mm/aaaa, aaaa-mm-dd e dd/mm sem ano (vale o ano de hoje; calendários costumam omitir o ano)."""
+    from datetime import datetime
+
+    achadas = []
+    for d, mth, a in re.findall(r"\b(\d{2})/(\d{2})/(20\d{2})\b", texto or ""):
+        achadas.append((a, mth, d))
+    for a, mth, d in re.findall(r"\b(20\d{2})-(\d{2})-(\d{2})\b", texto or ""):
+        achadas.append((a, mth, d))
+    ano = str(_hoje().year)
+    for d, mth in re.findall(r"(?<![\d/])(\d{2})/(\d{2})(?![\d/])", texto or ""):
+        achadas.append((ano, mth, d))
+    saida = []
+    for a, mth, d in achadas:
+        try:
+            saida.append(datetime(int(a), int(mth), int(d)))
+        except ValueError:
+            pass
+    return saida
+
+
 def _cobertura_calendario(texto):
     """Devolve a mensagem de erro se o calendário não cobre todas as semanas da campanha; None se cobre (ou não há como medir)."""
     try:
@@ -611,19 +632,7 @@ def _cobertura_calendario(texto):
     except ValueError:
         return None
     texto = _sem_alerta(texto)
-    from datetime import datetime
-
-    datas = []
-    for d, mth, a in re.findall(r"\b(\d{2})/(\d{2})/(20\d{2})\b", texto):
-        try:
-            datas.append(datetime(int(a), int(mth), int(d)))
-        except ValueError:
-            pass
-    for a, mth, d in re.findall(r"\b(20\d{2})-(\d{2})-(\d{2})\b", texto):
-        try:
-            datas.append(datetime(int(a), int(mth), int(d)))
-        except ValueError:
-            pass
+    datas = _extrair_datas(texto)
     blocos = {(x - min(datas)).days // 7 for x in datas} if datas else set()
     marcadores = [int(n) for n in re.findall(r"semana\s+(\d{1,2})", texto, re.I)]
     linhas_tabela = [int(n) for n in re.findall(r"^\|\s*(\d{1,2})\s*\|", texto, re.M)]  # coluna "Semana" numérica
@@ -657,23 +666,8 @@ def _hoje():
 
 def _datas_passadas(texto):
     """Datas do calendário anteriores a hoje (um post não pode ser agendado no passado). Lista de dd/mm/aaaa."""
-    from datetime import datetime
-
     hoje = _hoje()
-    achadas = []
-    for d, mth, a in re.findall(r"\b(\d{2})/(\d{2})/(20\d{2})\b", texto or ""):
-        try:
-            if datetime(int(a), int(mth), int(d)).date() < hoje:
-                achadas.append(f"{d}/{mth}/{a}")
-        except ValueError:
-            pass
-    for a, mth, d in re.findall(r"\b(20\d{2})-(\d{2})-(\d{2})\b", texto or ""):
-        try:
-            if datetime(int(a), int(mth), int(d)).date() < hoje:
-                achadas.append(f"{d}/{mth}/{a}")
-        except ValueError:
-            pass
-    return sorted(set(achadas))
+    return sorted({x.strftime("%d/%m/%Y") for x in _extrair_datas(texto) if x.date() < hoje})
 
 
 def _linha_solta_na_tabela(texto):
@@ -1183,7 +1177,11 @@ def _citacoes_inexistentes(parecer, fonte):
     return ruins[:3]
 
 
-_SEM_PROBLEMA = re.compile(r"nenhuma corre[çc][ãa]o|nenhum ajuste|est[áa] coerente|n[ãa]o h[áa] (diverg[êe]ncia|problema)|sem diverg[êe]ncia", re.I)
+_SEM_PROBLEMA = re.compile(
+    r"nenhuma corre[çc][ãa]o|nenhum ajuste|est[áa] coerente|n[ãa]o h[áa] (diverg[êe]ncia|problema)|sem diverg[êe]ncia|"
+    r"n[ãa]o h[áa] necessidade de (altera|corre|ajust)|n[ãa]o (apresenta|traz|possui) (altera[çc][õo]es|diverg[êe]ncias|problemas)|n[ãa]o aplic[áa]vel",
+    re.I,
+)
 
 
 def _dimensoes_incoerentes(parecer):

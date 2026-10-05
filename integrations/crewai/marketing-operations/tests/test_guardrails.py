@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_extrair_datas", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
 }
 
 
@@ -529,3 +529,24 @@ def test_calendario_com_data_passada_e_linha_solta():
         assert "fora do formato" in (G._problemas_calendario(solta) or "")
     finally:
         G._ns["_hoje"] = lambda: date(2026, 9, 1)
+
+
+def test_calendario_com_datas_sem_ano():
+    from datetime import date
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["duracao_semanas"] = "8"
+    sem_ano = _calendario(["| 1 | 02/10 | Instagram | Carrossel | a | b | c |", "| 1 | 04/10 | Facebook | Vídeo | a | b | c |", "| 2 | 09/10 | Instagram | Reels | a | b | c |"])
+    G._ns["_hoje"] = lambda: date(2026, 10, 5)
+    try:
+        assert [d.day for d in G._extrair_datas(sem_ano)] == [2, 4, 9]
+        assert G._datas_passadas(sem_ano) == ["02/10/2026", "04/10/2026"]
+        assert "já passaram" in (G._problemas_calendario(sem_ano) or "") or "cobre" in (G._problemas_calendario(sem_ano) or "")
+        assert G._extrair_datas("Período 10/2026 e 12/2026, razão 10/20") == []                        # mês/ano e frações não são datas
+        assert [d.day for d in G._extrair_datas("01/11/2026 e 2026-11-02")] == [1, 2]
+    finally:
+        G._ns["_hoje"] = lambda: date(2026, 9, 1)
+
+
+def test_dimensao_sem_problema_reconhece_nao_ha_necessidade():
+    assert G._SEM_PROBLEMA.search("Não há necessidade de alteração imediata; mantimento do objetivo literal")
+    assert G._SEM_PROBLEMA.search("O objetivo do brief estratégico não apresenta alterações em relação ao briefing")
+    assert not G._SEM_PROBLEMA.search("Faltou citar a verba de mídia do briefing")
