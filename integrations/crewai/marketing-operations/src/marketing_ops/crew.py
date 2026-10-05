@@ -533,6 +533,36 @@ def _com_alerta(saida, motivo):
     return linha + "\n\n" + raw
 
 
+def _limpar_final(texto):
+    """
+    Limpeza de última tentativa: frase em inglês solta é removida (em célula de tabela vira [VALIDAR: texto em inglês]) e o comentário depois do último bloco
+    ``` é cortado. Devolve (texto, lista do que foi feito).
+    """
+    feitos, saida = [], []
+    for linha in (texto or "").splitlines():
+        l = linha.strip()
+        if l.startswith("|"):
+            celulas = linha.split("|")
+            novas = []
+            for c in celulas:
+                if c.strip() and c.count(" ") >= 4 and not l.startswith("|--") and _trecho_em_ingles(c.strip()):
+                    novas.append(" [VALIDAR: texto em inglês] ")
+                    feitos.append("frase em inglês")
+                else:
+                    novas.append(c)
+            saida.append("|".join(novas))
+        elif l and not l.startswith(("```", "#")) and l.count(" ") >= 5 and _trecho_em_ingles(l):
+            feitos.append("frase em inglês removida")
+        else:
+            saida.append(linha)
+    novo = "\n".join(saida)
+    apos = _texto_apos_documento(novo)
+    if apos:
+        novo = novo[: novo.rfind("```") + 3] + "\n"
+        feitos.append("comentário depois do documento removido")
+    return novo, feitos
+
+
 def _com_limite_de_rejeicoes(guardrail, maximo=2, saneador=None):
     """
     Aceita a saída depois de `maximo` rejeições, porque guardrail esgotado derruba a execução inteira na plataforma. A saída aceita
@@ -549,7 +579,9 @@ def _com_limite_de_rejeicoes(guardrail, maximo=2, saneador=None):
                 if saneador is None:
                     return True, _com_alerta(saida, veredito[1])
                 original = getattr(saida, "raw", None) or str(saida) or ""
-                limpo, trocas = saneador(_sem_alerta(original))
+                pre, feitos = _limpar_final(_sem_alerta(original))
+                limpo, trocas = saneador(pre)
+                trocas = list(trocas) + feitos
                 if not trocas:
                     return True, _com_alerta(saida, veredito[1])
                 tipo = type("SaidaSaneada", (), {"raw": limpo, "name": getattr(saida, "name", None) or ""})()

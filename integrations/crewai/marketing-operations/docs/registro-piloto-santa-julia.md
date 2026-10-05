@@ -302,3 +302,8 @@ sem [VALIDAR]; "exemplos de experiências de pacientes [VALIDAR]" (risco de test
 G1 devolvido duas vezes (a primeira com o texto "devolver") e aprovado na terceira; a `aplicacao_g1` aplicou as ressalvas. Produção com 3 alertas (conteúdo, mídia, direção de arte), contra 7 na rodada anterior.
 Calendário com coluna Data e datas posteriores a hoje, sem histórias de pacientes; plano de mídia com a rotina. Falha restante: frase em inglês numa célula de tabela do calendário ("Techniques for building trust…") que a
 trava de idioma não via (ela pulava linhas de tabela): corrigido, agora cada célula é conferida. Rubrica deu 100/100 ao calendário e 97 ao e-mail enquanto o Guardião pediu ajustes.
+
+## Undécimo disparo: aplicação do G2 e G3 (execução `179fec0f`)
+G2 devolvido na intenção, registrado como Aprovar sem texto. A `aplicacao_g2` abriu com "I'm going to reissue each piece…" e fechou com "This reissuance accounts for…" (inglês antes e depois do documento) e a trava aceitou na 3ª tentativa;
+o pacote cobriu 2 das 8 semanas, com posts inventados ("Mês da Saúde") e horário malformado ("10:00-04:00"). Melhoria: na última tentativa, `_limpar_final` remove a frase em inglês (em célula de tabela vira
+`[VALIDAR: texto em inglês]`) e corta o comentário depois do último bloco, antes de o saneador de cada tarefa atuar.
