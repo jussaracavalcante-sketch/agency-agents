@@ -52,3 +52,22 @@ create policy portal_ao_vivo on public.crewai_webhook_events for select to authe
 create policy portal_ao_vivo on public.portal_decisoes for select to authenticated using (public.portal_membro());
 create policy portal_ao_vivo on public.portal_disparos for select to authenticated using (public.portal_membro());
 alter publication supabase_realtime add table public.crewai_webhook_events, public.portal_decisoes, public.portal_disparos;
+
+-- Base de conhecimento editável: edições do guia do repositório e documentos acrescentados, com histórico de versões.
+create table if not exists public.portal_conhecimento (
+  id bigint generated always as identity primary key,
+  cliente_slug text not null references public.portal_clientes(slug) on delete cascade,
+  doc_chave text not null, titulo text not null, conteudo text not null,
+  origem text not null check (origem in ('base_editada','adicionado')),
+  versao int not null default 1, atualizado_por uuid, atualizado_nome text not null, atualizado_em timestamptz not null default now(),
+  unique (cliente_slug, doc_chave)
+);
+create index if not exists portal_conhecimento_cliente on public.portal_conhecimento (cliente_slug);
+create table if not exists public.portal_conhecimento_versoes (
+  id bigint generated always as identity primary key,
+  cliente_slug text not null, doc_chave text not null, titulo text not null, conteudo text not null,
+  versao int not null, acao text not null, autor_nome text not null, criado_em timestamptz not null default now()
+);
+create index if not exists portal_conhecimento_versoes_doc on public.portal_conhecimento_versoes (cliente_slug, doc_chave, criado_em desc);
+alter table public.portal_conhecimento enable row level security;
+alter table public.portal_conhecimento_versoes enable row level security;

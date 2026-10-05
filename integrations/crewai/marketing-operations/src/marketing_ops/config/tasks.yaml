@@ -258,8 +258,8 @@ revisao_g2:
     IMPORTANTE: todas as entregas a revisar já estão no CONTEXTO desta tarefa (saídas das tarefas
     anteriores). NÃO tente abrir arquivos nem caminhos de output; trabalhe com o texto do contexto.
     RESULTADO POR ENTREGA = o PIOR resultado entre as dimensões avaliadas nela; uma dimensão Reprovada torna a entrega Reprovada.
-    A RUBRICA DE QUALIDADE (tarefa anterior, revisor de qualidade) está no CONTEXTO: trate a falha de qualquer gate dela como piso. Peça com G1, G3 ou G5
-    em FALHA nunca pode sair Aprovada por você; cite a nota e o veredito da rubrica no quadro-resumo e aponte divergência com a sua revisão.
+    Esta revisão é INDEPENDENTE da rubrica de qualidade: não há nota de outro revisor no contexto e você não deve procurar nenhuma. Revise cada peça
+    por conta própria, com o mesmo rigor, citando o trecho literal de cada apontamento.
     Confira também cada peça contra o brief final aprovado: serviço, procedimento, tecnologia ou promessa clínica que não conste do
     briefing original nem do brief aprovado, e claim de saúde sem fonte (ex.: recuperação mais rápida, menos invasivo, resultado garantido),
     tornam a peça Reprovada nas dimensões veracidade e setor regulado.
