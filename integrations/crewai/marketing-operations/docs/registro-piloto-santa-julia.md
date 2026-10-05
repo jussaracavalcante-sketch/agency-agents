@@ -312,3 +312,8 @@ o pacote cobriu 2 das 8 semanas, com posts inventados ("Mês da Saúde") e horá
 1. Pacote de publicação: o cronograma copia todas as linhas do calendário vigente (data e rede de cada post, 8 semanas) e não pode ter post que o calendário não tem nem repetir data e rede além do calendário;
    horário com fuso colado ("10:00-04:00") é rejeitado; com o calendário social entre as bloqueadas (ou aplicação não executada), o cronograma não lista posts de rede social (`_posts_da_tabela`, `_bloqueadas_do_g2`).
 2. Reemissão do G2: serviço, especialidade ou tecnologia fora do briefing é rejeitado também na reemissão (o assunto da peça não muda); "cirurgia" e derivados entram na lista de termos sensíveis e na de serviços não informados.
+
+# Duodécimo disparo (05/10, execução `53876f22`, build `a7d28a6`): G1
+Brief sem alerta, mas com a seção Fontes listando Conselho Federal de Medicina, ANVISA e CONAR com links (cfm.org.br, gov.br/anvisa, conar.org.br) que o briefing não traz (órgãos reguladores são regras do setor, não fontes de dados);
+Guardião reprovou "Coerência" citando um objetivo idêntico ao do briefing. Melhorias: link ou domínio na seção Fontes que o briefing e a base não trazem e órgão regulador citado como fonte são rejeitados;
+dimensão de coerência reprovada que cita trecho idêntico ao objetivo do briefing é tratada como incoerente.

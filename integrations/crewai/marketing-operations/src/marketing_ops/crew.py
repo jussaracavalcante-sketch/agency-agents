@@ -1110,6 +1110,21 @@ def _fontes_nao_informadas(texto):
     if not permitido:
         return []
     achados, dentro = [], False
+    # links e domínios na seção Fontes que o briefing e a base não trazem; órgão regulador citado como fonte (CFM, ANVISA, CONAR são regras do setor, não fontes de dados)
+    em_fontes = False
+    for linha in _sem_alerta(texto or "").splitlines():
+        l = linha.strip()
+        if _FONTE_SECAO.match(l):
+            em_fontes = True
+            continue
+        if em_fontes and (l.startswith("#") or l.startswith("---") or l.startswith("```")):
+            em_fontes = False
+        if em_fontes and "[validar" not in l.lower():
+            for url in re.findall(r"https?://[^\s)\]]+|\b[\w-]+(?:\.[\w-]+)*\.(?:org|com|gov|net)(?:\.br)?\b", l):
+                if _normalizar(url) not in permitido:
+                    achados.append(url)
+            if _ORGAO_REGULADOR.search(l) or re.search(r"conselho federal de medicina", l, re.I):
+                achados.append("órgão regulador como fonte")
     for linha in _sem_alerta(texto or "").splitlines():
         l = linha.strip()
         if _FONTE_SECAO.match(l):
@@ -1604,6 +1619,11 @@ def _dimensoes_incoerentes(parecer):
         reprovada = "reprovad" in _normalizar(cab) or re.search(r"status\W{0,6}\s*reprovad", _normalizar(corpo))
         if reprovada and _SEM_PROBLEMA.search(corpo):
             achados.append(cab.strip("# ").strip()[:70])
+        elif reprovada and re.search(r"coer", _normalizar(cab)) and re.search(r"diverg|difere|n[ãa]o corresponde", _normalizar(corpo)):
+            objetivo = _normalizar(str(_INPUTS_ATUAIS.get("objetivo", "")))
+            citados = [_normalizar(q) for q in re.findall(r"[\"“]([^\"”]{20,})[\"”]", corpo)]
+            if objetivo and any(objetivo in q for q in citados):
+                achados.append(cab.strip("# ").strip()[:70] + " (o trecho citado é idêntico ao objetivo do briefing)")
     return achados
 
 

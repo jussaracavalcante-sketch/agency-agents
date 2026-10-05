@@ -834,3 +834,24 @@ def test_reemissao_nao_troca_o_tema_para_servico_fora_do_briefing():
     assert r[0] is False and "cirurgia" in r[1] and "tema" in r[1]
     consultas = base + "### Consultas e exames no hospital\nAgende sua consulta [VALIDAR].\n### Parte C: Lista de Versões\n- Conteúdo: reemitido\n"
     assert G._guardrail_aplicacao_g2(_saida(consultas))[0] is True
+
+
+def test_fontes_com_orgao_regulador_e_links_inventados():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = "hospital santa júlia nekt refined rfn_midia cfm anvisa conar setor regulado"
+    fontes = ("## 9. Fontes\n- **Nekt Refined**: (rfn_midia__desempenho_diario)\n- **Conselho Federal de Medicina**: [cfm.org.br](https://cfm.org.br)\n"
+              "- **ANVISA**: [gov.br/anvisa](https://www.gov.br/anvisa/pt-br)\n")
+    achados = G._fontes_nao_informadas(fontes)
+    assert "órgão regulador como fonte" in achados and "https://cfm.org.br" in achados
+    assert "órgão regulador como fonte" not in G._fontes_nao_informadas("## Fontes\n- Nekt Refined (rfn_midia__desempenho_diario)\n")
+
+
+def test_coerencia_reprovada_citando_o_objetivo_identico():
+    G._INPUTS_ATUAIS.clear()
+    G._INPUTS_ATUAIS["objetivo"] = "Gerar 400 contatos qualificados (agendamentos e orçamentos) em 8 semanas (baseline: 863 conversões RD em 90 dias, 343 vindas de mídia paga)"
+    parecer = ("# Parecer\n\n## Resultado: Reprovado\n\n### Dimensão: Coerência com o Briefing\n- **Status**: Reprovado\n- **Apontamento**: O objetivo no brief diverge do briefing. "
+               "No brief, é mencionado: \"Gerar 400 contatos qualificados (agendamentos e orçamentos) em 8 semanas (baseline: 863 conversões RD em 90 dias, 343 vindas de mídia paga)\".\n"
+               "- **Correção Sugerida**: Alinhar o objetivo.\n\n### Dimensão: Aderência ao Guia de Marca\n- **Status**: Aprovado\n- **Apontamento**: Conforme.\n")
+    achados = G._dimensoes_incoerentes(parecer)
+    assert len(achados) == 1 and "idêntico" in achados[0]
+    outro = parecer.replace("Gerar 400 contatos qualificados (agendamentos e orçamentos) em 8 semanas (baseline: 863 conversões RD em 90 dias, 343 vindas de mídia paga)\"", "Gerar 500 contatos em 6 semanas e mais algum texto aqui\"")
+    assert G._dimensoes_incoerentes(outro) == []
