@@ -520,14 +520,14 @@ _CLAIMS_PROIBIDOS = re.compile(
     r"o melhor hospital|n[º°o] ?1\b|\bmelhor do (estado|brasil|norte)\b|"
     r"\b(o|a|os|as|ao|do|da|pelo|no|na|nos|nas) melhor(es)?\b|melhor (pra|para) voc[êe]|\bmelhor (atendimento|cuidado|experi[êe]ncia|hospital|cl[íi]nica|estrutura)\b|"
     r"tecnologia de ponta|tecnologias? de ponta|equipamentos? de [úu]ltima gera[çc][ãa]o|[úu]ltima gera[çc][ãa]o|estado da arte|"
-    r"diagn[óo]sticos? precis\w+|tratamentos? eficaz\w*|confian[çc]a em cada diagn[óo]stico|seguran[çc]a em cada tratamento|"
+    r"diagn[óo]sticos? precis\w+|tratamentos? eficaz\w*|(confian[çc]a|seguran[çc]a) em cada (diagn[óo]stico|tratamento)|"
     r"\bde ponta\b(?! a ponta)|melhor escolha|escolha preferencial|escolha segura|precis[ãa]o e seguran[çc]a|"
     r"certifica[çc][õo]es? reconhecid\w+|"
     r"garant\w+[^.\n]{0,60}(precis[ãa]o|seguran[çc]a|excel[êe]ncia|qualidade|efici[êe]ncia|resultados?|cura|"
     r"recupera[çc][ãa]o|lgpd|conformidade|ader[êe]ncia|atendimento|cuidado|diagn[óo]stico|tratamento)",
     re.I,
 )
-_LINHA_NEUTRA = re.compile(r"\[VALIDAR|\bsem (usar )?depoimento|proibid|n[ãa]o (use|usar|incluir|propor|citar)|evitar", re.I)
+_LINHA_NEUTRA = re.compile(r"\[VALIDAR|\bsem (usar )?depoimento|proibid|n[ãa]o (use|usar|incluir|propor|citar)|evitar|^\s*[-*]\s*(\[[ xX]\]\s*)?garantir\b", re.I)
 
 
 _PLACEHOLDERS = re.compile(
@@ -537,7 +537,8 @@ _PLACEHOLDERS = re.compile(
     r"conforme (solicitado|pedido|orienta[çc][ãa]o)|como solicitado|a pedido d[oa]|"
     # autocertificação de conformidade e afirmação de que não há pendência
     r"seguindo rigorosamente|(foi|foram) (criad|elaborad|redigid)\w+ seguindo|em total conformidade|"
-    r"todas as (propostas|valida[çc][õo]es|corre[çc][õo]es) foram|n[ãa]o h[áa] ajustes pendentes|todos os feedbacks[^.\n]{0,40}(considerad|inclu[íi]d)",
+    r"todas as (propostas|valida[çc][õo]es|corre[çc][õo]es) foram|n[ãa]o h[áa] ajustes pendentes|todos os feedbacks[^.\n]{0,40}(considerad|inclu[íi]d)|"
+    r"todos os elementos foram|(foi|foram) (desenvolvid|produzid|constru[íi]d)\w+ em conformidade|respeitando a linguagem de",
     re.I,
 )
 
@@ -677,6 +678,12 @@ def _extrair_datas(texto):
     ano = str(_hoje().year)
     for d, mth in re.findall(r"(?<![\d/])(\d{2})/(\d{2})(?![\d/])", texto or ""):
         achadas.append((ano, mth, d))
+    meses = {"jan": 1, "fev": 2, "feb": 2, "mar": 3, "abr": 4, "apr": 4, "mai": 5, "may": 5, "jun": 6, "jul": 7, "ago": 8, "aug": 8,
+             "set": 9, "sep": 9, "out": 10, "oct": 10, "nov": 11, "dez": 12, "dec": 12}
+    for d, nome, a in re.findall(r"\b(\d{1,2})[-/ ]([A-Za-zç]{3,9})\.?[-/ ](\d{2,4})\b", texto or ""):
+        mes = meses.get(nome[:3].lower())
+        if mes:
+            achadas.append(((("20" + a) if len(a) == 2 else a), f"{mes:02d}", f"{int(d):02d}"))
     saida = []
     for a, mth, d in achadas:
         try:
@@ -751,6 +758,12 @@ def _linha_solta_na_tabela(texto):
 
 def _problemas_calendario(texto):
     """Erro do calendário (cobertura, data passada, linha solta na tabela) ou None."""
+    linhas_tabela = len(re.findall(r"^\|\s*\d{1,2}\s*\|", _sem_alerta(texto), re.M | re.I))
+    if linhas_tabela >= 6 and len(_extrair_datas(_sem_alerta(texto))) < linhas_tabela * 0.5:
+        return (
+            f"A tabela tem {linhas_tabela} posts, mas só {len(_extrair_datas(_sem_alerta(texto)))} datas legíveis. Escreva a data de cada post como dd/mm/aaaa "
+            "(por exemplo 06/10/2026), uma data por linha, sem formatos como 01-Nov-23."
+        )
     erro = _cobertura_calendario(texto)
     if erro:
         return erro
@@ -852,6 +865,61 @@ _ORGAO_REGULADOR = re.compile(r"conselho federal de medicina|\banvisa\b|\bconar\
 _PCT_NOVO = re.compile(r"(?<![\d.,])(\d{1,3}(?:,\d+)?)\s?%")
 
 
+_MARCADOR_FALSO = re.compile(r"\[\s*(confirmad|validad|aprovad|verificad|checad|ok\b)\w*\s*\]", re.I)
+_FONTE_SECAO = re.compile(r"^#{1,4}\s*(\d+\.\s*)?fontes?\b", re.I)
+_ROTULO_FONTE = frozenset("guia identidade visual briefing marca hospital base conhecimento cliente baseline fonte fontes tendências tendencias dados mercado relatório relatorio nekt".split())
+
+
+def _fontes_nao_informadas(texto):
+    """Nomes próprios na seção Fontes que o briefing e a base do cliente não citam (veículos, associações, relatórios inventados)."""
+    permitido = _normalizar(_TEXTO_PERMITIDO["texto"])
+    if not permitido:
+        return []
+    achados, dentro = [], False
+    for linha in _sem_alerta(texto or "").splitlines():
+        l = linha.strip()
+        if _FONTE_SECAO.match(l):
+            dentro = True
+            continue
+        if dentro and (l.startswith("#") or l.startswith("---") or l.startswith("```")):
+            dentro = False
+        if not dentro or "[validar" in l.lower():
+            continue
+        corpo = re.sub(r"^[-*\d.\s]+", "", l)
+        corpo = re.sub(r"^\*{0,2}[^:*]{1,40}\*{0,2}\s*:\s*", "", corpo)       # tira o rótulo ("Tendências:")
+        for nome in re.findall(r"\b[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\wÁÉÍÓÚÂÊÔÃÕÇáéíóúâêôãõç]{2,}", corpo):
+            n = _normalizar(nome)
+            if n in _ROTULO_FONTE or n in permitido or _sem_acento(nome).lower() in _ROTULO_FONTE:
+                continue
+            achados.append(nome)
+    return sorted(set(achados))
+
+
+def _sanear_brief(texto):
+    """Brief na última tentativa: marcador falso vira [VALIDAR], linha de fonte com nome inventado vira [VALIDAR: fonte] e nota de conformidade é removida."""
+    texto, trocas = _sanear_claims(texto)
+    novo = _MARCADOR_FALSO.sub("[VALIDAR]", texto)
+    if novo != texto:
+        trocas.append("marcador falso [confirmado]")
+        texto = novo
+    saida, dentro = [], False
+    for linha in texto.splitlines():
+        l = linha.strip()
+        if _FONTE_SECAO.match(l):
+            dentro = True
+        elif dentro and (l.startswith("#") or l.startswith("---") or l.startswith("```")):
+            dentro = False
+        if dentro and _fontes_nao_informadas("## Fontes\n" + linha):
+            trocas.append("fonte inventada")
+            saida.append(re.sub(r"(?<=:).*$", " [VALIDAR: fonte]", linha) if ":" in linha else "- [VALIDAR: fonte]")
+            continue
+        if _PLACEHOLDERS.search(linha) and not l.startswith("|"):
+            trocas.append("nota de conformidade")
+            continue
+        saida.append(linha)
+    return "\n".join(saida), trocas
+
+
 def _guardrail_brief(saida):
     """O brief usa o objetivo do briefing literalmente e não cria baselines que ninguém informou."""
     base = _guardrail_producao(saida)
@@ -871,6 +939,18 @@ def _guardrail_brief(saida):
         return False, (
             "O brief cita fonte que o briefing não menciona: " + ", ".join(fontes) + ". A origem do baseline é a do briefing "
             "(ferramenta de analytics e CRM informados). Remova a fonte inventada ou escreva [VALIDAR: fonte]."
+        )
+    falso = sorted({m.group(0) for m in _MARCADOR_FALSO.finditer(texto)})
+    if falso:
+        return False, (
+            "O brief usa o marcador " + ", ".join(falso) + ", que não existe: nada foi confirmado. O único marcador é [VALIDAR]. Valor que o briefing "
+            "traz só como histórico (consumo dos últimos 90 dias, run-rate) não é verba aprovada: escreva [VALIDAR] e diga o que ele é."
+        )
+    inventadas = _fontes_nao_informadas(texto)
+    if inventadas:
+        return False, (
+            "A seção Fontes cita nomes que o briefing e a base do cliente não trazem: " + ", ".join(inventadas) + ". Cite só as fontes do briefing "
+            "(ferramentas de dados e CRM informados) e o guia de marca; para qualquer outra escreva [VALIDAR: fonte]."
         )
     regulador = [l.strip()[:90] for l in texto.splitlines() if "[validar" not in l.lower() and _FONTE_MERCADO.search(l) and _ORGAO_REGULADOR.search(l)]
     if regulador:
@@ -1323,6 +1403,23 @@ def _guardrail_parecer_factory(fontes):
     return guardrail
 
 
+def _saneador_aplicacao_g1_factory(brief_task, portao_task):
+    """Última barreira da aplicação do G1: sem feedback humano escrito, o brief original (saneado) segue, com o registro "ajustes aplicados: nenhum"."""
+
+    def saneador(texto):
+        original = _sem_alerta(getattr(getattr(brief_task, "output", None), "raw", None) or "")
+        portao = getattr(getattr(portao_task, "output", None), "raw", None) or ""
+        sem_feedback = (not portao) or "nenhum feedback humano" in _normalizar(portao)
+        if original and sem_feedback:
+            limpo, trocas = _sanear_brief(original)
+            cab = ("# Registro de decisão G1\n\n**Status:** Aprovado sem feedback escrito.\n**Ajustes aplicados:** nenhum.\n"
+                   "**Ajustes não aplicados e por quê:** não houve feedback humano; o brief original foi mantido.\n\n---\n\n")
+            return cab + limpo, trocas + ["brief original mantido (sem feedback humano)"]
+        return _sanear_brief(texto)
+
+    return saneador
+
+
 def _guardrail_aplicacao_g1_factory(brief_task, portao_task):
     """Reemissão do brief: passa pela trava do brief e não pode perder [VALIDAR] do original quando o humano não deu feedback escrito."""
 
@@ -1334,6 +1431,13 @@ def _guardrail_aplicacao_g1_factory(brief_task, portao_task):
         portao = getattr(getattr(portao_task, "output", None), "raw", None) or ""
         sem_feedback = (not portao) or "nenhum feedback humano" in _normalizar(portao)
         if original and sem_feedback:
+            linhas = _linhas_significativas(_sem_alerta(original))
+            norm = _normalizar(getattr(saida, "raw", None) or str(saida) or "")
+            if linhas and sum(1 for l in linhas if l in norm) / len(linhas) < 0.7:
+                return False, (
+                    "Não houve feedback humano escrito: a aprovação foi só \"Aprovado.\". A reemissão deve ser o brief original, sem reescrever, "
+                    "sem acrescentar afirmações e sem declarar ajustes que ninguém pediu. Copie o brief original integralmente e registre \"Ajustes aplicados: nenhum\"."
+                )
             antes = _sem_alerta(original).lower().count("[validar")
             depois = _sem_alerta(getattr(saida, "raw", None) or str(saida) or "").lower().count("[validar")
             if depois < antes:
@@ -1664,7 +1768,7 @@ class MarketingOpsCrew:
     @task
     def brief_estrategico(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_brief, saneador=_sanear_producao), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_brief, saneador=_sanear_brief), guardrail_max_retries=2,
             config=self.tasks_config["brief_estrategico"],
             context=[self.pesquisa_mercado(), self.mapa_seo()],
         )
@@ -1685,7 +1789,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g1(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g1_factory(self.brief_estrategico(), self.portao_g1()), saneador=_sanear_producao), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g1_factory(self.brief_estrategico(), self.portao_g1()), saneador=_saneador_aplicacao_g1_factory(self.brief_estrategico(), self.portao_g1())), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g1"],
             context=[self.brief_estrategico(), self.revisao_g1(), self.portao_g1()],
         )
