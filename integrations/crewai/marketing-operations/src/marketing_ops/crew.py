@@ -214,22 +214,31 @@ _ABERTURA_DE_CONVERSA = re.compile(
 )
 
 
-_PALAVRAS_EN = frozenset("the and with has have been will is are was were as per to for of if please that this all any further i'll i we our your you its be by on at from it not or but also should must can may these those into".split())
+_PALAVRAS_EN = frozenset("the and with has have been will is are was were as per to for of if please that this all any further i'll i we our your you its be by on at from it not or but also should must can may these those into in an how why what about care trust medical health patients building techniques best better".split())
 _PALAVRAS_PT = frozenset("o a os as de do da dos das e que para com um uma em no na nos nas por se ao à são é não ou mais como sua seu suas seus foi ser".split())
 
 
+def _trecho_em_ingles(trecho):
+    palavras = re.findall(r"[a-zA-Zà-úÀ-Ú']+", trecho.lower())
+    if len(palavras) < 6:
+        return False
+    en = sum(1 for p in palavras if p in _PALAVRAS_EN)
+    pt = sum(1 for p in palavras if p in _PALAVRAS_PT)
+    return en / len(palavras) >= 0.28 and pt / len(palavras) <= 0.1
+
+
 def _linha_em_ingles(texto):
-    """Primeira frase em inglês fora de blocos de tabela/código (a crew escreve em português do Brasil); vazio se não houver."""
+    """Primeira frase em inglês (inclusive numa célula de tabela; a crew escreve em português do Brasil); vazio se não houver."""
     for linha in _sem_alerta(texto or "").splitlines():
         l = linha.strip()
-        if not l or l.startswith(("|", "```", "#")) or l.count(" ") < 5:
+        if not l or l.startswith(("```", "#")):
             continue
-        palavras = re.findall(r"[a-zA-Zà-úÀ-Ú']+", l.lower())
-        if len(palavras) < 6:
-            continue
-        en = sum(1 for p in palavras if p in _PALAVRAS_EN)
-        pt = sum(1 for p in palavras if p in _PALAVRAS_PT)
-        if en / len(palavras) >= 0.28 and pt / len(palavras) <= 0.1:
+        if l.startswith("|"):
+            for celula in l.strip("|").split("|"):
+                c = celula.strip()
+                if c.count(" ") >= 4 and _trecho_em_ingles(c):
+                    return c[:80]
+        elif l.count(" ") >= 5 and _trecho_em_ingles(l):
             return l[:80]
     return ""
 
@@ -524,6 +533,36 @@ def _com_alerta(saida, motivo):
     return linha + "\n\n" + raw
 
 
+def _limpar_final(texto):
+    """
+    Limpeza de última tentativa: frase em inglês solta é removida (em célula de tabela vira [VALIDAR: texto em inglês]) e o comentário depois do último bloco
+    ``` é cortado. Devolve (texto, lista do que foi feito).
+    """
+    feitos, saida = [], []
+    for linha in (texto or "").splitlines():
+        l = linha.strip()
+        if l.startswith("|"):
+            celulas = linha.split("|")
+            novas = []
+            for c in celulas:
+                if c.strip() and c.count(" ") >= 4 and not l.startswith("|--") and _trecho_em_ingles(c.strip()):
+                    novas.append(" [VALIDAR: texto em inglês] ")
+                    feitos.append("frase em inglês")
+                else:
+                    novas.append(c)
+            saida.append("|".join(novas))
+        elif l and not l.startswith(("```", "#")) and l.count(" ") >= 5 and _trecho_em_ingles(l):
+            feitos.append("frase em inglês removida")
+        else:
+            saida.append(linha)
+    novo = "\n".join(saida)
+    apos = _texto_apos_documento(novo)
+    if apos:
+        novo = novo[: novo.rfind("```") + 3] + "\n"
+        feitos.append("comentário depois do documento removido")
+    return novo, feitos
+
+
 def _com_limite_de_rejeicoes(guardrail, maximo=2, saneador=None):
     """
     Aceita a saída depois de `maximo` rejeições, porque guardrail esgotado derruba a execução inteira na plataforma. A saída aceita
@@ -540,7 +579,9 @@ def _com_limite_de_rejeicoes(guardrail, maximo=2, saneador=None):
                 if saneador is None:
                     return True, _com_alerta(saida, veredito[1])
                 original = getattr(saida, "raw", None) or str(saida) or ""
-                limpo, trocas = saneador(_sem_alerta(original))
+                pre, feitos = _limpar_final(_sem_alerta(original))
+                limpo, trocas = saneador(pre)
+                trocas = list(trocas) + feitos
                 if not trocas:
                     return True, _com_alerta(saida, veredito[1])
                 tipo = type("SaidaSaneada", (), {"raw": limpo, "name": getattr(saida, "name", None) or ""})()
@@ -1464,7 +1505,7 @@ def _dimensoes_incoerentes(parecer):
     """Dimensão marcada Reprovada cujo próprio texto diz que está correta (nenhuma correção necessária, está coerente)."""
     blocos, atual = [], None
     for l in _sem_alerta(parecer).splitlines():
-        if re.match(r"\s*#{2,4}\s*\d+\.", l):
+        if re.match(r"\s*#{2,4}\s*\S", l):  # qualquer título de seção, numerado ou não ("### Coerência com o Briefing")
             atual = [l, []]
             blocos.append(atual)
         elif atual is not None:
