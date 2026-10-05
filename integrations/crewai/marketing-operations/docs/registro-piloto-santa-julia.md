@@ -324,3 +324,6 @@ dimensão de coerência reprovada que cita trecho idêntico ao objetivo do brief
 - G3: o pacote de publicação saiu com alerta de qualidade e cronograma inventado (9 posts, 02–10/11) contra 24 posts do calendário vigente; revisão do G3: Reprovado.
 - Correção: `_saneador_pacote_factory` refaz o cronograma por código (uma linha por post do calendário vigente, hora "a definir", fuso America/Manaus, UTM padrão) quando a trava de rejeições se esgota. Não atua se o calendário ou a aplicação estiverem bloqueados. Teste de regressão incluído (58 testes).
 - Pendente: reemissão do plano de mídia pela aplicação do G2 quando o feedback pedir; "Guia Definitivo"/"Conheça histórias" no calendário; rubrica severa.
+
+### Desfecho da execução 53876f22
+Decisões: nº 43 G1 aprovar; nº 44 G2 devolver (5 ajustes); nº 45 G2 aprovar; nº 46 G3 reprovar (campo vazio, não enviada à plataforma; execução encerrada no portal). Nada foi publicado. Registro de cada decisão confere com o que foi relatado.
