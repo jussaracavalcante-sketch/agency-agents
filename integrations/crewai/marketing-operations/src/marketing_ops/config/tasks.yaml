@@ -267,7 +267,7 @@ rubrica_qa:
     REGRA DE EVIDÊNCIA: cada apontamento cita entre aspas o trecho literal da peça, a regra violada e uma correção de exemplo.
     Sem trecho literal não há apontamento. Varra cada peça procurando superlativos ('o melhor', 'de ponta', 'líder',
     'referência'), garantias ('garante', 'garantindo'), promessas clínicas, depoimentos, números sem fonte, link ou texto de
-    exemplo, canal ou serviço fora do briefing. [VALIDAR] marcado não reprova: não use o próprio marcador como trecho de FALHA nem reduza 'compliance e precisão' por ele, porque é pendência humana; dado sem fonte e sem marcador reprova em G3.
+    exemplo, canal ou serviço fora do briefing. Os valores de marca do guia do cliente (por exemplo excelência médica, cuidado humano, confiança, tecnologia em saúde, acolhimento premium) são o posicionamento aprovado: citá-los como valor não é superlativo; só é falha afirmar comparação, liderança, garantia ou resultado sem fonte ("o melhor", "referência", "o mais", "garantimos"). [VALIDAR] marcado não reprova: não use o próprio marcador como trecho de FALHA nem reduza 'compliance e precisão' por ele, porque é pendência humana; dado sem fonte e sem marcador reprova em G3.
     A auditoria técnica do Supervisor de Mídia Paga (linhas AUDITORIA e PARECER DO SUPERVISOR) está no CONTEXTO: use-a como insumo para a peça MÍDIA, sem copiá-la nem depender dela; a nota é sua.
     CONSISTÊNCIA ENTRE CANAIS: orçamento, datas, preços, serviços e grafia da marca devem ser idênticos em todas as peças;
     divergência é ajuste obrigatório.

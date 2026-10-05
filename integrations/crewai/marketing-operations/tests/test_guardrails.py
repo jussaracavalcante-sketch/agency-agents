@@ -855,3 +855,10 @@ def test_coerencia_reprovada_citando_o_objetivo_identico():
     assert len(achados) == 1 and "idêntico" in achados[0]
     outro = parecer.replace("Gerar 400 contatos qualificados (agendamentos e orçamentos) em 8 semanas (baseline: 863 conversões RD em 90 dias, 343 vindas de mídia paga)\"", "Gerar 500 contatos em 6 semanas e mais algum texto aqui\"")
     assert G._dimensoes_incoerentes(outro) == []
+
+
+def test_claim_uma_referencia_e_valor_de_marca_nao_e_claim():
+    assert G._claims_proibidos("A confiança que nos torna uma referência está no atendimento.")
+    assert G._claims_proibidos("Somos uma referência em cuidado.")
+    assert not G._claims_proibidos("Excelência médica e cuidado humano são os valores do hospital.")
+    assert not G._claims_proibidos("Consulte as referências do guia de marca.")

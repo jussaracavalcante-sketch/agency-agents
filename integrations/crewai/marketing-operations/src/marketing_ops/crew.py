@@ -641,6 +641,7 @@ _CLAIMS_PROIBIDOS = re.compile(
     r"\b(o|a|os|as|ao|do|da|pelo|no|na|nos|nas) melhor(es)?\b|melhor (pra|para) voc[êe]|\bmelhor (atendimento|cuidado|experi[êe]ncia|hospital|cl[íi]nica|estrutura)\b|"
     r"tecnologia de ponta|tecnologias? de ponta|equipamentos? de [úu]ltima gera[çc][ãa]o|[úu]ltima gera[çc][ãa]o|estado da arte|"
     r"diagn[óo]sticos? precis\w+|tratamentos? eficaz\w*|(confian[çc]a|seguran[çc]a) em cada (diagn[óo]stico|tratamento)|"
+    r"(que nos torna|que faz d[oa] [\w ]{2,30}) uma refer[êe]ncia|\buma refer[êe]ncia\b|"
     r"\bde ponta\b(?! a ponta)|melhor escolha|escolha preferencial|escolha segura|precis[ãa]o e seguran[çc]a|"
     r"certifica[çc][õo]es? reconhecid\w+|"
     r"garant\w+[^.\n]{0,60}(precis[ãa]o|seguran[çc]a|excel[êe]ncia|qualidade|efici[êe]ncia|resultados?|cura|"
