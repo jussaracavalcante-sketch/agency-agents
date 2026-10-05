@@ -216,3 +216,17 @@ Acrescentados o agente `supervisor_midia_paga` (14º) e a tarefa `auditoria_midi
 `analista_dados` reescritos com a rotina de Carlos André e João Araújo; parâmetros em `config/rotina_midia.yaml`. Trava do plano de mídia exige budget pace, alerta de
 90%, UTM, revisão técnica do Supervisor e alçadas. Detalhes em `docs/rotina-midia-paga.md`. Ainda não validada em execução; se o próximo piloto falhar duas
 vezes, vale a regra de rollback (base `8fa07e3`).
+
+# Sexto piloto: rotina de mídia (05/10, execução `7d989de1`, build com a rotina)
+Decisões humanas: G1 devolvido e depois aprovado; G2 "Aprovado." sem texto; G3 reprovado. A esteira foi do briefing ao G3 sem erro técnico (19 tarefas, 3 pausas
+retomadas). Falhas de qualidade que as travas sinalizaram mas não impediram: cinco tarefas aceitas com ALERTA DE QUALIDADE (`aplicacao_g1`, `producao_conteudo`,
+`plano_midia_paga`, `aplicacao_g2`, `portao_g2`); rubrica com REFAZER em conteúdo, e-mail e mídia e G2 aprovado sem correções; `aplicacao_g2` em inglês antes e depois do
+documento e com calendário de 3 linhas (a trava aceitava a "semana 8" citada); e-mail reemitido só com [VALIDAR]; direção de arte com depoimento de paciente inventado;
+pacote de publicação montado com o calendário substituído (5 semanas, 12 de 15 datas "a definir").
+
+## Melhorias (pós-rodada)
+1. Frase em inglês fora de tabela/código rejeitada em toda tarefa de documento (`_linha_em_ingles`).
+2. Cobertura do calendário exige semanas distintas e ao menos 2 posts por semana; citar a última semana não basta.
+3. `aplicacao_g2`: sem ajustes escritos pelo humano ("Aprovado."), peça com VEREDITO=REFAZER na rubrica tem de constar como bloqueada.
+4. `pacote_publicacao`: posts de rede social só com datas do calendário vigente (reemitido, se houver), sem "a definir" onde há data e cobrindo a campanha inteira.
+5. Portal: confirmação antes de enviar a decisão (mostra o texto enviado) e execução reprovada passa a constar como encerrada.

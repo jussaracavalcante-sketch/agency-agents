@@ -43,6 +43,9 @@
 - Ferramentas de escrita só após G3; chaves apenas em `.env`.
 - `max_iter` evita loops; falha dupla escala ao humano.
 
+Travas acrescentadas após o piloto de 05/10 (`7d989de1`): saída em inglês, calendário com poucos posts por semana, peça com REFAZER na rubrica liberada por "Aprovado." sem texto
+e pacote de publicação montado com calendário substituído. Detalhes em `docs/registro-piloto-santa-julia.md`.
+
 ## 3. Memória e conhecimento
 
 | Mecanismo CrewAI | Uso nesta crew | Cuidados |

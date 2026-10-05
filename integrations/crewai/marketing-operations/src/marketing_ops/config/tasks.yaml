@@ -362,7 +362,12 @@ aplicacao_g2:
     formato e extensão da original (não apenas o trecho alterado), sem notas que afirmem conformidade. Ao reemitir, NÃO acrescente nenhuma afirmação nova: é proibido
     introduzir 'garantimos', 'garantindo', 'segurança', 'precisão' ou 'tecnologia de ponta' sem fonte; ajuste só remove, suaviza
     com [VALIDAR] ou mantém o texto original. Entrega sem ajuste não precisa ser reemitida. Ao final liste, por entrega, "versão reemitida" ou
-    "versão original". Esta tarefa não inventa aprovador, data, decisão ou feedback.
+    "versão original". BLOQUEIO POR RUBRICA: a aprovação "Aprovado." sem nenhum ajuste escrito pelo humano não carrega correções e
+    não libera peça que a rubrica de qualidade mandou REFAZER (veredito REFAZER na linha RESUMO da peça): registre essa
+    entrega como bloqueada, na linha "Bloqueadas:", com a pendência da rubrica. Quando o humano escreveu ajustes, aplique-os.
+    CALENDÁRIO: se reemitir o calendário social, reemita TODAS as semanas da campanha, com pelo menos 3 posts por semana e a data
+    de cada post, nunca só algumas linhas. Escreva tudo em português do Brasil e entregue só o documento, sem frase antes ou depois
+    dele. Esta tarefa não inventa aprovador, data, decisão ou feedback.
   expected_output: >
     Documento Markdown: (A) tabela entrega x decisão x ajustes (texto exato) x origem e listas de liberadas e bloqueadas;
     (B) cada peça ajustada reemitida na íntegra; (C) lista final de versões.
@@ -399,6 +404,10 @@ pacote_publicacao:
     datas e plataformas do próprio calendário, e (b) envios de e-mail do plano de e-mail, no canal E-mail, e (c) o artigo
     no canal Site/Blog. Documentos internos entram só no índice, com a observação \"documento interno, não publicável\".
     Não invente datas: se a peça não tiver data, escreva \"a definir\". Data e hora também ficam \"a definir\" quando a peça liberada não traz data própria (por exemplo, e-mail e artigo sem data no plano).
+    VERSÃO VIGENTE: para cada peça use a versão REEMITIDA em aplicacao_g2 quando existir; a original só vale para a peça que
+    aplicacao_g2 lista como "versão original". Para o calendário social, o cronograma copia TODAS as linhas do calendário vigente (todas as
+    semanas), com a data e a plataforma de cada post; não deixe "a definir" onde o calendário já tem data e não use posts, datas ou
+    temas do calendário substituído. Escreva em português do Brasil e entregue só o documento.
   expected_output: >
     Documento Markdown com Índice do pacote, Cronograma de publicação (tabela) e Checklist
     pré-publicação por canal com status.

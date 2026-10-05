@@ -182,6 +182,26 @@ _ABERTURA_DE_CONVERSA = re.compile(
 )
 
 
+_PALAVRAS_EN = frozenset("the and with has have been will is are was were as per to for of if please that this all any further i'll i we our your you its be by on at from it not or but also should must can may these those into".split())
+_PALAVRAS_PT = frozenset("o a os as de do da dos das e que para com um uma em no na nos nas por se ao à são é não ou mais como sua seu suas seus foi ser".split())
+
+
+def _linha_em_ingles(texto):
+    """Primeira frase em inglês fora de blocos de tabela/código (a crew escreve em português do Brasil); vazio se não houver."""
+    for linha in _sem_alerta(texto or "").splitlines():
+        l = linha.strip()
+        if not l or l.startswith(("|", "```", "#")) or l.count(" ") < 5:
+            continue
+        palavras = re.findall(r"[a-zA-Zà-úÀ-Ú']+", l.lower())
+        if len(palavras) < 6:
+            continue
+        en = sum(1 for p in palavras if p in _PALAVRAS_EN)
+        pt = sum(1 for p in palavras if p in _PALAVRAS_PT)
+        if en / len(palavras) >= 0.28 and pt / len(palavras) <= 0.1:
+            return l[:80]
+    return ""
+
+
 def _guardrail_documento(saida):  # sem anotação de retorno: o validador do CrewAI a compara com tipos reais
     """
     Rejeita a saída de uma tarefa de documento quando ela é uma desculpa em vez de entrega: curta demais ou
@@ -194,6 +214,11 @@ def _guardrail_documento(saida):  # sem anotação de retorno: o validador do Cr
         return False, (
             f"A saída traz comentário depois do documento (\"{apos[:70]}\"). O documento termina no fechamento do bloco ou na última seção: "
             "não escreva introdução, resumo, autoavaliação nem frase de conformidade depois dele."
+        )
+    ingles = _linha_em_ingles(texto)
+    if ingles:
+        return False, (
+            f"A saída tem frase em inglês (\"{ingles}\"). Escreva tudo em português do Brasil, só o documento, sem introdução nem fechamento em outro idioma."
         )
     primeira = next((l.strip() for l in texto.splitlines() if l.strip() and not l.strip().startswith(("```", ">"))), "")
     if _ABERTURA_DE_CONVERSA.match(primeira):
@@ -318,6 +343,48 @@ def _guardrail_aplicacao_g2(saida):
             "ou marque [VALIDAR]; nunca declare autorização."
         )
     return True, saida
+
+
+_CHAVE_PECA = {"CONTEUDO": r"conte[úu]do", "CALENDARIO": r"calend[áa]rio", "EMAIL": r"e-?mail", "MIDIA": r"m[íi]dia"}
+
+
+def _pecas_para_refazer(rubrica):
+    """Peças com VEREDITO=REFAZER na rubrica (nomes sem acento, como em _PECAS_RUBRICA)."""
+    saida = []
+    for m in _RESUMO_RUBRICA.finditer(_sem_alerta(rubrica or "")):
+        if m.group("ver").upper() == "REFAZER":
+            saida.append(_sem_acento(m.group("peca")).replace("-", "").replace(" ", ""))
+    return saida
+
+
+def _guardrail_aplicacao_g2_factory(rubrica_task, portao_task):
+    """
+    "Aprovado." sozinho não carrega correções. Peça que a rubrica mandou REFAZER não pode sair liberada quando o humano não escreveu
+    nenhum ajuste: tem de constar na lista de bloqueadas. Se o humano devolveu com texto, as correções dele são aplicadas e a regra não vale.
+    """
+
+    def guardrail(saida):
+        base = _guardrail_aplicacao_g2(saida)
+        if base[0] is False:
+            return base
+        rubrica = getattr(getattr(rubrica_task, "output", None), "raw", None) or ""
+        portao = getattr(getattr(portao_task, "output", None), "raw", None) or ""
+        devolvido = "ajustes pedidos" in _normalizar(portao)
+        refazer = _pecas_para_refazer(rubrica)
+        if refazer and not devolvido:
+            texto = _sem_alerta(getattr(saida, "raw", None) or str(saida) or "")
+            m = re.search(r"bloquead[ao]s?\W{0,6}([^\n]+)", texto, re.I)
+            bloqueadas = (m.group(1) if m else "").lower()
+            fora = [p for p in refazer if not re.search(_CHAVE_PECA[p], bloqueadas, re.I)]
+            if fora:
+                return False, (
+                    "A rubrica de qualidade mandou REFAZER " + ", ".join(fora) + " e o humano aprovou sem escrever ajustes: aprovação sem "
+                    "correção não libera peça reprovada. Registre essas entregas como BLOQUEADAS na lista de bloqueadas (\"Bloqueadas: ...\") "
+                    "com a pendência da rubrica, e não as inclua entre as liberadas."
+                )
+        return True, saida
+
+    return guardrail
 
 
 _TAG_ALERTA = "ALERTA DE QUALIDADE"
@@ -486,11 +553,16 @@ def _cobertura_calendario(texto):
             pass
     blocos = {(x - min(datas)).days // 7 for x in datas} if datas else set()
     marcadores = [int(n) for n in re.findall(r"semana\s+(\d{1,2})", texto, re.I)]
-    marcadores += [int(n) for n in re.findall(r"^\|\s*(\d{1,2})\s*\|", texto, re.M)]  # coluna "Semana" numérica
-    if len(blocos) >= semanas - 1 or (marcadores and max(marcadores) >= semanas):
+    linhas_tabela = [int(n) for n in re.findall(r"^\|\s*(\d{1,2})\s*\|", texto, re.M)]  # coluna "Semana" numérica
+    marcadores += linhas_tabela
+    # Cobrir é ter conteúdo em (quase) todas as semanas, não só citar a última: um calendário de 3 linhas com a semana 8 não cobre.
+    distintas = len({m for m in marcadores if 1 <= m <= semanas})
+    cobre_semanas = len(blocos) >= semanas - 1 or distintas >= semanas - 1
+    posts = max(len(datas), len(linhas_tabela))
+    if cobre_semanas and posts >= 2 * semanas:
         return None
     return (
-        f"O calendário cobre {len(blocos) or 'menos de ' + str(semanas)} semana(s) pelas datas, mas a campanha tem {semanas}. "
+        f"O calendário cobre {max(len(blocos), distintas) or 'menos de ' + str(semanas)} das {semanas} semanas da campanha e tem {posts} post(s). "
         f"Entregue posts distribuídos por todas as {semanas} semanas, com ao menos 3 por semana, datando cada um."
     )
 
@@ -515,6 +587,51 @@ def _trecho_calendario_reemitido(texto):
     resto = texto[m.start():]
     fim = re.search(r"\n#{1,4}\s*(pe[çc]a reemitida|parte c|lista de vers)", resto[m.end() - m.start():], re.I)
     return resto[: (m.end() - m.start()) + fim.start()] if fim else resto
+
+
+def _linhas_social(texto):
+    return [l for l in (texto or "").splitlines() if l.strip().startswith("|") and re.search(r"instagram|facebook|linkedin|tiktok|youtube", l, re.I)]
+
+
+def _guardrail_pacote_factory(calendario_task, aplicacao_task):
+    """
+    O cronograma do pacote usa o calendário VIGENTE (a versão reemitida em aplicacao_g2, se houver; senão o original): as linhas de rede social não
+    trazem data que o calendário vigente não tem, não ficam "a definir" onde o calendário já tem data e cobrem a campanha inteira.
+    """
+
+    def guardrail(saida):
+        base = _guardrail_documento(saida)
+        if base[0] is False:
+            return base
+        texto = _sem_alerta(getattr(saida, "raw", None) or str(saida) or "")
+        aplicacao = _sem_alerta(getattr(getattr(aplicacao_task, "output", None), "raw", None) or "")
+        original = _sem_alerta(getattr(getattr(calendario_task, "output", None), "raw", None) or "")
+        vigente = _trecho_calendario_reemitido(aplicacao) or original
+        datas_vigentes = _datas_do_texto(vigente)
+        sociais = "\n".join(_linhas_social(texto))
+        if datas_vigentes and sociais:
+            alheias = sorted(_datas_do_texto(sociais) - datas_vigentes)
+            if alheias:
+                return False, (
+                    "O cronograma traz datas de posts que não estão no calendário vigente (" + ", ".join(alheias[:4]) + "). Use só os posts, datas e plataformas do "
+                    "calendário liberado; se o calendário foi reemitido em aplicacao_g2, vale a versão reemitida, não a original."
+                )
+            pendentes = [l for l in sociais.splitlines() if re.match(r"\|\s*\d{1,2}\s*\|\s*a definir\s*\|", l, re.I)]
+            if pendentes:
+                return False, (
+                    f"{len(pendentes)} post(s) do cronograma estão com data \"a definir\", mas o calendário liberado já traz a data de cada um. "
+                    "Copie data e plataforma do calendário vigente."
+                )
+            erro = _cobertura_calendario(sociais)
+            if erro:
+                return False, "O cronograma de redes sociais não cobre a campanha inteira. " + erro.replace("O calendário", "O cronograma")
+        return True, saida
+
+    return guardrail
+
+
+def _datas_do_texto(texto):
+    return set(re.findall(r"\b\d{2}/\d{2}/20\d{2}\b", texto or ""))
 
 
 _FONTE_INTERNA = re.compile(
@@ -1434,7 +1551,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g2(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g2), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g2_factory(self.rubrica_qa(), self.portao_g2())), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g2"],
             context=[
                 self.portao_g2(),
@@ -1462,7 +1579,7 @@ class MarketingOpsCrew:
     @task
     def pacote_publicacao(self) -> Task:
         return Task(
-            guardrail=_g_doc(), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_pacote_factory(self.calendario_social(), self.aplicacao_g2())), guardrail_max_retries=2,
             config=self.tasks_config["pacote_publicacao"],
             context=[
                 self.aplicacao_g2(),
