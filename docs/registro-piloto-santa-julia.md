@@ -191,3 +191,22 @@ G1 aprovado com "Aprovado." (parecer Reprovado e alerta no brief); a execução 
 - O brief precisa citar a verba de mídia do briefing e manter o [VALIDAR] dos valores que o briefing marca assim.
 - Toda rejeição de trava chega ao agente com o prefixo "REVISÃO AUTOMÁTICA DE QUALIDADE (não é feedback humano…)"; o alerta mostra o motivo sem o prefixo.
 - Objetivo literal pedido em bloco de citação (`> objetivo`), sem objetivo específico, e orçamento sem divisão inventada (a divisão restante vai [VALIDAR]); `aplicacao_g1` passa pela mesma trava do brief.
+
+# Quinto piloto com rubrica (05/10, execução `8e11e98c`, build `2929969e` / `4451e6e`)
+G1 aprovado com "Aprovado." 56 s depois da pausa; execução seguiu para as peças.
+
+| Verificação | Resultado |
+|---|---|
+| Alerta de trava no brief | **Nenhum** (rodada anterior: 3 até o G1) |
+| Objetivo literal em bloco de citação, fonte Nekt, percentuais e verbas com [VALIDAR] | **OK** |
+| Parecer do Guardião | Reprovado, com falhas: dimensão "Coerência" Reprovada com apontamento "nenhuma correção necessária"; reprova por itens já marcados [VALIDAR]; citação deturpada ("conhecimento da diferença que um atendimento…" no lugar de "Conheça a diferença…") |
+| Brief | Parágrafo depois do documento com autocertificação ("seguindo rigorosamente as diretrizes"); "Dados de Mercado: CFM, ANVISA, CONAR" |
+| `aplicacao_g1` | Alerta (percentual 20% sem [VALIDAR]); disse "não há ajustes pendentes" e perdeu [VALIDAR] do brief original |
+
+## Melhorias (pós-rodada)
+1. Guardião (G1 e G2): [VALIDAR] já marcado é pendência humana ("Aprovado com ajustes"), não reprovação; só reprova item inventado sem marcação e sem fonte.
+2. Parecer (G1, G2, G3): todo trecho entre aspas precisa existir no texto revisado (código compara; linhas de regra ou correção sugerida não contam).
+3. Dimensão Reprovada cujo apontamento diz "nenhuma correção necessária" ou "está coerente" é rejeitada.
+4. Texto depois do fechamento do bloco ``` e frases de autocertificação ("seguindo rigorosamente", "todos os feedbacks foram incluídos", "não há ajustes pendentes") rejeitados.
+5. Órgãos reguladores (CFM, ANVISA, CONAR) como fonte de "dados de mercado" rejeitados no brief.
+6. `aplicacao_g1`: sem feedback humano escrito, a reemissão não pode ter menos marcações [VALIDAR] que o brief original.
