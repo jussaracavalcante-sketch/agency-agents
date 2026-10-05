@@ -230,3 +230,17 @@ pacote de publicação montado com o calendário substituído (5 semanas, 12 de 
 3. `aplicacao_g2`: sem ajustes escritos pelo humano ("Aprovado."), peça com VEREDITO=REFAZER na rubrica tem de constar como bloqueada.
 4. `pacote_publicacao`: posts de rede social só com datas do calendário vigente (reemitido, se houver), sem "a definir" onde há data e cobrindo a campanha inteira.
 5. Portal: confirmação antes de enviar a decisão (mostra o texto enviado) e execução reprovada passa a constar como encerrada.
+
+# Sétimo piloto (05/10, execução `9b423a64`, build `ffcc3d4`)
+Decisões humanas: G1 "Aprovado." sem texto; G2 registrado como "Aprovado." sem texto; G3 registrado como Reprovar (com texto de ajustes gravado só como justificativa). Sem erro técnico.
+Resultado das travas do sexto piloto: sem inglês, calendário com 8 semanas (24 posts), conteúdo e mídia bloqueados no G2 por REFAZER na rubrica, pacote sem peça do calendário
+substituído. Falhas que restaram: 8 alertas de qualidade (brief, parecer G1, aplicação G1, produção, calendário, mídia, aplicação G2, revisão G3); "cirurgia robótica" e
+"telemedicina" no brief e nas peças; calendário com datas passadas (02 e 03/10) e linha solta dentro da tabela; mídia com YouTube Ads e Display.
+
+## Melhorias (varredura de QA após a rodada)
+1. Saneador na última tentativa (`_com_limite_de_rejeicoes(..., saneador=...)`): quando a trava esgota, a saída aceita já sai com serviço fora do briefing trocado por
+   `[VALIDAR: serviço fora do briefing]`, afirmação proibida marcada `[VALIDAR MÉDICO]` e, no plano de mídia, canal fora do brief trocado por `[VALIDAR: canal fora do brief]`.
+   O alerta no topo lista o que foi trocado. Na reemissão do G2 só o trecho reemitido é saneado (o registro que cita o problema fica intacto).
+2. Calendário: data anterior a hoje (fuso da campanha) e linha de tabela com número de colunas diferente do cabeçalho são rejeitadas (também na reemissão do G2).
+3. Portal: Aprovar ou Reprovar com texto digitado exige confirmar que o texto não será enviado (servidor responde 409 sem a confirmação).
+Não resolvido: divergência entre rubrica e Guardião (e-mail 98 na rubrica com número inventado) e parecer do Guardião sem citações; ficam como risco conhecido para o G2/G3 humano.

@@ -333,9 +333,9 @@ def _guardrail_aplicacao_g2(saida):
         )
     cal = _trecho_calendario_reemitido(texto)
     if cal:
-        erro = _cobertura_calendario(cal)
+        erro = _problemas_calendario(cal)
         if erro:
-            return False, "O calendário reemitido está incompleto. " + erro + " Reemita o calendário inteiro, não só as linhas ajustadas."
+            return False, "O calendário reemitido tem problema. " + erro + " Reemita o calendário inteiro, não só as linhas ajustadas."
     if _AFIRMACOES_FALSAS.search(texto):
         return False, (
             "A saída afirma que depoimentos/testemunhos são reais, colhidos com consentimento ou autorizados. Isso não "
@@ -408,10 +408,11 @@ def _com_alerta(saida, motivo):
     return linha + "\n\n" + raw
 
 
-def _com_limite_de_rejeicoes(guardrail, maximo=2):
+def _com_limite_de_rejeicoes(guardrail, maximo=2, saneador=None):
     """
     Aceita a saída depois de `maximo` rejeições, porque guardrail esgotado derruba a execução inteira na plataforma. A saída aceita
-    leva uma linha "ALERTA DE QUALIDADE" no topo com a pendência que a trava não conseguiu corrigir.
+    leva uma linha "ALERTA DE QUALIDADE" no topo com a pendência que a trava não conseguiu corrigir. Com `saneador`, o texto aceito
+    sai antes com os termos proibidos trocados por [VALIDAR]: o humano recebe a peça já neutralizada, não só o aviso.
     """
     estado = {"n": 0}
 
@@ -420,7 +421,14 @@ def _com_limite_de_rejeicoes(guardrail, maximo=2):
         if veredito[0] is False:
             estado["n"] += 1
             if estado["n"] > maximo:
-                return True, _com_alerta(saida, veredito[1])
+                if saneador is None:
+                    return True, _com_alerta(saida, veredito[1])
+                original = getattr(saida, "raw", None) or str(saida) or ""
+                limpo, trocas = saneador(_sem_alerta(original))
+                if not trocas:
+                    return True, _com_alerta(saida, veredito[1])
+                tipo = type("SaidaSaneada", (), {"raw": limpo, "name": getattr(saida, "name", None) or ""})()
+                return True, _com_alerta(tipo, f"{veredito[1]} Termos trocados automaticamente por [VALIDAR]: {', '.join(sorted(set(trocas)))[:200]}.")
             return False, _PREFIXO_AUTO + str(veredito[1])
         return veredito
 
@@ -528,6 +536,71 @@ def _guardrail_sem_claims(saida):
     return True, saida
 
 
+def _acrescentar_marca(linha, marca):
+    """Põe a marca no fim da linha; em linha de tabela, antes do último separador, para não quebrar a tabela."""
+    if linha.rstrip().endswith("|"):
+        corpo = linha.rstrip()[:-1].rstrip()
+        return f"{corpo} {marca} |"
+    return f"{linha.rstrip()} {marca}"
+
+
+def _sanear_claims(texto, so_apos=None):
+    """
+    Última barreira quando a trava esgota: linha com superlativo/garantia/depoimento sem [VALIDAR] ganha [VALIDAR MÉDICO]; serviço ou
+    especialidade que o briefing não cita é trocado por [VALIDAR: serviço fora do briefing]. `so_apos` limita ao trecho depois de um
+    marcador (peças reemitidas), para não mexer no registro que cita o problema. Devolve (texto, lista do que foi trocado).
+    """
+    linhas = (texto or "").splitlines()
+    inicio = 0
+    if so_apos:
+        for i, l in enumerate(linhas):
+            if re.search(so_apos, l, re.I):
+                inicio = i
+                break
+        else:
+            return texto, []
+    permitido = _TEXTO_PERMITIDO["texto"]
+    trocas = []
+    for i in range(inicio, len(linhas)):
+        l = linhas[i]
+        if "[validar" in l.lower() or _TAG_ALERTA in l:
+            continue
+        if permitido:
+            def _trocar(m):
+                if re.search(rf"\b{re.escape(m.group(0).lower())}\b", permitido):
+                    return m.group(0)
+                trocas.append(m.group(0).lower())
+                return "[VALIDAR: serviço fora do briefing]"
+            l = _TERMOS_SENSIVEIS.sub(_trocar, l)
+        if "[validar" not in l.lower() and _CLAIMS_PROIBIDOS.search(l) and not _LINHA_NEUTRA.search(l):
+            trocas.append(_CLAIMS_PROIBIDOS.search(l).group(0).lower())
+            l = _acrescentar_marca(l, "[VALIDAR MÉDICO]")
+        linhas[i] = l
+    return "\n".join(linhas), trocas
+
+
+def _sanear_producao(texto):
+    return _sanear_claims(texto)
+
+
+def _sanear_reemissao(texto):
+    return _sanear_claims(texto, so_apos=r"parte b|pe[çc]a reemitida")
+
+
+def _sanear_midia(texto):
+    """Plano de mídia: além das afirmações, canal pago que o briefing não prevê vira [VALIDAR: canal fora do brief] (a verba segue para o humano decidir)."""
+    texto, trocas = _sanear_claims(texto)
+    base = _normalizar(_TEXTO_PERMITIDO["texto"])
+    for canal in _CANAIS_PAGOS:
+        if _normalizar(canal) in base:
+            continue
+        novo = re.sub(re.escape(canal), "[VALIDAR: canal fora do brief]", texto, flags=re.I)
+        if novo != texto:
+            trocas.append(canal)
+            texto = novo
+    return texto, trocas
+
+
 _INPUTS_ATUAIS = {}
 
 
@@ -567,12 +640,87 @@ def _cobertura_calendario(texto):
     )
 
 
+def _hoje():
+    """Data de hoje no fuso da campanha; o campo "hoje" em _INPUTS_ATUAIS (ISO) a substitui nos testes."""
+    from datetime import date, datetime
+
+    fixo = str(_INPUTS_ATUAIS.get("hoje", "")).strip()
+    if fixo:
+        return date.fromisoformat(fixo)
+    try:
+        from zoneinfo import ZoneInfo
+
+        return datetime.now(ZoneInfo(str(_INPUTS_ATUAIS.get("fuso_horario") or "America/Manaus"))).date()
+    except Exception:  # noqa: BLE001 - sem tzdata, usa a data do servidor
+        return date.today()
+
+
+def _datas_passadas(texto):
+    """Datas do calendário anteriores a hoje (um post não pode ser agendado no passado). Lista de dd/mm/aaaa."""
+    from datetime import datetime
+
+    hoje = _hoje()
+    achadas = []
+    for d, mth, a in re.findall(r"\b(\d{2})/(\d{2})/(20\d{2})\b", texto or ""):
+        try:
+            if datetime(int(a), int(mth), int(d)).date() < hoje:
+                achadas.append(f"{d}/{mth}/{a}")
+        except ValueError:
+            pass
+    for a, mth, d in re.findall(r"\b(20\d{2})-(\d{2})-(\d{2})\b", texto or ""):
+        try:
+            if datetime(int(a), int(mth), int(d)).date() < hoje:
+                achadas.append(f"{d}/{mth}/{a}")
+        except ValueError:
+            pass
+    return sorted(set(achadas))
+
+
+def _linha_solta_na_tabela(texto):
+    """Linha de tabela com número de colunas diferente do cabeçalho (nota ou instrução que vazou para dentro da tabela); vazio se não houver."""
+    cabecalho = None
+    for linha in _sem_alerta(texto or "").splitlines():
+        l = linha.strip()
+        if not l.startswith("|"):
+            cabecalho = None
+            continue
+        if re.fullmatch(r"\|[\s:|-]+\|?", l):
+            continue
+        colunas = l.strip("|").count("|") + 1
+        if cabecalho is None:
+            cabecalho = colunas
+        elif colunas != cabecalho:
+            return l[:80]
+    return ""
+
+
+def _problemas_calendario(texto):
+    """Erro do calendário (cobertura, data passada, linha solta na tabela) ou None."""
+    erro = _cobertura_calendario(texto)
+    if erro:
+        return erro
+    passadas = _datas_passadas(_sem_alerta(texto))
+    if passadas:
+        amanha = (_hoje()).strftime("%d/%m/%Y")
+        return (
+            f"O calendário tem posts em datas que já passaram ({', '.join(passadas[:4])}). Hoje é {amanha}: o primeiro post é de hoje em diante, "
+            "mantendo todas as semanas e ao menos 3 posts por semana."
+        )
+    solta = _linha_solta_na_tabela(texto)
+    if solta:
+        return (
+            f"Há uma linha fora do formato dentro da tabela do calendário (\"{solta}\"). Toda linha da tabela tem as mesmas colunas; notas ou "
+            "instruções não entram na tabela nem na peça."
+        )
+    return None
+
+
 def _guardrail_calendario(saida):
     """O calendário deve cobrir todas as semanas da campanha (por datas ou por marcadores 'Semana N')."""
     base = _guardrail_producao(saida)
     if base[0] is False:
         return base
-    erro = _cobertura_calendario(getattr(saida, "raw", None) or str(saida) or "")
+    erro = _problemas_calendario(getattr(saida, "raw", None) or str(saida) or "")
     return (False, erro) if erro else (True, saida)
 
 
@@ -1184,7 +1332,7 @@ def _g_doc():
 
 
 def _g_prod():
-    return _com_limite_de_rejeicoes(_guardrail_producao)
+    return _com_limite_de_rejeicoes(_guardrail_producao, saneador=_sanear_producao)
 
 
 def _aplicar_pasta_de_saida(tasks: list[Task]) -> str | None:
@@ -1408,7 +1556,7 @@ class MarketingOpsCrew:
     @task
     def brief_estrategico(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_brief), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_brief, saneador=_sanear_producao), guardrail_max_retries=2,
             config=self.tasks_config["brief_estrategico"],
             context=[self.pesquisa_mercado(), self.mapa_seo()],
         )
@@ -1429,7 +1577,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g1(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g1_factory(self.brief_estrategico(), self.portao_g1())), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g1_factory(self.brief_estrategico(), self.portao_g1()), saneador=_sanear_producao), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g1"],
             context=[self.brief_estrategico(), self.revisao_g1(), self.portao_g1()],
         )
@@ -1447,7 +1595,7 @@ class MarketingOpsCrew:
     @task
     def calendario_social(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_calendario), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_calendario, saneador=_sanear_producao), guardrail_max_retries=2,
             config=self.tasks_config["calendario_social"],
             context=[self.aplicacao_g1(), self.producao_conteudo(), self.pesquisa_mercado()],
         )
@@ -1469,7 +1617,7 @@ class MarketingOpsCrew:
     @task
     def plano_midia_paga(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_midia_factory(self.aplicacao_g1())), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_midia_factory(self.aplicacao_g1()), saneador=_sanear_midia), guardrail_max_retries=2,
             config=self._com_rotina("plano_midia_paga", _bloco_operacao()),
             context=[self.aplicacao_g1(), self.mapa_seo(), self.pesquisa_mercado(), self.fluxos_email()],
         )
@@ -1551,7 +1699,7 @@ class MarketingOpsCrew:
     @task
     def aplicacao_g2(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g2_factory(self.rubrica_qa(), self.portao_g2())), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g2_factory(self.rubrica_qa(), self.portao_g2()), saneador=_sanear_reemissao), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g2"],
             context=[
                 self.portao_g2(),
