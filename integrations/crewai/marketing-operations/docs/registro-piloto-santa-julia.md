@@ -287,3 +287,8 @@ telemedicina (fora do briefing) e o saneador deixou o artigo sem assunto. Plano 
 1. Calendário: a tabela precisa da coluna Data; post com história, relato ou depoimento de paciente é rejeitado mesmo com [VALIDAR] em outra célula da linha (`_tabela_sem_coluna_data`, `_historias_de_pacientes`).
 2. Reemissão do G2: marcador inexistente ([confirmado]) rejeitado e trocado por [VALIDAR]; o plano de mídia reemitido precisa manter a rotina (budget pace, alerta de 90%, UTM, alçadas) e, ao esgotar, as seções são inseridas por código.
 3. Serviços: `before_kickoff` calcula `servicos_nao_informados` (serviços e especialidades que o briefing e a base do cliente não citam) e as tarefas de conteúdo, calendário, e-mail, direção de arte e plano de mídia o recebem no prompt como lista de itens que não podem ser tema, título, exemplo nem copy.
+
+# Décimo disparo (05/10): recusado pela plataforma
+O disparo de 17:58 foi recusado com `Missing inputs: servicos_nao_informados`. A plataforma exige todos os campos `{...}` das tarefas antes de rodar o `before_kickoff`, e o portal só envia os 17 campos do
+briefing; o campo novo do item "serviços não informados" quebrou o kickoff (nenhuma execução criada, sem custo). Correção: o bloco `[SERVIÇOS NÃO INFORMADOS]` passa a ir no fim de `contexto_cliente`
+(que toda tarefa já recebe), fora do texto permitido e sem duplicar em retomadas. Teste de regressão: os placeholders das tarefas e agentes só podem ser os 17 campos do briefing.

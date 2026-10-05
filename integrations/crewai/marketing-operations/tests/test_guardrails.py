@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario",
 }
 
 
@@ -18,7 +18,8 @@ def _carregar():
     arvore = ast.parse(_FONTE.read_text())
     import yaml
     rotina = yaml.safe_load((_FONTE.parent / "config/rotina_midia.yaml").read_text(encoding="utf-8"))
-    ns = {"re": re, "_ROTINA": rotina, "_ALERTA_PCT": int(rotina["parametros"]["alerta_consumo_pct"])}
+    ns = {"re": re, "definir_contexto_do_portal": lambda *a, **k: None, "BrandBookTool": type("BrandBookTool", (), {"_run": lambda self, c: "Hospital Santa Júlia: consultas e exames de cardiologia."}),
+          "_ROTINA": rotina, "_ALERTA_PCT": int(rotina["parametros"]["alerta_consumo_pct"])}
     for no in arvore.body:
         nome = getattr(no, "name", None) or (no.targets[0].id if isinstance(no, ast.Assign) and isinstance(no.targets[0], ast.Name) else None)
         if nome in _NOMES:
@@ -720,9 +721,31 @@ def test_reemissao_com_marcador_falso_e_plano_sem_rotina():
     assert "confirmado" not in G._a_partir_da_reemissao(parte_a)
 
 
-def test_servicos_nao_informados_para_o_prompt():
-    permitido = G._texto_permitido({"objetivo": "consultas e exames de cardiologia", "servicos_nao_informados": "telemedicina"})
-    assert "telemedicina" not in permitido                                              # a lista não se autoriza
-    lista = G._servicos_nao_informados(permitido)
-    assert "telemedicina" in lista and "cirurgia robótica" in lista and "cardiologia" not in lista
+def test_servicos_nao_informados_vao_dentro_do_contexto_e_nao_se_autorizam():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+    entrada = {"cliente": "hospital_santa_julia", "objetivo": "Gerar 400 contatos"}
+    saida = G._injetar_contexto_cliente(entrada)
+    assert "servicos_nao_informados" not in saida                                       # a plataforma exige todo campo novo: nada de campo novo
+    ctx = saida["contexto_cliente"]
+    assert G._MARCA_SERVICOS in ctx and "telemedicina" in ctx.split(G._MARCA_SERVICOS)[1] and "cardiologia" not in ctx.split(G._MARCA_SERVICOS)[1]
+    assert "telemedicina" not in G._TEXTO_PERMITIDO["texto"]                            # o bloco não autoriza o que ele proíbe
+    # retomada: o contexto já vem com o bloco anexado e não pode duplicar nem autorizar
+    G._TEXTO_PERMITIDO["texto"] = ""
+    de_novo = G._injetar_contexto_cliente(dict(saida))
+    assert de_novo["contexto_cliente"].count(G._MARCA_SERVICOS) == 1 and "telemedicina" not in G._TEXTO_PERMITIDO["texto"]
     assert G._servicos_nao_informados(" ".join(s.lower() for s in G._SERVICOS_LISTA)) == "nenhum"
+
+
+def test_placeholders_das_tarefas_sao_so_os_campos_do_briefing():
+    """A plataforma recusa o disparo ("Missing inputs") se uma tarefa usar {campo} que o portal não envia. Os 17 campos do briefing são os únicos permitidos."""
+    import yaml
+    base = pathlib.Path(__file__).parent.parent / "src/marketing_ops/config"
+    permitidos = {"briefing_titulo", "caminho_dados", "cliente", "duracao_semanas", "ferramenta_analytics", "ferramenta_crm", "fuso_horario", "objetivo",
+                  "orcamento_midia", "orcamento_total", "periodo_relatorio", "plataformas_sociais", "prazo", "publico_alvo", "regiao", "segmento", "site_url"}
+    usados = set()
+    for nome in ("tasks.yaml", "agents.yaml"):
+        for v in yaml.safe_load((base / nome).read_text(encoding="utf-8")).values():
+            for k in ("description", "expected_output", "role", "goal", "backstory"):
+                if isinstance(v.get(k), str):
+                    usados |= set(re.findall(r"\{(\w+)\}", v[k]))
+    assert usados <= permitidos, sorted(usados - permitidos)
