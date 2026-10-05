@@ -13,23 +13,23 @@
     },
     {
      "nome": "portao_g2",
-     "ordem": 14
-    },
-    {
-     "nome": "aplicacao_g2",
      "ordem": 15
     },
     {
-     "nome": "portao_g3",
-     "ordem": 19
+     "nome": "aplicacao_g2",
+     "ordem": 16
     },
     {
-     "nome": "aplicacao_g3",
+     "nome": "portao_g3",
      "ordem": 20
     },
     {
+     "nome": "aplicacao_g3",
+     "ordem": 21
+    },
+    {
      "nome": "sumario_executivo",
-     "ordem": 22
+     "ordem": 23
     }
    ]
   },
@@ -145,7 +145,7 @@
   {
    "chave": "gestor_midia_paga",
    "papel": "Gestor(a) de Mídia Paga (Search, Social e Programática)",
-   "objetivo": "Estruturar as campanhas pagas de {cliente} com orçamento de {orcamento_midia}: arquitetura por plataforma e funil, públicos, palavras-chave e negativas, copies de anúncios, briefing de criativos, lances, projeções com premissas declaradas e rotina de otimização.",
+   "objetivo": "Estruturar as campanhas pagas de {cliente} com orçamento de {orcamento_midia}: arquitetura por plataforma e funil, públicos, palavras-chave e negativas, copies de anúncios, briefing de criativos, lances, projeções com premissas declaradas, controle de verba (budget pace) e rotina de otimização diária e semanal, pronto para a revisão técnica do Supervisor de Mídia Paga.",
    "delega": false,
    "ferramentas": [
     "Guia de marca do cliente",
@@ -161,6 +161,22 @@
    ]
   },
   {
+   "chave": "supervisor_midia_paga",
+   "papel": "Supervisor(a) de Mídia Paga e Performance",
+   "objetivo": "Auditar a qualidade técnica do plano de mídia de {cliente} antes do portão G2: segmentação, pixel/CAPI e tags, criativos, URLs com UTM, copies, verba e budget pace, alçadas. Liberar para o G2 ou devolver ao gestor com FALHAS citadas, sem refazer o trabalho dele.",
+   "delega": false,
+   "ferramentas": [
+    "Leitura de arquivos",
+    "Mídia paga (leitura)"
+   ],
+   "tarefas": [
+    {
+     "nome": "auditoria_midia",
+     "ordem": 11
+    }
+   ]
+  },
+  {
    "chave": "diretor_arte",
    "papel": "Diretor(a) de Arte e Briefing Criativo",
    "objetivo": "Traduzir mensagens e copies em direção visual executável: conceito criativo, briefing por peça, especificações técnicas por formato e prompts de geração de imagem alinhados ao brand book de {cliente}, prontos para um designer humano ou ferramenta de geração.",
@@ -172,14 +188,14 @@
    "tarefas": [
     {
      "nome": "direcao_arte",
-     "ordem": 11
+     "ordem": 12
     }
    ]
   },
   {
    "chave": "analista_dados",
    "papel": "Analista de Dados e Performance de Marketing",
-   "objetivo": "Garantir que tudo o que a crew produz seja mensurável e medido: plano de medição (KPIs, eventos, UTMs, conversões, dashboard), checklist de rastreamento antes de G3 e relatórios de performance com insights e recomendações priorizadas.",
+   "objetivo": "Garantir que tudo o que a crew produz seja mensurável e medido: plano de medição (KPIs, eventos, UTMs, conversões, dashboard), auditoria de pixel e rastreamento antes de G3 e relatórios de performance com insights, validados pelo Supervisor de Mídia Paga antes de seguir ao Account.",
    "delega": false,
    "ferramentas": [
     "Leitura de arquivos",
@@ -188,7 +204,7 @@
    "tarefas": [
     {
      "nome": "plano_medicao",
-     "ordem": 16
+     "ordem": 17
     }
    ]
   },
@@ -209,11 +225,11 @@
     },
     {
      "nome": "revisao_g2",
-     "ordem": 13
+     "ordem": 14
     },
     {
      "nome": "revisao_g3",
-     "ordem": 18
+     "ordem": 19
     }
    ]
   },
@@ -229,7 +245,7 @@
    "tarefas": [
     {
      "nome": "rubrica_qa",
-     "ordem": 12
+     "ordem": 13
     }
    ]
   },
@@ -245,11 +261,11 @@
    "tarefas": [
     {
      "nome": "pacote_publicacao",
-     "ordem": 17
+     "ordem": 18
     },
     {
      "nome": "execucao_publicacao",
-     "ordem": 21
+     "ordem": 22
     }
    ]
   }
@@ -263,27 +279,27 @@
   "portao_g2": {
    "agente": "gerente_operacoes",
    "papel": "Gerente de Operações de Marketing",
-   "ordem": 14
+   "ordem": 15
   },
   "aplicacao_g2": {
    "agente": "gerente_operacoes",
    "papel": "Gerente de Operações de Marketing",
-   "ordem": 15
+   "ordem": 16
   },
   "portao_g3": {
    "agente": "gerente_operacoes",
    "papel": "Gerente de Operações de Marketing",
-   "ordem": 19
+   "ordem": 20
   },
   "aplicacao_g3": {
    "agente": "gerente_operacoes",
    "papel": "Gerente de Operações de Marketing",
-   "ordem": 20
+   "ordem": 21
   },
   "sumario_executivo": {
    "agente": "gerente_operacoes",
    "papel": "Gerente de Operações de Marketing",
-   "ordem": 22
+   "ordem": 23
   },
   "brief_estrategico": {
    "agente": "estrategista_campanhas",
@@ -325,15 +341,20 @@
    "papel": "Gestor(a) de Mídia Paga (Search, Social e Programática)",
    "ordem": 10
   },
+  "auditoria_midia": {
+   "agente": "supervisor_midia_paga",
+   "papel": "Supervisor(a) de Mídia Paga e Performance",
+   "ordem": 11
+  },
   "direcao_arte": {
    "agente": "diretor_arte",
    "papel": "Diretor(a) de Arte e Briefing Criativo",
-   "ordem": 11
+   "ordem": 12
   },
   "plano_medicao": {
    "agente": "analista_dados",
    "papel": "Analista de Dados e Performance de Marketing",
-   "ordem": 16
+   "ordem": 17
   },
   "revisao_g1": {
    "agente": "guardiao_marca_compliance",
@@ -343,27 +364,27 @@
   "revisao_g2": {
    "agente": "guardiao_marca_compliance",
    "papel": "Guardião(ã) de Marca, Qualidade e Compliance",
-   "ordem": 13
+   "ordem": 14
   },
   "revisao_g3": {
    "agente": "guardiao_marca_compliance",
    "papel": "Guardião(ã) de Marca, Qualidade e Compliance",
-   "ordem": 18
+   "ordem": 19
   },
   "rubrica_qa": {
    "agente": "revisor_qualidade",
    "papel": "Revisor(a) de Qualidade e Rubrica de Peças",
-   "ordem": 12
+   "ordem": 13
   },
   "pacote_publicacao": {
    "agente": "coordenador_publicacao",
    "papel": "Coordenador(a) de Publicação e Distribuição",
-   "ordem": 17
+   "ordem": 18
   },
   "execucao_publicacao": {
    "agente": "coordenador_publicacao",
    "papel": "Coordenador(a) de Publicação e Distribuição",
-   "ordem": 21
+   "ordem": 22
   }
  }
 }

@@ -97,7 +97,7 @@ Briefing ──► [03 Pesquisa] ──► [04 SEO] ──► [02 Estratégia] �
 
 Cada portão (G1, G2, G3) é composto por duas tarefas: o **pedido** de aprovação, onde a execução pausa, e a
 **aplicação da decisão**, que reemite o documento para as tarefas seguintes (ver `docs/fluxos-e-handoffs.md` §8).
-A crew tem 22 tarefas no pipeline mais o relatório pós-campanha. A tarefa `rubrica_qa` (revisor de qualidade) avalia as quatro
+A crew tem 23 tarefas no pipeline mais o relatório pós-campanha. A tarefa `auditoria_midia` (Supervisor de Mídia Paga) audita o plano de mídia antes do G2, conforme a rotina em `docs/rotina-midia-paga.md`. A tarefa `rubrica_qa` (revisor de qualidade) avalia as quatro
 peças de produção antes da revisão do Guardião e do G2.
 
 Detalhes de cada tarefa, dependências (`context`) e templates de handoff em
@@ -219,7 +219,7 @@ F5                                       ███████ ▶
 ```
 marketing-operations/
 ├── README.md                      ← este documento (visão executiva)
-├── agents/                        ← fichas detalhadas dos 13 agentes
+├── agents/                        ← fichas detalhadas dos 14 agentes
 ├── pyproject.toml / uv.lock       ← padrão CrewAI (crewai run / deploy na plataforma)
 ├── knowledge/                     ← guias de identidade visual por cliente (brand_book_lookup)
 ├── docs/

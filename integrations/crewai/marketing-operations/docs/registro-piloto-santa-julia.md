@@ -210,3 +210,9 @@ G1 aprovado com "Aprovado." 56 s depois da pausa; execução seguiu para as peç
 4. Texto depois do fechamento do bloco ``` e frases de autocertificação ("seguindo rigorosamente", "todos os feedbacks foram incluídos", "não há ajustes pendentes") rejeitados.
 5. Órgãos reguladores (CFM, ANVISA, CONAR) como fonte de "dados de mercado" rejeitados no brief.
 6. `aplicacao_g1`: sem feedback humano escrito, a reemissão não pode ter menos marcações [VALIDAR] que o brief original.
+
+# Rotina de Mídia Paga e Performance parametrizada (05/10)
+Acrescentados o agente `supervisor_midia_paga` (14º) e a tarefa `auditoria_midia` (23ª do pipeline), antes da direção de arte e da rubrica; `gestor_midia_paga` e
+`analista_dados` reescritos com a rotina de Carlos André e João Araújo; parâmetros em `config/rotina_midia.yaml`. Trava do plano de mídia exige budget pace, alerta de
+90%, UTM, revisão técnica do Supervisor e alçadas. Detalhes em `docs/rotina-midia-paga.md`. Ainda não validada em execução; se o próximo piloto falhar duas
+vezes, vale a regra de rollback (base `8fa07e3`).
