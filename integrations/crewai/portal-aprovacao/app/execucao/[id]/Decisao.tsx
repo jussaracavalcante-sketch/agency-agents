@@ -22,7 +22,7 @@ function resumo(d: Decisao, portao: string | null, instrucoes: string) {
     titulo: `Reprovar o portão ${g}`,
     efeito: "A execução é encerrada no portal e não será retomada. Nada é enviado à plataforma e não há como desfazer.",
     enviado: "(nada é enviado à plataforma)",
-    aviso: instrucoes.trim() ? "O texto que você escreveu fica só neste rascunho: Reprovar não o registra nem o envia." : null,
+    aviso: instrucoes.trim() ? "Você escreveu instruções: Reprovar as guarda só como justificativa no histórico e NÃO as envia à plataforma, então nada será reescrito. Para pedir correções, cancele e use Devolver com ajustes." : null,
   };
 }
 
