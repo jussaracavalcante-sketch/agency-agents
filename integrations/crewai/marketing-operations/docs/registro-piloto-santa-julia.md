@@ -147,3 +147,27 @@ Conclusão: a rubrica funciona no formato e nas faixas, mas foi leniente e ancor
 - Brief: fonte do baseline que o briefing não cita ("análise interna", "registros internos") rejeitada.
 - Termos novos: "de ponta", "melhor escolha", "escolha preferencial", "escolha segura", "precisão e segurança", "certificações reconhecidas".
   "Premium" e "excelência" ficam fora da trava (decisão: rubrica e G2 humano).
+
+
+# Terceiro piloto com rubrica (05/10, execução `7ebd5877`, build `bc3ef896` / `5d9e3f9`)
+G1 e G2 aprovados com "Aprovado." e G3 pendente com parecer Reprovado do Guardião; publicação desligada.
+
+| Verificação | Resultado |
+|---|---|
+| Objetivo geral literal e baseline 863/343 | OK |
+| Fonte do baseline | "Relatório interno RD Station": inventada; objetivo específico de +20% de tráfego com baseline "1.000 visitas semanais" e Google Analytics: inventado |
+| Rubrica do Rui (varredura em código) | **Funcionou**: as quatro peças saíram 59 DEVOLVER (G1 em FALHA em conteúdo, calendário e mídia; G2/LGPD no e-mail), com trechos reais |
+| Guardião independente | Divergiu da rubrica (mídia "Aprovado com ajustes"); o pedido do G2 mostra os dois |
+| Parecer do G1 | "Resultado Geral: Aprovado com ajustes" com dimensão Reprovada: contraria a regra do pior resultado |
+| Peças | Ainda com "tecnologia de ponta", "infraestrutura de ponta", "referência em", "garantindo segurança", "melhor pra você": travas esgotaram as 2 tentativas e aceitaram |
+| G3 | Pedido com parecer resumido (não literal) e abertura de comentário na `aplicacao_g2` |
+
+## Melhorias (pós-rodada)
+- **Alerta de trava esgotada**: quando uma trava reprova 3 vezes, a saída é aceita com uma linha `ALERTA DE QUALIDADE` no topo com a pendência.
+  As varreduras ignoram essa linha. Os pedidos dos portões listam os alertas (instrução nos prompts) e o portal os mostra em destaque
+  na tela de aprovação (caixa vermelha e contador na lista).
+- Projeções de CPC/CTR/CVR em **lista** (além de tabela) exigem [VALIDAR].
+- "no/na melhor" e "melhor pra/para você" entram nos superlativos.
+- `revisao_g1`: o Resultado Geral precisa ser o pior entre as dimensões.
+- Abertura de conversa do agente ("Para proceder…", "Abaixo está…") rejeitada em todo documento.
+- Fica para depois: cenários de orçamento do brief somarem exatamente o total do briefing.

@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral",
 }
 
 
@@ -177,3 +177,44 @@ def test_rubrica_com_varredura_em_codigo():
     assert fab(citado)[0] is True                                                      # o trecho foi citado nos apontamentos
     reprovou = _rubrica([_OK[0].replace("G1=OK", "G1=FALHA").replace("NOTA=92", "NOTA=50").replace("APROVAR", "REFAZER")] + _OK[1:])
     assert fab(reprovou)[0] is True                                                    # G1=FALHA já reconhece o problema
+
+
+# --- rodada de 05/10 (execução 7ebd5877): melhorias ----------------------------------------------------------------------------
+def test_listas_de_projecao_e_no_melhor():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = "google ads"
+    lista = "- **Cenário Conservador:** CPC: R$ 5, CTR: 2%, CVR: 3%\n- **Cenário Realista:** CPC: R$ 4, CTR: 3%, CVR: 4%\n"
+    assert "VALIDAR" in (G._problemas_midia(lista, "Google Ads") or "")
+    assert G._problemas_midia("Premissas [VALIDAR]\n" + lista, "Google Ads") is None
+    assert G._ocorrencias_proibidas("Sempre focados no melhor pra você. Conheça-nos.")
+    assert not G._ocorrencias_proibidas("Aprender a cuidar melhor da saúde")
+
+
+def test_alerta_quando_a_trava_esgota():
+    peca = types.SimpleNamespace(raw="# Peça\n" + "x" * 800 + "\ninfraestrutura de ponta", name="producao_conteudo")
+    g = G._com_limite_de_rejeicoes(lambda s: (False, "A saída cita 'de ponta'."), maximo=2)
+    assert g(peca)[0] is False and g(peca)[0] is False
+    ok, saida = g(peca)                                                  # terceira rejeição: aceita com alerta
+    assert ok is True and isinstance(saida, str) and saida.splitlines()[0].startswith("> ⚠ ALERTA DE QUALIDADE (producao_conteudo)")
+    assert "infraestrutura de ponta" in saida
+    # a linha de alerta não conta como texto da peça nas varreduras seguintes
+    assert not G._ocorrencias_proibidas(saida.splitlines()[0])
+    assert "de ponta" in " ".join(t for t, _ in G._ocorrencias_proibidas(saida))   # o texto real continua sendo varrido
+
+
+def test_resultado_geral_e_a_pior_dimensao():
+    base = "# Parecer\n" + "x" * 800 + "\n"
+    ruim = base + "## Resultado Geral: **Aprovado com ajustes**\n### 1. Coerência com o Briefing: **Reprovada**\n- **Apontamento**: x\n### 2. Objetivos: **Aprovado**\n"
+    assert G._guardrail_parecer_geral(types.SimpleNamespace(raw=ruim))[0] is False
+    ok = base + "## Resultado Geral: **Reprovado**\n### 1. Coerência com o Briefing: **Reprovada**\n### 2. Objetivos: **Aprovado**\n"
+    assert G._guardrail_parecer_geral(types.SimpleNamespace(raw=ok))[0] is True
+    outro = base + "## Resultado Geral\n**Aprovado**\n### 1. A\n**Status:** Aprovado com ajustes\n"
+    assert G._guardrail_parecer_geral(types.SimpleNamespace(raw=outro))[0] is False
+    sem_dims = base + "Resultado Geral: Aprovado\n"
+    assert G._guardrail_parecer_geral(types.SimpleNamespace(raw=sem_dims))[0] is True
+
+
+def test_abertura_de_conversa():
+    doc = lambda ini: types.SimpleNamespace(raw=ini + "\n" + "# Registro\n" + "x" * 900)
+    assert G._guardrail_documento(doc("Para proceder corretamente com a aplicação da Decisão G2, precisamos garantir rigor"))[0] is False
+    assert G._guardrail_documento(doc("```markdown"))[0] is True
+    assert G._guardrail_documento(doc("> ⚠ ALERTA DE QUALIDADE: x"))[0] is True
