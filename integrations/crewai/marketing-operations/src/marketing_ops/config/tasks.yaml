@@ -368,7 +368,8 @@ aplicacao_g2:
     marcá-lo [VALIDAR]: é proibido declarar que algo é real, autorizado, consentido ou validado. Reemita cada peça no mesmo
     formato e extensão da original (não apenas o trecho alterado), sem notas que afirmem conformidade. Reemitir é COPIAR a peça inteira trocando só o trecho
     ajustado: conteúdo com todos os metadados e o texto completo; e-mail com segmentação, fluxos, tabelas, todos os e-mails e checklist; plano de mídia com todas
-    as seções; calendário com todas as linhas e as listas de apoio. Resumo ou esqueleto da peça é reprovado (a reemissão precisa ter ao menos 60% do tamanho da original). Ao reemitir, NÃO acrescente nenhuma afirmação nova: é proibido
+    as seções; calendário com todas as linhas e as listas de apoio. Resumo ou esqueleto da peça é reprovado (a reemissão precisa ter ao menos 60% do tamanho da original). É PROIBIDO escrever "..." ou colchetes que apontem
+    para a peça ("[O conteúdo completo original com ajustes]", "[CONTINUAÇÃO do fluxo]", "[Incluindo todas as semanas]"): isso é esqueleto, não reemissão. Ao reemitir, NÃO acrescente nenhuma afirmação nova: é proibido
     introduzir 'garantimos', 'garantindo', 'segurança', 'precisão' ou 'tecnologia de ponta' sem fonte; ajuste só remove, suaviza
     com [VALIDAR] ou mantém o texto original. Entrega sem ajuste não precisa ser reemitida. Ao final liste, por entrega, "versão reemitida" ou
     "versão original". BLOQUEIO POR RUBRICA: a aprovação "Aprovado." sem nenhum ajuste escrito pelo humano não carrega correções e
@@ -443,6 +444,8 @@ revisao_g3:
     Qualquer um desses itens torna a dimensão veracidade ou setor regulado Reprovada para a peça.
     Linhas com "ALERTA DE QUALIDADE" nas entregas indicam problema que a trava automática não conseguiu corrigir: trate o trecho citado como achado e cite-o no parecer.
     VERSÃO VIGENTE: revise a versão reemitida em aplicacao_g2 quando existir; um trecho só é achado se estiver presente nela (não cobre o que a reemissão já removeu).
+    PADRÃO PRÉ-PUBLICAÇÃO: Link "a definir após a publicação", Responsável "a definir" e Hora "a definir" são o preenchimento esperado antes de publicar, não achados;
+    a dimensão UTMs só reprova se a coluna UTM estiver vazia, "a definir" ou fora do padrão utm_source/utm_medium/utm_campaign em minúsculas.
     Escreva todo o parecer, inclusive títulos de seção e rótulos, em português do Brasil (nada de "Legal and Claim Compliance"), e copie cada trecho citado letra por letra.
   expected_output: >
     Parecer Markdown do pacote com resultado, checklist e riscos residuais.

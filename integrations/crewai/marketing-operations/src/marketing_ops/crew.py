@@ -471,12 +471,31 @@ def _pecas_encolhidas(texto, originais, minimo=0.6):
     return achadas
 
 
+_ESQUELETO = re.compile(
+    r"^\s*(\.{3}|\[\.{3}\]|…)\s*$|"
+    r"\[(o |a |os |as )?(conte[úu]do|texto|restante|continua[çc][ãa]o|incluindo|demais|inclua|inserir|repetir|manter|sem necessidade|idem|igual ao original|"
+    r"o fluxo|os e-?mails?|as semanas|calend[áa]rio completo|plano completo)[^\]]{3,}\]",
+    re.I | re.M,
+)
+
+
+def _esqueleto(texto):
+    """Trechos em que a reemissão só aponta para a peça em vez de copiá-la: "...", "[O conteúdo completo original com ajustes…]", "[CONTINUAÇÃO do fluxo…]"."""
+    return sorted({m.group(0).strip()[:70] for m in _ESQUELETO.finditer(_sem_alerta(texto or ""))})
+
+
 def _guardrail_aplicacao_g2(saida):
     """Ajuste de veracidade só remove ou marca [VALIDAR]: nunca afirma que depoimento é real ou autorizado."""
     base = _guardrail_documento(saida)
     if base[0] is False:
         return base
     texto = (getattr(saida, "raw", None) or str(saida) or "")
+    esqueleto = _esqueleto(_a_partir_da_reemissao(texto))
+    if esqueleto:
+        return False, (
+            "A reemissão é um esqueleto: " + "; ".join(f'"{e}"' for e in esqueleto[:3]) + ". Não aponte para a peça original nem resuma: copie a peça INTEIRA "
+            "(metadados, texto, tabelas, todos os e-mails e seções) com os ajustes aplicados. Peça que não precisa de ajuste não é reemitida."
+        )
     claims = _claims_proibidos(texto)
     if claims or _placeholders(texto):
         return _guardrail_sem_claims(saida)
@@ -583,6 +602,22 @@ def _feedback_do_portao(portao_texto):
     return (m.group(1).strip() if m else "")[:3000]
 
 
+def _retirar_das_liberadas(texto, nomes):
+    """Tira das linhas "Liberadas: …" (e das linhas "Versão reemitida") as peças que o saneador bloqueou, para o registro não se contradizer."""
+    chaves = [(_CHAVE_PECA.get(k) or re.escape(n)) for n in nomes for k in [_sem_acento(n.split()[0]).replace("-", "")]]
+    saida = []
+    for l in texto.splitlines():
+        if re.search(r"liberad[ao]s?\W{0,4}:", l, re.I):
+            cab, _, resto = l.partition(":")
+            itens = [i.strip() for i in re.split(r",|;", resto) if i.strip()]
+            itens = [i for i in itens if not any(re.search(rx, i, re.I) for rx in chaves)]
+            l = f"{cab}: " + (", ".join(itens) if itens else "nenhuma (ver Reemissão incompleta)")
+        elif re.search(r"vers[ãa]o reemitida", l, re.I) and any(re.search(rx, l, re.I) for rx in chaves):
+            l = re.sub(r"vers[ãa]o reemitida", "versão original, BLOQUEADA (reemissão incompleta)", l, flags=re.I)
+        saida.append(l)
+    return "\n".join(saida)
+
+
 def _saneador_aplicacao_g2_factory(portao_task, originais=None):
     """
     Última barreira da aplicação do G2. Saída curta ou que "não conseguiu ler o feedback" não pode seguir adiante como se as peças tivessem
@@ -603,8 +638,15 @@ def _saneador_aplicacao_g2_factory(portao_task, originais=None):
                 novo = novo.rstrip() + "\n\n### Plano de mídia: seções da rotina (inseridas automaticamente)\n" + _secoes_rotina_midia(plano) + "\n"
                 trocas.append("seções da rotina de mídia")
             encolhidas = _pecas_encolhidas(novo, originais)
+            if _esqueleto(_a_partir_da_reemissao(novo)):
+                ja = {n for n, _ in encolhidas}
+                for nome, (rx, _t) in (originais or {}).items():
+                    trecho = _trecho_calendario_reemitido(novo) if "calend" in rx else _trecho_reemitido(novo, rx)
+                    if nome not in ja and trecho and _esqueleto(trecho):
+                        encolhidas.append((nome, 0))
             if encolhidas:
                 nomes = ", ".join(n for n, _ in encolhidas)
+                novo = _retirar_das_liberadas(novo, [n for n, _ in encolhidas])
                 novo = novo.rstrip() + (
                     "\n\n### Reemissão incompleta (inserida automaticamente)\n"
                     f"Bloqueadas: {nomes}. A reemissão perdeu partes da peça original (seções, metadados, e-mails ou tabelas): mantenha a versão original e reaplique "
@@ -782,7 +824,8 @@ _CLAIMS_PROIBIDOS = re.compile(
     r"recupera[çc][ãa]o|lgpd|conformidade|ader[êe]ncia|atendimento|cuidado|diagn[óo]stico|tratamento)",
     re.I,
 )
-_LINHA_NEUTRA = re.compile(r"\[VALIDAR|\bsem (usar )?depoimento|proibid|n[ãa]o (use|usar|incluir|propor|citar)|evitar|^\s*[-*]\s*(\[[ xX]\]\s*)?garantir\b", re.I)
+_LINHA_NEUTRA = re.compile(r"\[VALIDAR|\bsem (usar )?depoimento|proibid|n[ãa]o (use|usar|incluir|propor|citar)|evitar|^\s*[-*]\s*(\[[ xX]\]\s*)?garantir\b|"
+                           r"garant\w+[^.\n]{0,40}(acessibilidade|contraste|wcag|leitura assistiva|alt text|carregamento)", re.I)
 
 
 _PLACEHOLDERS = re.compile(
@@ -793,7 +836,9 @@ _PLACEHOLDERS = re.compile(
     # autocertificação de conformidade e afirmação de que não há pendência
     r"seguindo rigorosamente|(foi|foram) (criad|elaborad|redigid)\w+ seguindo|em total conformidade|"
     r"todas as (propostas|valida[çc][õo]es|corre[çc][õo]es) foram|n[ãa]o h[áa] ajustes pendentes|todos os feedbacks[^.\n]{0,40}(considerad|inclu[íi]d)|"
-    r"todos os elementos foram|(foi|foram) (desenvolvid|produzid|constru[íi]d)\w+ em conformidade|respeitando a linguagem de",
+    r"todos os elementos foram|(foi|foram) (desenvolvid|produzid|constru[íi]d)\w+ em conformidade|respeitando a linguagem de|"
+    r"acreditamos que|est[áa] pronto para (a )?(aprova[çc][ãa]o|execu[çc][ãa]o)|caminho est[áa] pronto|com os ajustes realizados|"
+    r"este plano prop[õo]e|este parecer serve|este documento (foi|serve|segue)",
     re.I,
 )
 
@@ -1131,9 +1176,10 @@ def _posts_da_tabela(texto):
 def _bloqueadas_do_g2(aplicacao):
     """Texto da lista de entregas bloqueadas da aplicação do G2 (na mesma linha ou nos itens que seguem); vazio se não houver."""
     linhas = _sem_alerta(aplicacao or "").splitlines()
+    coletado = []
     for i, l in enumerate(linhas):
         if re.search(r"entregas? bloquead|bloquead[ao]s?\W{0,4}:", l, re.I):
-            coletado = [l.split(":", 1)[1] if ":" in l else ""]
+            coletado.append(l.split(":", 1)[1] if ":" in l else "")
             for prox in linhas[i + 1:]:
                 if prox.strip().startswith(("-", "*")):
                     coletado.append(prox)
@@ -1141,8 +1187,7 @@ def _bloqueadas_do_g2(aplicacao):
                     continue
                 else:
                     break
-            return "\n".join(coletado)
-    return ""
+    return "\n".join(coletado)
 
 
 def _linhas_social(texto):
@@ -1239,7 +1284,8 @@ def _saneador_pacote_factory(calendario_task, aplicacao_task):
         nao_executada = "não executada" in aplicacao.lower() and "nenhuma peça foi reemitida" in aplicacao.lower()
         if nao_executada or re.search(r"calend", _bloqueadas_do_g2(aplicacao), re.I):
             return texto, []
-        posts = _linhas_do_calendario(_trecho_calendario_reemitido(aplicacao) or original)
+        reemitido = _trecho_calendario_reemitido(aplicacao)
+        posts = _linhas_do_calendario(reemitido if _posts_da_tabela(reemitido) else original)
         if not posts:
             return texto, []
         linhas = ["| Data | Hora | Fuso | Canal | Peça | Link | UTM | Responsável | Status |", "|---|---|---|---|---|---|---|---|---|"]
@@ -1300,7 +1346,8 @@ def _guardrail_pacote_factory(calendario_task, aplicacao_task):
                 "O calendário social está entre as entregas bloqueadas em aplicacao_g2: o cronograma não pode listar posts de rede social. "
                 "Liste só e-mail e artigo liberados, ou escreva que não há post liberado."
             )
-        vigente = _trecho_calendario_reemitido(aplicacao) or original
+        reemitido = _trecho_calendario_reemitido(aplicacao)
+        vigente = reemitido if _posts_da_tabela(reemitido) else original  # reemissão sem tabela (esqueleto) não é calendário: vale o original
         posts_vigentes = _posts_da_tabela(vigente)
         if posts_vigentes and not calendario_bloqueado:
             do_pacote = _posts_da_tabela(texto)
@@ -1347,7 +1394,12 @@ def _guardrail_pacote_factory(calendario_task, aplicacao_task):
 
 
 def _datas_do_texto(texto):
-    return set(re.findall(r"\b\d{2}/\d{2}/20\d{2}\b", texto or ""))
+    """Datas do texto normalizadas em dd/mm/aaaa (aceita também aaaa-mm-dd), só as com ano explícito."""
+    t = texto or ""
+    achadas = set(re.findall(r"\b\d{2}/\d{2}/20\d{2}\b", t))
+    for a, m, d in re.findall(r"\b(20\d{2})-(\d{2})-(\d{2})\b", t):
+        achadas.add(f"{d}/{m}/{a}")
+    return achadas
 
 
 _FONTE_INTERNA = re.compile(
@@ -1636,7 +1688,8 @@ def _guardrail_rubrica(saida):
     return True, saida
 
 
-_CANAIS_PAGOS = ("meta ads", "linkedin ads", "tiktok ads", "youtube ads", "microsoft ads", "pinterest ads", "twitter ads", "display", "programática")
+_CANAIS_PAGOS = ("meta ads", "linkedin ads", "tiktok ads", "youtube ads", "youtube", "pmax", "performance max", "demand gen", "discovery", "microsoft ads",
+                 "pinterest ads", "twitter ads", "display", "programática")
 _LINHA_PROJECAO = re.compile(
     r"^\|\s*(?P<nome>[^|]+?)\s*\|\s*R\$\s*(?P<cpc>[\d.]+(?:,\d+)?)\s*\|\s*(?P<ctr>[\d.,]+)\s*%\s*\|\s*(?P<cvr>[\d.,]+)\s*%\s*\|\s*(?P<conv>\d[\d.]*)\s*\|?\s*$",
     re.M,
@@ -1673,9 +1726,13 @@ def _orcamento_de_historico(texto):
         if _MARCA_HISTORICO.search(l):
             historico |= {_num(x) for x in re.findall(r"R\$\s*([\d.]+(?:,\d+)?)", l)}
     historico = {h for h in historico if h and h >= 100}
+    aprovados = {_num(x) for k in ("orcamento_midia", "orcamento_total") for x in re.findall(r"R\$\s*([\d.]+(?:,\d+)?)", str(_INPUTS_ATUAIS.get(k, "")))}
     for l in linhas:
-        if re.search(r"or[çc]amento|verba", l, re.I) and not _MARCA_HISTORICO.search(l):
-            achados = {_num(x) for x in re.findall(r"R\$\s*([\d.]+(?:,\d+)?)", l)} & historico
+        if re.search(r"or[çc]amento|verba", l, re.I):
+            valores = {_num(x) for x in re.findall(r"R\$\s*([\d.]+(?:,\d+)?)", l)}
+            if _MARCA_HISTORICO.search(l) and (valores & aprovados or not re.match(r"^\W{0,6}\**\s*(or[çc]amento|verba)", l.strip(), re.I)):
+                continue  # linha que traz a verba aprovada e cita o histórico, ou menção ao histórico fora do rótulo de orçamento
+            achados = valores & historico if not _MARCA_HISTORICO.search(l) else {v for v in valores if v and v >= 100}
             if achados:
                 total = str(_INPUTS_ATUAIS.get("orcamento_midia", "") or "o orçamento do briefing")
                 return (
@@ -1962,7 +2019,7 @@ def _dimensoes_incoerentes(parecer):
             if re.search(r"coer", _normalizar(cab)) and objetivo and any(objetivo in q for q in citados) and re.search(
                     r"diverg|difere|n[ãa]o corresponde|est[áa] conforme|est[áa] alinhad|id[êe]ntic|igual ao briefing|foi mantido", ncorpo):
                 achados.append(cab.strip("# ").strip()[:70] + " (o trecho citado é idêntico ao objetivo do briefing)")
-            elif citados and all((q.startswith("validar") and len(q) < 40) or (objetivo and objetivo in q) for q in citados):
+            elif citados and all((q.startswith("validar") and len(q) < 40) or q.startswith("a definir") or (objetivo and objetivo in q) for q in citados):
                 achados.append(cab.strip("# ").strip()[:70] + " (só cita trechos já marcados [VALIDAR] ou o objetivo do briefing)")
     return achados
 
@@ -2004,7 +2061,7 @@ def _guardrail_parecer_factory(fontes):
         if inc:
             return False, (
                 f"A dimensão '{inc[0]}' está Reprovada, mas o próprio apontamento diz que está correta, ou só cita o objetivo do briefing (que está "
-                "correto) e trechos já marcados [VALIDAR] (pendência humana, não erro). Se não há problema a corrigir, o status não pode ser Reprovado; "
+                "correto), trechos já marcados [VALIDAR] (pendência humana, não erro) ou \"a definir\" (padrão antes da publicação). Se não há problema a corrigir, o status não pode ser Reprovado; "
                 "se há, descreva o problema com o trecho literal que está errado."
             )
         sem_trecho = _reprovadas_sem_trecho(texto)
