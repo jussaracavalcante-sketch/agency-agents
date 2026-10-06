@@ -288,6 +288,24 @@ def _linha_em_ingles(texto):
     return ""
 
 
+_NOTA_FINAL = re.compile(r"^[\s>*_-]*(nota|observa[çc][ãa]o|obs\.?|aviso|coment[áa]rio)\s*[:：]", re.I)
+_MARCADOR_MALFORMADO = re.compile(r"\[\s*VALIDAR\s+(?!M[ÉE]DICO\s*\])[^\]:]{1,40}\]", re.I)
+
+
+def _nota_final(texto):
+    """Última linha do documento quando é uma nota do agente ("**Nota:** algumas seções requerem confirmação…"); vazio se não houver."""
+    linhas = [l for l in _sem_alerta(texto or "").splitlines() if l.strip() and l.strip() != "```"]
+    if not linhas:
+        return ""
+    ultima = linhas[-1].strip()
+    return ultima[:90] if _NOTA_FINAL.match(ultima) and not ultima.startswith("|") else ""
+
+
+def _marcadores_malformados(texto):
+    """Marcadores inventados a partir de [VALIDAR] ("[VALIDAR NOS UM]", "[VALIDAR URGENTE]"): só existem [VALIDAR], [VALIDAR MÉDICO] e [VALIDAR: motivo]."""
+    return sorted({m.group(0) for m in _MARCADOR_MALFORMADO.finditer(_sem_alerta(texto or ""))})
+
+
 def _guardrail_documento(saida):  # sem anotação de retorno: o validador do CrewAI a compara com tipos reais
     """
     Rejeita a saída de uma tarefa de documento quando ela é uma desculpa em vez de entrega: curta demais ou
@@ -305,6 +323,17 @@ def _guardrail_documento(saida):  # sem anotação de retorno: o validador do Cr
     if ingles:
         return False, (
             f"A saída tem frase em inglês (\"{ingles}\"). Escreva tudo em português do Brasil, só o documento, sem introdução nem fechamento em outro idioma."
+        )
+    nota = _nota_final(texto)
+    if nota:
+        return False, (
+            f"O documento termina com uma nota do agente (\"{nota}\"). Entregue só o documento: a última linha é a última seção, sem nota, "
+            "observação ou aviso sobre pendências (as pendências já estão marcadas [VALIDAR] no texto)."
+        )
+    malformados = _marcadores_malformados(texto)
+    if malformados:
+        return False, (
+            "Marcador inválido: " + ", ".join(malformados) + ". Os únicos marcadores são [VALIDAR], [VALIDAR MÉDICO] e [VALIDAR: motivo]."
         )
     pt_pt = _portugues_de_portugal(texto)
     if pt_pt:
@@ -648,6 +677,17 @@ def _limpar_final(texto):
         else:
             saida.append(linha)
     novo = "\n".join(saida)
+    if _marcadores_malformados(novo):
+        novo = _MARCADOR_MALFORMADO.sub("[VALIDAR]", novo)
+        feitos.append("marcador inválido normalizado para [VALIDAR]")
+    if _nota_final(novo):
+        linhas_doc = novo.splitlines()
+        for i in range(len(linhas_doc) - 1, -1, -1):
+            if linhas_doc[i].strip() and linhas_doc[i].strip() != "```":
+                del linhas_doc[i]
+                break
+        novo = "\n".join(linhas_doc)
+        feitos.append("nota final do agente removida")
     if _portugues_de_portugal(novo):
         def _tela(m):  # "no ecrã" vira "na tela": o gênero muda junto com o artigo
             art = _ECRA_ARTIGO[m.group(1).lower()]
@@ -737,7 +777,7 @@ _CLAIMS_PROIBIDOS = re.compile(
     r"diagn[óo]sticos? precis\w+|tratamentos? eficaz\w*|(confian[çc]a|seguran[çc]a) em cada (diagn[óo]stico|tratamento)|"
     r"(que nos torna|que faz d[oa] [\w ]{2,30}) uma refer[êe]ncia|\buma refer[êe]ncia\b|"
     r"\bde ponta\b(?! a ponta)|melhor escolha|escolha preferencial|escolha segura|precis[ãa]o e seguran[çc]a|"
-    r"certifica[çc][õo]es? reconhecid\w+|"
+    r"certifica[çc][õo]es? reconhecid\w+|guia definitivo|"
     r"garant\w+[^.\n]{0,60}(precis[ãa]o|seguran[çc]a|excel[êe]ncia|qualidade|efici[êe]ncia|resultados?|cura|"
     r"recupera[çc][ãa]o|lgpd|conformidade|ader[êe]ncia|atendimento|cuidado|diagn[óo]stico|tratamento)",
     re.I,
@@ -1386,8 +1426,35 @@ def _sanear_brief(texto):
         if _PLACEHOLDERS.search(linha) and not l.startswith("|"):
             trocas.append("nota de conformidade")
             continue
+        if _valores_rs_inventados(linha, _normalizar(_TEXTO_PERMITIDO["texto"])):
+            trocas.append("valor em R$ não informado")
+            linha = _acrescentar_marca(linha, "[VALIDAR]")
         saida.append(linha)
     return "\n".join(saida), trocas
+
+
+def _numeros_informados(permitido):
+    """Números (sem R$) que o briefing e a base do cliente trazem, para conferir valores do brief."""
+    nums = set(re.findall(r"\d[\d.]*(?:,\d+)?", permitido or ""))
+    for v in _INPUTS_ATUAIS.values():
+        nums |= set(re.findall(r"\d[\d.]*(?:,\d+)?", str(v)))
+    return {n.strip(".,") for n in nums}
+
+
+def _valores_rs_inventados(texto, permitido):
+    """Valores "R$ N" em linha sem [VALIDAR] que não constam do briefing, dos inputs nem da base do cliente."""
+    if not permitido and not _INPUTS_ATUAIS:
+        return []
+    informados = _numeros_informados(permitido)
+    achados = []
+    for linha in _sem_alerta(texto or "").splitlines():
+        if "[validar" in linha.lower():
+            continue
+        for n in re.findall(r"R\$\s*(\d[\d.]*(?:,\d+)?)", linha):
+            n = n.strip(".,")
+            if n not in informados and _num(n) and _num(n) >= 100:
+                achados.append(f"R$ {n}")
+    return sorted(set(achados))
 
 
 def _guardrail_brief(saida):
@@ -1440,6 +1507,12 @@ def _guardrail_brief(saida):
         return False, (
             "O brief traz percentuais que não constam do briefing nem da base do cliente: " + ", ".join(sorted(set(pct))) + ". Metas, hipóteses "
             "e divisões de orçamento com número novo são premissas: escreva [VALIDAR] na mesma linha ou retire o número."
+        )
+    inventados_rs = _valores_rs_inventados(texto, permitido)
+    if inventados_rs:
+        return False, (
+            "O brief traz valores em R$ que o briefing não informa e que estão sem [VALIDAR]: " + ", ".join(inventados_rs) + ". O briefing só traz o "
+            "orçamento total e a verba de mídia; qualquer divisão, estimativa ou gasto adicional é premissa: escreva [VALIDAR] na mesma linha ou retire o valor."
         )
     for chave in ("orcamento_midia", "orcamento_total"):
         valor = str(_INPUTS_ATUAIS.get(chave, ""))
@@ -1887,6 +1960,28 @@ def _dimensoes_incoerentes(parecer):
     return achados
 
 
+def _reprovadas_sem_trecho(parecer):
+    """Dimensões ou entregas Reprovadas cujo bloco não cita nenhum trecho entre aspas: pela regra de evidência, apontamento sem trecho não existe."""
+    blocos, atual = [], None
+    for l in _sem_alerta(parecer).splitlines():
+        if re.match(r"\s*#{2,4}\s*\S", l):
+            atual = [l, []]
+            blocos.append(atual)
+        elif atual is not None:
+            atual[1].append(l)
+    achados = []
+    for cab, linhas in blocos:
+        corpo = "\n".join(linhas)
+        ncab = _normalizar(cab)
+        if re.search(r"resultado|resumo|risco|quadro|recomenda|conclus", ncab):
+            continue
+        dimensao = re.match(r"\s*#{2,4}\s*\d+[.)]", cab) or re.search(r"status|resultado", _normalizar(corpo))
+        reprovada = "reprovad" in ncab or re.search(r"(status|resultado)\W{0,8}reprovad", _normalizar(corpo))
+        if dimensao and reprovada and not re.search(r"[\"“«]([^\"”»\n]{10,})[\"”»]", corpo):
+            achados.append(cab.strip("# ").strip()[:70])
+    return achados
+
+
 def _guardrail_parecer_factory(fontes):
     """
     Parecer do Guardião: (1) Resultado Geral = pior dimensão, (2) dimensão Reprovada não pode dizer que está correta, (3) todo trecho
@@ -1903,6 +1998,12 @@ def _guardrail_parecer_factory(fontes):
             return False, (
                 f"A dimensão '{inc[0]}' está Reprovada, mas o próprio apontamento diz que está correta (nenhuma correção necessária). "
                 "Se não há problema a corrigir, o status não pode ser Reprovado; se há, descreva o problema com o trecho literal."
+            )
+        sem_trecho = _reprovadas_sem_trecho(texto)
+        if sem_trecho:
+            return False, (
+                f"A dimensão '{sem_trecho[0]}' está Reprovada sem citar nenhum trecho literal entre aspas. Pela regra de evidência, apontamento sem trecho "
+                "não existe: cite o trecho exato do documento que motiva a reprovação ou mude o status."
             )
         revisado = "\n".join(getattr(getattr(t, "output", None), "raw", None) or "" for t in fontes) + "\n" + _TEXTO_PERMITIDO["texto"]
         if revisado.strip():
