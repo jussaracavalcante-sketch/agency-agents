@@ -361,3 +361,13 @@ Correções:
 - Claims: "guia definitivo" barrado. Calendário: hook deve ser frase completa com sujeito e verbo.
 
 Verificação: 68 testes; crew carregada com o CrewAI 1.15.23 em venv local (14 agentes, 23 tarefas, 23 guardrails, 3 portões com human_input), `before_kickoff` com o briefing de 17 campos, interpolação de todas as tarefas sem placeholder faltando; portal com `tsc` limpo e produção na Vercel em `main` 67b4463.
+
+## Décimo quinto disparo (execução af286084, build 092fd05b, commit b454dd2)
+
+Decisões: nº 53 G1 devolver (display, run-rate como histórico, Fontes); nº 54 G1 aprovar; nº 55 G2 aprovar (sem análise prévia); nº 56 G3 reprovar. Nada publicado.
+
+Funcionou: aplicação do G1 aplicou os três ajustes; rubrica equilibrada (conteúdo 91); travas novas atuaram (reemissão resumida bloqueada, inglês após o documento removido, citação inexistente do Guardião no G3 acusada); pacote com Peça e UTM por post e hora "a definir".
+
+Falhou: `aplicacao_g2` entregou esqueleto ("[O conteúdo completo original com ajustes…]", "...") e manteve "Liberadas" contraditório; pacote montou cronograma sem calendário vigente válido (reemissão sem tabela) com datas ISO não comparadas; plano de mídia com "PMax e YouTube" e run-rate como orçamento na mesma linha; Guardião do G3 reprovou UTM por "a definir após a publicação"; alerta falso na seção Fontes ("Este"); coerência reprovada com objetivo conforme; autoavaliação final no brief.
+
+Correções (este PR): esqueleto de reemissão reprovado e, na última tentativa, peça retirada das liberadas; todas as listas "Bloqueadas" lidas; pacote usa o calendário original quando a reemissão não tem tabela e compara datas ISO; PMax/Performance Max/YouTube/Demand Gen como canais fora do brief; run-rate rotulado como orçamento reprovado; "a definir" não sustenta reprovação do Guardião (prompt e código); autoavaliação final barrada; "garanta aderência à acessibilidade" não é claim; início de frase na seção Fontes não é nome próprio. 73 testes.

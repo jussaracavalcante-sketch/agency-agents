@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_limpar_final", "_trecho_em_ingles", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_linhas_do_calendario", "_saneador_pacote_factory", "_REDES", "_HORA_COM_FUSO_COLADO", "_posts_da_tabela", "_bloqueadas_do_g2", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario", "_trechos_entre_aspas", "_fim_do_documento", "_PALAVRAS_TITULO_EN", "_PT_PT", "_PT_PT_RE", "_titulo_em_ingles", "_portugues_de_portugal", "_linhas_do_cronograma", "_problemas_cronograma", "_tamanho_util", "_pecas_encolhidas", "_MARCA_HISTORICO", "_orcamento_de_historico", "_ECRA_COM_ARTIGO", "_ECRA_ARTIGO", "_NOTA_FINAL", "_MARCADOR_MALFORMADO", "_nota_final", "_marcadores_malformados", "_numeros_informados", "_valores_rs_inventados", "_reprovadas_sem_trecho",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_limpar_final", "_trecho_em_ingles", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_linhas_do_calendario", "_saneador_pacote_factory", "_REDES", "_HORA_COM_FUSO_COLADO", "_posts_da_tabela", "_bloqueadas_do_g2", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario", "_trechos_entre_aspas", "_fim_do_documento", "_PALAVRAS_TITULO_EN", "_PT_PT", "_PT_PT_RE", "_titulo_em_ingles", "_portugues_de_portugal", "_linhas_do_cronograma", "_problemas_cronograma", "_tamanho_util", "_pecas_encolhidas", "_MARCA_HISTORICO", "_orcamento_de_historico", "_ECRA_COM_ARTIGO", "_ECRA_ARTIGO", "_NOTA_FINAL", "_MARCADOR_MALFORMADO", "_nota_final", "_marcadores_malformados", "_numeros_informados", "_valores_rs_inventados", "_reprovadas_sem_trecho", "_PALAVRAS_COMUNS", "_ESQUELETO", "_esqueleto", "_retirar_das_liberadas",
 }
 
 
@@ -1031,3 +1031,60 @@ def test_dimensao_reprovada_sem_trecho_literal():
     g2 = "## 1. Produção de Conteúdo\n### Parecer\n- **Resultado:** Reprovado\n- **Trechos Problemáticos Citados:**\n  - \"garantir cuidados eficazes\"\n### Correção Sugerida\n- Remover.\n"
     assert G._reprovadas_sem_trecho(g2) == []
     assert G._claims_proibidos("Guia Definitivo para escolher um hospital") and not G._claims_proibidos("Guia para escolher um hospital")
+
+
+def test_fontes_nao_confunde_inicio_de_frase_com_nome_proprio():
+    G._TEXTO_PERMITIDO["texto"] = "briefing: Nekt Refined, RD Station, Guia de Identidade Visual"
+    assert G._fontes_nao_informadas("## Fontes\n- Nekt Refined\n- RD Station\nEste documento usa apenas as fontes acima. Todos os dados conferidos.") == []
+    assert G._fontes_nao_informadas("## Fontes\n- Relatório Datafolha 2025") == ["Datafolha"]
+    G._TEXTO_PERMITIDO["texto"] = ""
+
+
+def test_guardiao_nao_reprova_coerencia_com_objetivo_conforme_nem_so_por_validar():
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["objetivo"] = "Gerar 400 contatos qualificados em 8 semanas"
+    p = ("### 1. Coerência com o Briefing\n- **Status:** Reprovado\n- **Apontamento:** O objetivo do brief está conforme o briefing: \"Gerar 400 contatos qualificados em 8 semanas\". "
+         "No entanto, o trecho cita a fonte \"[VALIDAR: fonte]\" que não foi mencionada.\n")
+    inc = G._dimensoes_incoerentes(p)
+    assert inc and "Coerência" in inc[0]
+    ok = "### 1. Coerência com o Briefing\n- **Status:** Reprovado\n- **Apontamento:** O brief traz \"Gerar 500 contatos em 6 semanas\", diferente do briefing.\n"
+    assert G._dimensoes_incoerentes(ok) == []
+    G._INPUTS_ATUAIS.clear()
+
+
+def test_reemissao_esqueleto_e_barrada_e_liberadas_corrigidas():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+    registro = "# Registro G2\n" + "Decisão e ajustes registrados para cada entrega do pacote. " * 12 + "\n- **Liberadas:** Conteúdo, Calendário Social, Fluxos de E-mail, Direção de Arte\n- **Bloqueadas:** Plano de Mídia\n"
+    esq = registro + "## Parte B\n### Peça reemitida: Conteúdo\n...\n[O conteúdo completo original com ajustes de indicação de fonte]\n\n### Peça reemitida: Fluxos de E-mail\nAssunto: Olá\n[CONTINUAÇÃO do fluxo de e-mail original, aplicando ajustes]\n\n- **Conteúdo:** Versão reemitida\n"
+    r = G._guardrail_aplicacao_g2(_saida(esq))
+    assert r[0] is False and "esqueleto" in r[1]
+    assert G._esqueleto("Caro [Nome do Paciente], veja [VALIDAR] e [AVAL ESPECIALISTA].") == []
+    originais = {"Conteúdo longo": (r"conte[úu]do", _tarefa(_CONTEUDO_COMPLETO)), "Fluxos de e-mail": (r"e-?mail", _tarefa(_EMAIL_COMPLETO))}
+    novo, trocas = G._saneador_aplicacao_g2_factory(_tarefa("# Histórico\nAjustes pedidos: x"), originais)(esq)
+    assert "Bloqueadas: Conteúdo longo, Fluxos de e-mail" in novo
+    lib = next(l for l in novo.splitlines() if "Liberadas" in l)
+    assert "Conteúdo" not in lib and "E-mail" not in lib and "Calendário Social" in lib and "Direção de Arte" in lib
+    assert "versão original, BLOQUEADA" in novo
+    assert "conte" in G._bloqueadas_do_g2(novo).lower() and "mídia" in G._bloqueadas_do_g2(novo).lower()   # todas as listas de bloqueadas
+
+
+def test_pacote_usa_o_original_quando_o_calendario_reemitido_e_esqueleto_e_le_datas_iso():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+    cal_iso = _CAL_8.replace("01/11/2026", "2026-11-01")
+    assert ("01/11/2026", "instagram") in G._posts_da_tabela(cal_iso) and "01/11/2026" in G._datas_do_texto(cal_iso)
+    apl = _tarefa("### Entregas Bloqueadas:\n- Plano de Mídia\n## Parte B\n### Peça reemitida: Calendário Social\n- Semana 1: Post 1 [VALIDAR]\n[Incluindo todas as semanas da campanha]\n")
+    g = G._guardrail_pacote_factory(_tarefa(cal_iso), apl)
+    r = g(_post_cron([f"| 2026-10-06 | a definir | America/Manaus | Instagram | Carrossel – post {i} | a definir após a publicação | utm_source=instagram&utm_medium=social&utm_campaign=c | a definir | A definir |" for i in range(3)]))
+    assert r[0] is False and ("não tem" in r[1] or "TODAS" in r[1])
+
+
+def test_canais_novos_run_rate_como_orcamento_e_autoavaliacao():
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["orcamento_midia"] = "R$ 15.000 [VALIDAR]"; G._TEXTO_PERMITIDO["texto"] = ""
+    brief = "Mix: Google Ads (busca). Orçamento de mídia R$ 15.000."
+    assert "pmax" in (G._problemas_midia("## Campanhas: Pesquisa, PMax e YouTube", brief) or "")
+    r = G._problemas_midia("## Orçamento e Lances\n- **Orçamento Google Ads**: R$ 11.654 referenciado pelo gasto histórico.\n")
+    assert r and "gasto histórico" in r
+    assert G._problemas_midia("- **Orçamento Google Ads**: parte dos R$ 15.000 [VALIDAR]; gasto histórico de R$ 11.654 em 90 dias como referência.\n") is None
+    assert G._placeholders("Com os ajustes realizados, acreditamos que o caminho está pronto para aprovação.")
+    assert not G._claims_proibidos("Antes da finalização, garanta aderência aos critérios de acessibilidade AA.")
+    assert G._dimensoes_incoerentes("### 3. UTMs Conformes\n- **Status:** Reprovado\n- **Observações:** Os links permanecem indefinidos, \"a definir após a publicação\".\n")
+    G._INPUTS_ATUAIS.clear()
