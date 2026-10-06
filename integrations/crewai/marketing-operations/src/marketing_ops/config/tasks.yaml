@@ -164,7 +164,7 @@ portao_g1:
 
 aplicacao_g1:
   description: >
-    APLICAÇÃO DO FEEDBACK HUMANO DO G1. Esta tarefa só executa quando o aprovador DEVOLVEU o portão com ajustes escritos. Reemita o BRIEF
+    APLICAÇÃO DO FEEDBACK HUMANO DO G1. Se o histórico de feedbacks humanos do portão disser "Nenhum feedback humano recebido" (aprovação sem ajustes), responda somente: SEM AJUSTES. (o sistema mantém a versão corrigida; não reescreva nada). Só reescreva quando o aprovador DEVOLVEU o portão com ajustes escritos. Reemita o BRIEF
     ESTRATÉGICO COMPLETO de "{briefing_titulo}", com as 9 seções do template (Contexto e desafio; Objetivos SMART e KPI norteador; Público e personas;
     Proposta de valor e matriz de mensagens persona x etapa do funil; Mix de canais e papel no funil;
     Orçamento em tabela com canal, percentual, valor, justificativa e KPI; Hipóteses e plano de teste;
@@ -475,7 +475,7 @@ portao_g2:
 
 aplicacao_g2_conteudo:
   description: >
-    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em o conteúdo longo. Esta tarefa só executa quando o aprovador DEVOLVEU o portão com ajustes escritos.
+    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em o conteúdo longo. Se o histórico de feedbacks humanos do portão disser "Nenhum feedback humano recebido" (aprovação sem ajustes), responda somente: SEM AJUSTES. (o sistema mantém a versão corrigida; não reescreva nada). Só reescreva quando o aprovador DEVOLVEU o portão com ajustes escritos.
     Parta da versão corrigida que está no contexto e aplique APENAS os ajustes do feedback humano transcrito no pedido do portão G2 que se
     referem a esta peça (se nenhum se referir a ela, reemita-a igual, inteira). REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
     trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
@@ -489,7 +489,7 @@ aplicacao_g2_conteudo:
 
 aplicacao_g2_calendario:
   description: >
-    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em o calendário social. Esta tarefa só executa quando o aprovador DEVOLVEU o portão com ajustes escritos.
+    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em o calendário social. Se o histórico de feedbacks humanos do portão disser "Nenhum feedback humano recebido" (aprovação sem ajustes), responda somente: SEM AJUSTES. (o sistema mantém a versão corrigida; não reescreva nada). Só reescreva quando o aprovador DEVOLVEU o portão com ajustes escritos.
     Parta da versão corrigida que está no contexto e aplique APENAS os ajustes do feedback humano transcrito no pedido do portão G2 que se
     referem a esta peça (se nenhum se referir a ela, reemita-a igual, inteira); todas as datas em dd/mm/aaaa, no ano corrente ou seguinte, todas as semanas. REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
     trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
@@ -503,7 +503,7 @@ aplicacao_g2_calendario:
 
 aplicacao_g2_email:
   description: >
-    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em os fluxos de e-mail. Esta tarefa só executa quando o aprovador DEVOLVEU o portão com ajustes escritos.
+    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em os fluxos de e-mail. Se o histórico de feedbacks humanos do portão disser "Nenhum feedback humano recebido" (aprovação sem ajustes), responda somente: SEM AJUSTES. (o sistema mantém a versão corrigida; não reescreva nada). Só reescreva quando o aprovador DEVOLVEU o portão com ajustes escritos.
     Parta da versão corrigida que está no contexto e aplique APENAS os ajustes do feedback humano transcrito no pedido do portão G2 que se
     referem a esta peça (se nenhum se referir a ela, reemita-a igual, inteira). REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
     trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
@@ -517,7 +517,7 @@ aplicacao_g2_email:
 
 aplicacao_g2_midia:
   description: >
-    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em o plano de mídia paga. Esta tarefa só executa quando o aprovador DEVOLVEU o portão com ajustes escritos.
+    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em o plano de mídia paga. Se o histórico de feedbacks humanos do portão disser "Nenhum feedback humano recebido" (aprovação sem ajustes), responda somente: SEM AJUSTES. (o sistema mantém a versão corrigida; não reescreva nada). Só reescreva quando o aprovador DEVOLVEU o portão com ajustes escritos.
     Parta da versão corrigida que está no contexto e aplique APENAS os ajustes do feedback humano transcrito no pedido do portão G2 que se
     referem a esta peça (se nenhum se referir a ela, reemita-a igual, inteira); a verba de mídia ({orcamento_midia}) é só dos canais pagos do brief e toda projeção leva [VALIDAR]; mantenha as seções da rotina. REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
     trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
@@ -531,7 +531,7 @@ aplicacao_g2_midia:
 
 aplicacao_g2_arte:
   description: >
-    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em a direção de arte. Esta tarefa só executa quando o aprovador DEVOLVEU o portão com ajustes escritos.
+    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em a direção de arte. Se o histórico de feedbacks humanos do portão disser "Nenhum feedback humano recebido" (aprovação sem ajustes), responda somente: SEM AJUSTES. (o sistema mantém a versão corrigida; não reescreva nada). Só reescreva quando o aprovador DEVOLVEU o portão com ajustes escritos.
     Parta da versão corrigida que está no contexto e aplique APENAS os ajustes do feedback humano transcrito no pedido do portão G2 que se
     referem a esta peça (se nenhum se referir a ela, reemita-a igual, inteira). REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
     trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um

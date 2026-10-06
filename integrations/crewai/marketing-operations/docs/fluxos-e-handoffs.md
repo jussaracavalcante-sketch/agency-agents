@@ -215,6 +215,6 @@ reescrevia o parecer do Guardião; o registro do G3 autorizava canais cujas peç
 
 Desenho vigente (36 tarefas): produção → revisão do Guardião → **correção automática** (cada autor reemite a própria peça com os apontamentos: `correcao_brief`, `correcao_conteudo/calendario/email/midia/arte`) → **revisão final do Guardião** (`revisao_g1_final`, `revisao_g2_final`) → portão humano, que já mostra a versão corrigida.
 
-- "Aprovado." não reescreve nada: as tarefas `aplicacao_g1`, `aplicacao_g2_*` e `aplicacao_g3` são `ConditionalTask` e só rodam quando o portão traz feedback humano (`_tem_feedback`).
+- "Aprovado." não reescreve nada: as tarefas `aplicacao_g1`, `aplicacao_g2_*` e `aplicacao_g3` são tarefas comuns (a CrewAI AMP falha ao retomar fluxos com `ConditionalTask`: AttributeError "reloaded"); sem feedback humano a saída é a versão corrigida copiada por código (`_com_copia_sem_feedback`).
 - A versão vigente de cada peça é a reemissão pós-portão, se houve, senão a versão corrigida (`_Vigente`).
 - Reemissão incompleta (esqueleto ou menos de 60% do tamanho) cai na versão anterior com a marca "AJUSTES PENDENTES"; a peça fica bloqueada no `registro_g2`, cujo bloco "Versões vigentes" é gerado por código.
