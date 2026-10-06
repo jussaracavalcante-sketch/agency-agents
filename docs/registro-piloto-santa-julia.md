@@ -349,3 +349,15 @@ Pendências para o próximo PR:
 - Plano de mídia: gasto histórico (run-rate de N dias) não pode ser declarado como orçamento do canal; a verba do canal é parte do orçamento do briefing, [VALIDAR].
 - Pacote: coluna Peça com o formato e o hook de cada post (não o título do conteúdo longo), UTM por post preenchida, hora "a definir" quando o calendário não traz horário; o saneador do pacote gera a mesma tabela.
 - Testes: 65 passando.
+
+## Varredura de QA antes do lançamento (06/10/2026)
+
+Execução 42551a91 (G1 devolvido, nº 51; portão reaberto e não decidido): o brief trouxe divisão de orçamento inventada (R$ 6.000 e R$ 4.000), "Nota:" ao final sem bloco de código, e o Guardião reprovou a dimensão 2 sem trecho literal e escreveu "[VALIDAR NOS UM]".
+
+Correções:
+- Documento: nota final do agente ("**Nota:** …", "Observação:") reprovada e removida na última tentativa; marcador inventado ("[VALIDAR NOS UM]") reprovado e normalizado para [VALIDAR].
+- Brief: valor em R$ sem [VALIDAR] que não consta do briefing, dos inputs nem da base é reprovado; o saneador acrescenta [VALIDAR].
+- Guardião: dimensão ou entrega Reprovada sem trecho entre aspas é reprovada (regra de evidência em código).
+- Claims: "guia definitivo" barrado. Calendário: hook deve ser frase completa com sujeito e verbo.
+
+Verificação: 68 testes; crew carregada com o CrewAI 1.15.23 em venv local (14 agentes, 23 tarefas, 23 guardrails, 3 portões com human_input), `before_kickoff` com o briefing de 17 campos, interpolação de todas as tarefas sem placeholder faltando; portal com `tsc` limpo e produção na Vercel em `main` 67b4463.
