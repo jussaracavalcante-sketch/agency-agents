@@ -9,27 +9,27 @@
    "tarefas": [
     {
      "nome": "portao_g1",
-     "ordem": 5
+     "ordem": 7
     },
     {
      "nome": "portao_g2",
-     "ordem": 15
+     "ordem": 23
     },
     {
-     "nome": "aplicacao_g2",
-     "ordem": 16
+     "nome": "registro_g2",
+     "ordem": 29
     },
     {
      "nome": "portao_g3",
-     "ordem": 20
+     "ordem": 33
     },
     {
      "nome": "aplicacao_g3",
-     "ordem": 21
+     "ordem": 34
     },
     {
      "nome": "sumario_executivo",
-     "ordem": 23
+     "ordem": 36
     }
    ]
   },
@@ -49,8 +49,12 @@
      "ordem": 3
     },
     {
+     "nome": "correcao_brief",
+     "ordem": 5
+    },
+    {
      "nome": "aplicacao_g1",
-     "ordem": 6
+     "ordem": 8
     }
    ]
   },
@@ -104,7 +108,15 @@
    "tarefas": [
     {
      "nome": "producao_conteudo",
-     "ordem": 7
+     "ordem": 9
+    },
+    {
+     "nome": "correcao_conteudo",
+     "ordem": 17
+    },
+    {
+     "nome": "aplicacao_g2_conteudo",
+     "ordem": 24
     }
    ]
   },
@@ -121,7 +133,15 @@
    "tarefas": [
     {
      "nome": "calendario_social",
-     "ordem": 8
+     "ordem": 10
+    },
+    {
+     "nome": "correcao_calendario",
+     "ordem": 18
+    },
+    {
+     "nome": "aplicacao_g2_calendario",
+     "ordem": 25
     }
    ]
   },
@@ -138,7 +158,15 @@
    "tarefas": [
     {
      "nome": "fluxos_email",
-     "ordem": 9
+     "ordem": 11
+    },
+    {
+     "nome": "correcao_email",
+     "ordem": 19
+    },
+    {
+     "nome": "aplicacao_g2_email",
+     "ordem": 26
     }
    ]
   },
@@ -156,7 +184,15 @@
    "tarefas": [
     {
      "nome": "plano_midia_paga",
-     "ordem": 10
+     "ordem": 12
+    },
+    {
+     "nome": "correcao_midia",
+     "ordem": 20
+    },
+    {
+     "nome": "aplicacao_g2_midia",
+     "ordem": 27
     }
    ]
   },
@@ -172,7 +208,7 @@
    "tarefas": [
     {
      "nome": "auditoria_midia",
-     "ordem": 11
+     "ordem": 13
     }
    ]
   },
@@ -188,7 +224,15 @@
    "tarefas": [
     {
      "nome": "direcao_arte",
-     "ordem": 12
+     "ordem": 14
+    },
+    {
+     "nome": "correcao_arte",
+     "ordem": 21
+    },
+    {
+     "nome": "aplicacao_g2_arte",
+     "ordem": 28
     }
    ]
   },
@@ -204,7 +248,7 @@
    "tarefas": [
     {
      "nome": "plano_medicao",
-     "ordem": 17
+     "ordem": 30
     }
    ]
   },
@@ -224,12 +268,20 @@
      "ordem": 4
     },
     {
+     "nome": "revisao_g1_final",
+     "ordem": 6
+    },
+    {
      "nome": "revisao_g2",
-     "ordem": 14
+     "ordem": 16
+    },
+    {
+     "nome": "revisao_g2_final",
+     "ordem": 22
     },
     {
      "nome": "revisao_g3",
-     "ordem": 19
+     "ordem": 32
     }
    ]
   },
@@ -245,7 +297,7 @@
    "tarefas": [
     {
      "nome": "rubrica_qa",
-     "ordem": 13
+     "ordem": 15
     }
    ]
   },
@@ -261,11 +313,11 @@
    "tarefas": [
     {
      "nome": "pacote_publicacao",
-     "ordem": 18
+     "ordem": 31
     },
     {
      "nome": "execucao_publicacao",
-     "ordem": 22
+     "ordem": 35
     }
    ]
   }
@@ -274,42 +326,47 @@
   "portao_g1": {
    "agente": "gerente_operacoes",
    "papel": "Gerente de Operações de Marketing",
-   "ordem": 5
+   "ordem": 7
   },
   "portao_g2": {
    "agente": "gerente_operacoes",
    "papel": "Gerente de Operações de Marketing",
-   "ordem": 15
+   "ordem": 23
   },
-  "aplicacao_g2": {
+  "registro_g2": {
    "agente": "gerente_operacoes",
    "papel": "Gerente de Operações de Marketing",
-   "ordem": 16
+   "ordem": 29
   },
   "portao_g3": {
    "agente": "gerente_operacoes",
    "papel": "Gerente de Operações de Marketing",
-   "ordem": 20
+   "ordem": 33
   },
   "aplicacao_g3": {
    "agente": "gerente_operacoes",
    "papel": "Gerente de Operações de Marketing",
-   "ordem": 21
+   "ordem": 34
   },
   "sumario_executivo": {
    "agente": "gerente_operacoes",
    "papel": "Gerente de Operações de Marketing",
-   "ordem": 23
+   "ordem": 36
   },
   "brief_estrategico": {
    "agente": "estrategista_campanhas",
    "papel": "Estrategista de Campanhas de Marketing",
    "ordem": 3
   },
+  "correcao_brief": {
+   "agente": "estrategista_campanhas",
+   "papel": "Estrategista de Campanhas de Marketing",
+   "ordem": 5
+  },
   "aplicacao_g1": {
    "agente": "estrategista_campanhas",
    "papel": "Estrategista de Campanhas de Marketing",
-   "ordem": 6
+   "ordem": 8
   },
   "pesquisa_mercado": {
    "agente": "pesquisador_mercado",
@@ -324,67 +381,127 @@
   "producao_conteudo": {
    "agente": "redator_conteudo",
    "papel": "Redator(a) de Conteúdo Longo e Conversão",
-   "ordem": 7
+   "ordem": 9
+  },
+  "correcao_conteudo": {
+   "agente": "redator_conteudo",
+   "papel": "Redator(a) de Conteúdo Longo e Conversão",
+   "ordem": 17
+  },
+  "aplicacao_g2_conteudo": {
+   "agente": "redator_conteudo",
+   "papel": "Redator(a) de Conteúdo Longo e Conversão",
+   "ordem": 24
   },
   "calendario_social": {
    "agente": "estrategista_social",
    "papel": "Estrategista e Copywriter de Social Media",
-   "ordem": 8
+   "ordem": 10
+  },
+  "correcao_calendario": {
+   "agente": "estrategista_social",
+   "papel": "Estrategista e Copywriter de Social Media",
+   "ordem": 18
+  },
+  "aplicacao_g2_calendario": {
+   "agente": "estrategista_social",
+   "papel": "Estrategista e Copywriter de Social Media",
+   "ordem": 25
   },
   "fluxos_email": {
    "agente": "especialista_email_crm",
    "papel": "Especialista em E-mail Marketing, Automação e CRM",
-   "ordem": 9
+   "ordem": 11
+  },
+  "correcao_email": {
+   "agente": "especialista_email_crm",
+   "papel": "Especialista em E-mail Marketing, Automação e CRM",
+   "ordem": 19
+  },
+  "aplicacao_g2_email": {
+   "agente": "especialista_email_crm",
+   "papel": "Especialista em E-mail Marketing, Automação e CRM",
+   "ordem": 26
   },
   "plano_midia_paga": {
    "agente": "gestor_midia_paga",
    "papel": "Gestor(a) de Mídia Paga (Search, Social e Programática)",
-   "ordem": 10
+   "ordem": 12
+  },
+  "correcao_midia": {
+   "agente": "gestor_midia_paga",
+   "papel": "Gestor(a) de Mídia Paga (Search, Social e Programática)",
+   "ordem": 20
+  },
+  "aplicacao_g2_midia": {
+   "agente": "gestor_midia_paga",
+   "papel": "Gestor(a) de Mídia Paga (Search, Social e Programática)",
+   "ordem": 27
   },
   "auditoria_midia": {
    "agente": "supervisor_midia_paga",
    "papel": "Supervisor(a) de Mídia Paga e Performance",
-   "ordem": 11
+   "ordem": 13
   },
   "direcao_arte": {
    "agente": "diretor_arte",
    "papel": "Diretor(a) de Arte e Briefing Criativo",
-   "ordem": 12
+   "ordem": 14
+  },
+  "correcao_arte": {
+   "agente": "diretor_arte",
+   "papel": "Diretor(a) de Arte e Briefing Criativo",
+   "ordem": 21
+  },
+  "aplicacao_g2_arte": {
+   "agente": "diretor_arte",
+   "papel": "Diretor(a) de Arte e Briefing Criativo",
+   "ordem": 28
   },
   "plano_medicao": {
    "agente": "analista_dados",
    "papel": "Analista de Dados e Performance de Marketing",
-   "ordem": 17
+   "ordem": 30
   },
   "revisao_g1": {
    "agente": "guardiao_marca_compliance",
    "papel": "Guardião(ã) de Marca, Qualidade e Compliance",
    "ordem": 4
   },
+  "revisao_g1_final": {
+   "agente": "guardiao_marca_compliance",
+   "papel": "Guardião(ã) de Marca, Qualidade e Compliance",
+   "ordem": 6
+  },
   "revisao_g2": {
    "agente": "guardiao_marca_compliance",
    "papel": "Guardião(ã) de Marca, Qualidade e Compliance",
-   "ordem": 14
+   "ordem": 16
+  },
+  "revisao_g2_final": {
+   "agente": "guardiao_marca_compliance",
+   "papel": "Guardião(ã) de Marca, Qualidade e Compliance",
+   "ordem": 22
   },
   "revisao_g3": {
    "agente": "guardiao_marca_compliance",
    "papel": "Guardião(ã) de Marca, Qualidade e Compliance",
-   "ordem": 19
+   "ordem": 32
   },
   "rubrica_qa": {
    "agente": "revisor_qualidade",
    "papel": "Revisor(a) de Qualidade e Rubrica de Peças",
-   "ordem": 13
+   "ordem": 15
   },
   "pacote_publicacao": {
    "agente": "coordenador_publicacao",
    "papel": "Coordenador(a) de Publicação e Distribuição",
-   "ordem": 18
+   "ordem": 31
   },
   "execucao_publicacao": {
    "agente": "coordenador_publicacao",
    "papel": "Coordenador(a) de Publicação e Distribuição",
-   "ordem": 22
+   "ordem": 35
   }
  }
 }

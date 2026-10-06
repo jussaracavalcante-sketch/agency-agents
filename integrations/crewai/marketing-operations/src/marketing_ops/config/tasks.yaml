@@ -92,6 +92,8 @@ revisao_g1:
     [VALIDAR] JÁ MARCADO É PENDÊNCIA HUMANA, NÃO ERRO: item que o autor marcou [VALIDAR] não reprova a dimensão veracidade nem a dimensão de itens [VALIDAR]; ele só entra como "Aprovado com
     ajustes" com a lista das pendências para a decisão humana. Só reprova item inventado SEM marcação [VALIDAR] e SEM fonte nos dados fornecidos. Uma dimensão cujo apontamento diz que não há
     correção a fazer não pode ser Reprovada. Cada trecho entre aspas no parecer deve ser CÓPIA EXATA do documento revisado, sem parafrasear nem juntar palavras de trechos diferentes.
+    ORÇAMENTO DO BRIEFING: o orçamento total ({orcamento_total}) e a verba de mídia ({orcamento_midia}) são valores DO BRIEFING; repeti-los no brief, com [VALIDAR], é coerência, não divergência.
+    Um run-rate ou gasto histórico citado no briefing é referência, não a verba: não trate a diferença entre os dois como erro.
     Linhas com "ALERTA DE QUALIDADE" nas entregas indicam problema que a trava automática não conseguiu corrigir: trate o trecho citado como achado e cite-o no parecer.
   expected_output: >
     Parecer Markdown com resultado, checklist por dimensão (status, apontamento, regra,
@@ -99,13 +101,42 @@ revisao_g1:
   agent: guardiao_marca_compliance
   output_file: output/04_parecer_g1.md
 
+correcao_brief:
+  description: >
+    CORREÇÃO AUTOMÁTICA DO BRIEF, antes do portão humano. Reemita o Brief Estratégico de "{briefing_titulo}" completo, com as 9 seções,
+    aplicando os ajustes obrigatórios do parecer do Guardião (revisao_g1): o que ele apontou como sem fonte sai ou ganha [VALIDAR]; o objetivo
+    continua literal ({objetivo}); o orçamento total ({orcamento_total}) e a verba de mídia ({orcamento_midia}) ficam como no briefing, com [VALIDAR].
+    Dimensão que o Guardião reprovou citando o próprio objetivo do briefing ou um valor do briefing não é erro: mantenha o texto.
+    REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
+    trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
+    registro no lugar da peça ("versão original", "sem necessidade de reemissão"). Ajuste de veracidade só remove o trecho ou marca [VALIDAR] / [VALIDAR MÉDICO];
+    não acrescente afirmação, serviço, canal ou número novo. Mantenha todas as marcações [VALIDAR] que não foram resolvidas. Português do Brasil;
+    a saída começa pelo título da peça e termina na última seção, sem comentário antes ou depois.
+  expected_output: >
+    Brief Estratégico completo (9 seções), já corrigido, sem registro de decisão e sem comentário final.
+  agent: estrategista_campanhas
+  output_file: output/04b_brief_corrigido.md
+
+revisao_g1_final:
+  description: >
+    REVISÃO FINAL DO BRIEF (versão corrigida em correcao_brief): este é o parecer que o aprovador humano verá no portão G1. Aplique
+    exatamente as mesmas dimensões e regras da revisão preliminar (coerência com o briefing, objetivos com baseline, guia de marca,
+    riscos regulatórios, itens [VALIDAR]), sobre o texto da versão corrigida, que está no CONTEXTO. Não reabra apontamento já resolvido;
+    cite o trecho literal da versão corrigida em cada apontamento que mantiver. RESULTADO GERAL = pior dimensão.
+    [VALIDAR] já marcado é pendência humana, não erro. O orçamento total ({orcamento_total}) e a verba de mídia ({orcamento_midia}) são valores do
+    briefing: repeti-los com [VALIDAR] é coerência. Cada trecho entre aspas é CÓPIA EXATA do documento revisado. Português do Brasil, sem comentário final.
+  expected_output: >
+    Parecer Markdown com resultado, checklist por dimensão (status, apontamento, regra, correção sugerida) e riscos residuais.
+  agent: guardiao_marca_compliance
+  output_file: output/04c_parecer_g1_final.md
+
 portao_g1:
   description: >
-    PORTÃO G1 — Aprovação humana da estratégia. Esta tarefa SÓ consolida o pedido de aprovação:
-    apresente ao aprovador um resumo de 10 linhas do brief estratégico, o resultado do parecer de
-    revisão (incluindo os ajustes exigidos pelo Guardião) e os riscos principais, e peça a decisão:
-    aprovar, aprovar com ajustes ou reprovar. NÃO reescreva o brief aqui; a aplicação da decisão é
-    feita na tarefa seguinte (aplicacao_g1). Se esta tarefa for refeita após feedback humano, comece a
+    PORTÃO G1 — Aprovação humana da estratégia. O brief que o aprovador vê é a VERSÃO CORRIGIDA (correcao_brief) e o parecer é o da
+    REVISÃO FINAL (revisao_g1_final): as correções automáticas já aconteceram; aprovar não dispara nenhuma reescrita. Esta tarefa SÓ consolida o pedido:
+    apresente ao aprovador um resumo de 10 linhas do brief corrigido, o resultado do parecer final e os riscos principais, e peça a decisão:
+    aprovar (o brief segue como está), devolver com ajustes (só então o brief é reescrito, aplicando o texto do aprovador) ou reprovar.
+    NÃO reescreva o brief aqui. Se esta tarefa for refeita após feedback humano, comece a
     saída com o registro literal do feedback recebido (data, decisão e ajustes pedidos, em transcrição)
     e depois reapresente o pedido. Nunca invente aprovador, data ou decisão.
     Reproduza o parecer do Guardião literalmente, como foi emitido: você não pode alterá-lo nem afirmar que ajustes
@@ -133,23 +164,19 @@ portao_g1:
 
 aplicacao_g1:
   description: >
-    APLICAÇÃO DA DECISÃO G1. Reemita o BRIEF ESTRATÉGICO COMPLETO E FINAL de "{briefing_titulo}", com as
-    9 seções do template (Contexto e desafio; Objetivos SMART e KPI norteador; Público e personas;
+    APLICAÇÃO DO FEEDBACK HUMANO DO G1. Esta tarefa só executa quando o aprovador DEVOLVEU o portão com ajustes escritos. Reemita o BRIEF
+    ESTRATÉGICO COMPLETO de "{briefing_titulo}", com as 9 seções do template (Contexto e desafio; Objetivos SMART e KPI norteador; Público e personas;
     Proposta de valor e matriz de mensagens persona x etapa do funil; Mix de canais e papel no funil;
     Orçamento em tabela com canal, percentual, valor, justificativa e KPI; Hipóteses e plano de teste;
-    Riscos e premissas; Fontes), aplicando: (a) os ajustes exigidos pelo Guardião no parecer revisao_g1;
-    (b) o feedback e os ajustes humanos transcritos no pedido do portão G1, quando houver; (c) o objetivo
-    e os dados do briefing original ({objetivo}; orçamento total {orcamento_total}; mídia
+    Riscos e premissas; Fontes), partindo da versão corrigida (correcao_brief) e aplicando APENAS: (a) o feedback e os ajustes humanos transcritos
+    no pedido do portão G1; (b) o objetivo e os dados do briefing original ({objetivo}; orçamento total {orcamento_total}; mídia
     {orcamento_midia}; prazo {prazo}). Na seção Fontes cite apenas tabelas/ferramentas realmente consultadas, sem inventar ano, versão ou documento; não introduza KPI sem baseline disponível (marque [VALIDAR]). Nunca troque o objetivo do briefing por metas inventadas e use
-    como fonte de dados apenas o que está disponível ({ferramenta_analytics}). Comece a saída com o bloco
-    "Registro de decisão G1" (status, ajustes aplicados, ajustes não aplicados e por quê) e depois traga
-    o documento INTEGRAL, nunca um resumo das mudanças, porque as tarefas seguintes dependem do texto
-    completo.
+    como fonte de dados apenas o que está disponível ({ferramenta_analytics}). Entregue o documento INTEGRAL, nunca um resumo das mudanças, porque as tarefas seguintes dependem do texto
+    completo; sem bloco de registro antes dele.
     PRESERVE O QUE JÁ ESTAVA CERTO: reemita o brief mantendo todas as marcações [VALIDAR] do original, porque sem feedback humano escrito nenhuma pendência foi resolvida. Não altere o que já estava
     correto (por exemplo, um objetivo que já era literal) e não escreva "todos os feedbacks foram incluídos" nem "não há ajustes pendentes". A reemissão termina na última seção, sem comentário depois.
   expected_output: >
-    Documento Markdown: bloco "Registro de decisão G1" seguido do Brief Estratégico final, integral,
-    com as 9 seções.
+    Brief Estratégico final, integral, com as 9 seções e o feedback humano aplicado.
   agent: estrategista_campanhas
   output_file: output/05b_brief_final_g1.md
 
@@ -175,7 +202,7 @@ calendario_social:
     estratégico e do conteúdo-base. FORMATO COMPACTO OBRIGATÓRIO (a resposta precisa caber inteira): uma única tabela
     Markdown com as colunas Semana | Data | Plataforma | Formato | Pilar | Hook e copy (até 25 palavras) | CTA, com ao
     menos 3 posts por semana em TODAS as {duracao_semanas} semanas (semanas 1 a {duracao_semanas}, sem pular nenhuma),
-    cada post datado. Cada "Hook e copy" é uma frase completa em português do Brasil, com sujeito e verbo, que faria sentido lida sozinha
+    cada post datado com dd/mm/aaaa no ANO CORRENTE OU SEGUINTE (a campanha começa depois da aprovação; nunca use anos passados como 2023 ou 2024). Cada "Hook e copy" é uma frase completa em português do Brasil, com sujeito e verbo, que faria sentido lida sozinha
     num post (nada de sequências de substantivos como "Culminação da confiança" ou "Seleções médicas complexas com inteligência"). Adapte a mensagem por plataforma (não replique). O objetivo de cada post vem do objetivo do
     briefing ({objetivo}), sem metas numéricas novas, e por isso não ganha coluna própria. Depois da tabela, em listas
     curtas: hashtags por plataforma, guia de engajamento (respostas-padrão, comunidades), posts candidatos a
@@ -213,7 +240,9 @@ plano_midia_paga:
     declaradas, rotina semanal de otimização e requisitos de rastreamento. Briefe os criativos
     necessários (formato, dimensão, quantidade). NÃO crie nem ative nada em plataforma.
     SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
-    ORÇAMENTO: a verba de cada canal é parte do orçamento de {orcamento_midia}, marcada [VALIDAR]; gasto histórico (run-rate de 90 dias, por exemplo) é referência e nunca vira orçamento.
+    ORÇAMENTO: a verba de cada canal PAGO é parte do orçamento de {orcamento_midia}, marcada [VALIDAR]; gasto histórico (run-rate de 90 dias, por exemplo) é referência e nunca vira orçamento.
+    A verba de mídia não se divide com SEO, blog, conteúdo, e-mail nem social orgânico: esses saem do restante do orçamento total e não entram no plano de mídia. Canal pago só se o brief
+    aprovado o prevê (briefing "sem Meta Ads" = sem social pago). Toda projeção de CPC, CTR, CVR ou contatos leva [VALIDAR] na mesma linha ou no título do bloco de cenários.
   expected_output: >
     Documento Markdown "Plano de Mídia" com as 9 seções do template, mais "Insumos e pendências", "Rotina operacional (diária, semanal)"
     e "Alçadas e autorizações", tabela de estrutura de campanhas e briefing de criativos.
@@ -323,13 +352,102 @@ revisao_g2:
   agent: guardiao_marca_compliance
   output_file: output/11_parecer_g2.md
 
+correcao_conteudo:
+  description: >
+    CORREÇÃO AUTOMÁTICA, antes do portão humano: reemita o conteúdo longo (artigo com metadados, texto completo, variações de título e CTA) de "{briefing_titulo}" completo, aplicando os apontamentos do Guardião
+    (revisao_g2) e da rubrica de qualidade (rubrica_qa) que se referem a esta peça. Apontamento que cita trecho inexistente na peça, ou que
+    reprova só por [VALIDAR] já marcado, não se aplica: mantenha o texto. REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
+    trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
+    registro no lugar da peça ("versão original", "sem necessidade de reemissão"). Ajuste de veracidade só remove o trecho ou marca [VALIDAR] / [VALIDAR MÉDICO];
+    não acrescente afirmação, serviço, canal ou número novo. Mantenha todas as marcações [VALIDAR] que não foram resolvidas. Português do Brasil;
+    a saída começa pelo título da peça e termina na última seção, sem comentário antes ou depois.
+    SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
+  expected_output: >
+    Peça completa, já corrigida, no mesmo formato da versão anterior.
+  agent: redator_conteudo
+  output_file: output/10c_conteudo_corrigido.md
+
+correcao_calendario:
+  description: >
+    CORREÇÃO AUTOMÁTICA, antes do portão humano: reemita o calendário social (tabela completa com todas as semanas e datas, hashtags, guia de engajamento, impulsionamento e assets) de "{briefing_titulo}" completo, aplicando os apontamentos do Guardião
+    (revisao_g2) e da rubrica de qualidade (rubrica_qa) que se referem a esta peça; todas as datas em dd/mm/aaaa, no ano corrente ou seguinte, cobrindo todas as semanas. Apontamento que cita trecho inexistente na peça, ou que
+    reprova só por [VALIDAR] já marcado, não se aplica: mantenha o texto. REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
+    trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
+    registro no lugar da peça ("versão original", "sem necessidade de reemissão"). Ajuste de veracidade só remove o trecho ou marca [VALIDAR] / [VALIDAR MÉDICO];
+    não acrescente afirmação, serviço, canal ou número novo. Mantenha todas as marcações [VALIDAR] que não foram resolvidas. Português do Brasil;
+    a saída começa pelo título da peça e termina na última seção, sem comentário antes ou depois.
+    SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
+  expected_output: >
+    Peça completa, já corrigida, no mesmo formato da versão anterior.
+  agent: estrategista_social
+  output_file: output/10d_calendario_corrigido.md
+
+correcao_email:
+  description: >
+    CORREÇÃO AUTOMÁTICA, antes do portão humano: reemita os fluxos de e-mail (segmentação, fluxos com tabelas, todos os e-mails completos, plano de testes e checklist) de "{briefing_titulo}" completo, aplicando os apontamentos do Guardião
+    (revisao_g2) e da rubrica de qualidade (rubrica_qa) que se referem a esta peça. Apontamento que cita trecho inexistente na peça, ou que
+    reprova só por [VALIDAR] já marcado, não se aplica: mantenha o texto. REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
+    trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
+    registro no lugar da peça ("versão original", "sem necessidade de reemissão"). Ajuste de veracidade só remove o trecho ou marca [VALIDAR] / [VALIDAR MÉDICO];
+    não acrescente afirmação, serviço, canal ou número novo. Mantenha todas as marcações [VALIDAR] que não foram resolvidas. Português do Brasil;
+    a saída começa pelo título da peça e termina na última seção, sem comentário antes ou depois.
+    SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
+  expected_output: >
+    Peça completa, já corrigida, no mesmo formato da versão anterior.
+  agent: especialista_email_crm
+  output_file: output/10e_email_corrigido.md
+
+correcao_midia:
+  description: >
+    CORREÇÃO AUTOMÁTICA, antes do portão humano: reemita o plano de mídia paga (todas as seções, inclusive Insumos e pendências, Rotina operacional e Alçadas e autorizações) de "{briefing_titulo}" completo, aplicando os apontamentos do Guardião
+    (revisao_g2) e da rubrica de qualidade (rubrica_qa) que se referem a esta peça e da auditoria técnica do Supervisor (auditoria_midia). A verba de mídia ({orcamento_midia}) é só dos canais pagos do brief; projeções levam [VALIDAR]. Apontamento que cita trecho inexistente na peça, ou que
+    reprova só por [VALIDAR] já marcado, não se aplica: mantenha o texto. REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
+    trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
+    registro no lugar da peça ("versão original", "sem necessidade de reemissão"). Ajuste de veracidade só remove o trecho ou marca [VALIDAR] / [VALIDAR MÉDICO];
+    não acrescente afirmação, serviço, canal ou número novo. Mantenha todas as marcações [VALIDAR] que não foram resolvidas. Português do Brasil;
+    a saída começa pelo título da peça e termina na última seção, sem comentário antes ou depois.
+    SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
+  expected_output: >
+    Peça completa, já corrigida, no mesmo formato da versão anterior.
+  agent: gestor_midia_paga
+  output_file: output/10f_midia_corrigido.md
+
+correcao_arte:
+  description: >
+    CORREÇÃO AUTOMÁTICA, antes do portão humano: reemita a direção de arte (conceito criativo e briefings por peça, com specs e acessibilidade) de "{briefing_titulo}" completo, aplicando os apontamentos do Guardião
+    (revisao_g2) e da rubrica de qualidade (rubrica_qa) que se referem a esta peça, usando as versões corrigidas das outras peças que estão no contexto. Apontamento que cita trecho inexistente na peça, ou que
+    reprova só por [VALIDAR] já marcado, não se aplica: mantenha o texto. REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
+    trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
+    registro no lugar da peça ("versão original", "sem necessidade de reemissão"). Ajuste de veracidade só remove o trecho ou marca [VALIDAR] / [VALIDAR MÉDICO];
+    não acrescente afirmação, serviço, canal ou número novo. Mantenha todas as marcações [VALIDAR] que não foram resolvidas. Português do Brasil;
+    a saída começa pelo título da peça e termina na última seção, sem comentário antes ou depois.
+    SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
+  expected_output: >
+    Peça completa, já corrigida, no mesmo formato da versão anterior.
+  agent: diretor_arte
+  output_file: output/10g_arte_corrigida.md
+
+revisao_g2_final:
+  description: >
+    REVISÃO FINAL DAS PEÇAS CORRIGIDAS (correcao_conteudo, correcao_calendario, correcao_email, correcao_midia, correcao_arte): este é o parecer
+    que o aprovador humano verá no portão G2. Revise cada peça pelas mesmas dimensões e regras da revisão preliminar (marca, qualidade editorial,
+    veracidade e fontes, LGPD, CONAR/CDC, políticas de plataforma, setor regulado), sobre o texto das versões corrigidas que estão no CONTEXTO.
+    RESULTADO POR ENTREGA = pior dimensão. Não reabra apontamento já resolvido; cada apontamento cita o trecho literal da versão corrigida.
+    [VALIDAR] já marcado é pendência humana, não erro. Link "a definir após a publicação" e hora "a definir" são o padrão antes de publicar.
+    Cada trecho entre aspas é CÓPIA EXATA do documento revisado. Português do Brasil, sem comentário final.
+  expected_output: >
+    Documento Markdown com um parecer por entrega e um quadro-resumo final: entrega × resultado × nº de ajustes.
+  agent: guardiao_marca_compliance
+  output_file: output/11b_parecer_g2_final.md
+
 portao_g2:
   description: >
-    PORTÃO G2 — Aprovação humana dos criativos e planos. Esta tarefa SÓ consolida o pedido: apresente o
-    quadro-resumo dos pareceres do Guardião por entrega (resultado e número de ajustes), os ajustes
-    pendentes e amostras reais extraídas das entregas (1 título, 1 post, 1 e-mail, 1 anúncio). Peça a
-    decisão por entrega: aprovar, ajustar ou reprovar. NÃO reescreva peças aqui; a aplicação da decisão é
-    feita na tarefa seguinte (aplicacao_g2). Se esta tarefa for refeita após feedback humano, comece a
+    PORTÃO G2 — Aprovação humana dos criativos e planos. As peças que o aprovador vê são as VERSÕES CORRIGIDAS (correcao_*) e o parecer é o da
+    REVISÃO FINAL (revisao_g2_final): as correções automáticas já aconteceram; aprovar não dispara nenhuma reescrita. Esta tarefa SÓ consolida o pedido:
+    apresente o quadro-resumo do parecer final por entrega (resultado e número de ajustes), as pendências [VALIDAR] e amostras reais extraídas das
+    versões corrigidas (1 título, 1 post, 1 e-mail, 1 anúncio). Peça a decisão: aprovar (as peças seguem como estão), devolver com ajustes (só então
+    cada peça citada é reescrita pelo próprio autor, aplicando o texto do aprovador) ou reprovar. NÃO reescreva peças aqui.
+    O quadro da rubrica e a auditoria de mídia copiados abaixo são da VERSÃO INICIAL das peças (antes das correções automáticas): rotule-os assim. Se esta tarefa for refeita após feedback humano, comece a
     saída com o registro literal do feedback recebido. Nunca invente aprovador, data ou decisão.
     Reproduza o parecer do Guardião literalmente, como foi emitido: você não pode alterá-lo nem afirmar que ajustes
     foram cumpridos ou que o Guardião revisou de novo, porque isso só acontece na tarefa de revisão.
@@ -355,34 +473,86 @@ portao_g2:
   human_input: true
   output_file: output/12_pedido_g2.md
 
-aplicacao_g2:
+aplicacao_g2_conteudo:
   description: >
-    APLICAÇÃO DA DECISÃO G2. Parte A, REGISTRO: para CADA uma das cinco entregas de produção (conteúdo, calendário
-    social, fluxos de e-mail, plano de mídia e direção de arte) registre a decisão (liberada, liberada com ajustes ou
-    reprovada), os ajustes obrigatórios com a redação exata a alterar, a origem (Guardião ou feedback humano) e as listas
-    de entregas liberadas e bloqueadas. Parte B, REEMISSÃO: para cada entrega que recebeu qualquer ajuste (do Guardião
-    ou do feedback humano transcrito no pedido do portão G2), reemita a peça INTEGRAL já corrigida, aplicando todos os
-    ajustes, sob o título "Peça reemitida: <nome da entrega>". Mantenha o texto aprovado das partes sem ajuste; não
-    acrescente conteúdo novo além do necessário e não invente dados. Ajuste que depende de informação ausente vira
-    [VALIDAR] na peça. Ajuste de veracidade (depoimento, testemunho, caso de paciente, claim) só pode REMOVER o trecho ou
-    marcá-lo [VALIDAR]: é proibido declarar que algo é real, autorizado, consentido ou validado. Reemita cada peça no mesmo
-    formato e extensão da original (não apenas o trecho alterado), sem notas que afirmem conformidade. Reemitir é COPIAR a peça inteira trocando só o trecho
-    ajustado: conteúdo com todos os metadados e o texto completo; e-mail com segmentação, fluxos, tabelas, todos os e-mails e checklist; plano de mídia com todas
-    as seções; calendário com todas as linhas e as listas de apoio. Resumo ou esqueleto da peça é reprovado (a reemissão precisa ter ao menos 60% do tamanho da original). É PROIBIDO escrever "..." ou colchetes que apontem
-    para a peça ("[O conteúdo completo original com ajustes]", "[CONTINUAÇÃO do fluxo]", "[Incluindo todas as semanas]"): isso é esqueleto, não reemissão. Ao reemitir, NÃO acrescente nenhuma afirmação nova: é proibido
-    introduzir 'garantimos', 'garantindo', 'segurança', 'precisão' ou 'tecnologia de ponta' sem fonte; ajuste só remove, suaviza
-    com [VALIDAR] ou mantém o texto original. Entrega sem ajuste não precisa ser reemitida. Ao final liste, por entrega, "versão reemitida" ou
-    "versão original". BLOQUEIO POR RUBRICA: a aprovação "Aprovado." sem nenhum ajuste escrito pelo humano não carrega correções e
-    não libera peça que a rubrica de qualidade mandou REFAZER (veredito REFAZER na linha RESUMO da peça): registre essa
-    entrega como bloqueada, na linha "Bloqueadas:", com a pendência da rubrica. Quando o humano escreveu ajustes, aplique-os.
-    CALENDÁRIO: se reemitir o calendário social, reemita TODAS as semanas da campanha, com pelo menos 3 posts por semana e a data
-    de cada post, nunca só algumas linhas. Escreva tudo em português do Brasil e entregue só o documento, sem frase antes ou depois
-    dele. Esta tarefa não inventa aprovador, data, decisão ou feedback.
+    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em o conteúdo longo. Esta tarefa só executa quando o aprovador DEVOLVEU o portão com ajustes escritos.
+    Parta da versão corrigida que está no contexto e aplique APENAS os ajustes do feedback humano transcrito no pedido do portão G2 que se
+    referem a esta peça (se nenhum se referir a ela, reemita-a igual, inteira). REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
+    trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
+    registro no lugar da peça ("versão original", "sem necessidade de reemissão"). Ajuste de veracidade só remove o trecho ou marca [VALIDAR] / [VALIDAR MÉDICO];
+    não acrescente afirmação, serviço, canal ou número novo. Mantenha todas as marcações [VALIDAR] que não foram resolvidas. Português do Brasil;
+    a saída começa pelo título da peça e termina na última seção, sem comentário antes ou depois.
   expected_output: >
-    Documento Markdown: (A) tabela entrega x decisão x ajustes (texto exato) x origem e listas de liberadas e bloqueadas;
-    (B) cada peça ajustada reemitida na íntegra; (C) lista final de versões.
+    Peça completa, com o feedback humano aplicado.
+  agent: redator_conteudo
+  output_file: output/12c_conteudo_final.md
+
+aplicacao_g2_calendario:
+  description: >
+    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em o calendário social. Esta tarefa só executa quando o aprovador DEVOLVEU o portão com ajustes escritos.
+    Parta da versão corrigida que está no contexto e aplique APENAS os ajustes do feedback humano transcrito no pedido do portão G2 que se
+    referem a esta peça (se nenhum se referir a ela, reemita-a igual, inteira); todas as datas em dd/mm/aaaa, no ano corrente ou seguinte, todas as semanas. REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
+    trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
+    registro no lugar da peça ("versão original", "sem necessidade de reemissão"). Ajuste de veracidade só remove o trecho ou marca [VALIDAR] / [VALIDAR MÉDICO];
+    não acrescente afirmação, serviço, canal ou número novo. Mantenha todas as marcações [VALIDAR] que não foram resolvidas. Português do Brasil;
+    a saída começa pelo título da peça e termina na última seção, sem comentário antes ou depois.
+  expected_output: >
+    Peça completa, com o feedback humano aplicado.
+  agent: estrategista_social
+  output_file: output/12d_calendario_final.md
+
+aplicacao_g2_email:
+  description: >
+    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em os fluxos de e-mail. Esta tarefa só executa quando o aprovador DEVOLVEU o portão com ajustes escritos.
+    Parta da versão corrigida que está no contexto e aplique APENAS os ajustes do feedback humano transcrito no pedido do portão G2 que se
+    referem a esta peça (se nenhum se referir a ela, reemita-a igual, inteira). REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
+    trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
+    registro no lugar da peça ("versão original", "sem necessidade de reemissão"). Ajuste de veracidade só remove o trecho ou marca [VALIDAR] / [VALIDAR MÉDICO];
+    não acrescente afirmação, serviço, canal ou número novo. Mantenha todas as marcações [VALIDAR] que não foram resolvidas. Português do Brasil;
+    a saída começa pelo título da peça e termina na última seção, sem comentário antes ou depois.
+  expected_output: >
+    Peça completa, com o feedback humano aplicado.
+  agent: especialista_email_crm
+  output_file: output/12e_email_final.md
+
+aplicacao_g2_midia:
+  description: >
+    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em o plano de mídia paga. Esta tarefa só executa quando o aprovador DEVOLVEU o portão com ajustes escritos.
+    Parta da versão corrigida que está no contexto e aplique APENAS os ajustes do feedback humano transcrito no pedido do portão G2 que se
+    referem a esta peça (se nenhum se referir a ela, reemita-a igual, inteira); a verba de mídia ({orcamento_midia}) é só dos canais pagos do brief e toda projeção leva [VALIDAR]; mantenha as seções da rotina. REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
+    trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
+    registro no lugar da peça ("versão original", "sem necessidade de reemissão"). Ajuste de veracidade só remove o trecho ou marca [VALIDAR] / [VALIDAR MÉDICO];
+    não acrescente afirmação, serviço, canal ou número novo. Mantenha todas as marcações [VALIDAR] que não foram resolvidas. Português do Brasil;
+    a saída começa pelo título da peça e termina na última seção, sem comentário antes ou depois.
+  expected_output: >
+    Peça completa, com o feedback humano aplicado.
+  agent: gestor_midia_paga
+  output_file: output/12f_midia_final.md
+
+aplicacao_g2_arte:
+  description: >
+    APLICAÇÃO DO FEEDBACK HUMANO DO G2 em a direção de arte. Esta tarefa só executa quando o aprovador DEVOLVEU o portão com ajustes escritos.
+    Parta da versão corrigida que está no contexto e aplique APENAS os ajustes do feedback humano transcrito no pedido do portão G2 que se
+    referem a esta peça (se nenhum se referir a ela, reemita-a igual, inteira). REGRAS DA REEMISSÃO: entregue a peça INTEIRA (mesmo formato, mesmas seções, tabelas, metadados e textos da versão anterior),
+    trocando só o que o ajuste pede; nunca resuma, nunca escreva "..." nem colchetes que apontem para a versão anterior, nunca entregue um
+    registro no lugar da peça ("versão original", "sem necessidade de reemissão"). Ajuste de veracidade só remove o trecho ou marca [VALIDAR] / [VALIDAR MÉDICO];
+    não acrescente afirmação, serviço, canal ou número novo. Mantenha todas as marcações [VALIDAR] que não foram resolvidas. Português do Brasil;
+    a saída começa pelo título da peça e termina na última seção, sem comentário antes ou depois.
+  expected_output: >
+    Peça completa, com o feedback humano aplicado.
+  agent: diretor_arte
+  output_file: output/12g_arte_final.md
+
+registro_g2:
+  description: >
+    REGISTRO DA DECISÃO G2. Em um documento curto, registre: a decisão humana transcrita do pedido do portão (histórico de feedbacks), o
+    resultado do parecer final por entrega, e, para cada uma das cinco entregas (conteúdo, calendário, e-mail, plano de mídia, direção de arte),
+    quais ajustes humanos foram aplicados e por qual tarefa. NÃO reescreva peças nem resuma o conteúdo delas; não afirme conformidade; não liste
+    versões vigentes nem bloqueadas (o código acrescenta essa lista). Nunca invente aprovador, data ou decisão. Português do Brasil, sem comentário final.
+  expected_output: >
+    Documento Markdown "Registro de decisão G2" com decisão humana, resultado por entrega e ajustes aplicados por entrega.
   agent: gerente_operacoes
-  output_file: output/12b_decisao_g2.md
+  output_file: output/12_registro_g2.md
 
 # ───────────────────────── FASE 3 · MEDIÇÃO E PUBLICAÇÃO ─────────────────────────
 
@@ -407,21 +577,21 @@ pacote_publicacao:
     cronograma de publicação por canal (data, hora, fuso {fuso_horario}, peça, link, UTM,
     responsável, status) e checklist pré-publicação por canal, conferindo UTMs contra o
     dicionário. NÃO publique nem agende nada nesta tarefa.
-    O cronograma deve conter APENAS peças das entregas liberadas em aplicacao_g2; peça de entrega bloqueada não pode
+    O cronograma deve conter APENAS peças das entregas não bloqueadas no registro_g2; peça de entrega bloqueada não pode
     aparecer. Em Responsável escreva "a definir" e em Link escreva "a definir após a publicação": nunca invente nomes
     de pessoas, links ou canais sem entrega correspondente. Um plano ou um documento interno não é uma peça de canal: Plano de E-mail, Plano de Mídia, Conceito Criativo e
     Conteúdo Longo não viram post de rede social. O cronograma só lista (a) posts do calendário editorial liberado, com as
     datas e plataformas do próprio calendário, e (b) envios de e-mail do plano de e-mail, no canal E-mail, e (c) o artigo
     no canal Site/Blog. Documentos internos entram só no índice, com a observação \"documento interno, não publicável\".
     Não invente datas: se a peça não tiver data, escreva \"a definir\". Data e hora também ficam \"a definir\" quando a peça liberada não traz data própria (por exemplo, e-mail e artigo sem data no plano).
-    VERSÃO VIGENTE: para cada peça use a versão REEMITIDA em aplicacao_g2 quando existir; a original só vale para a peça que
-    aplicacao_g2 lista como "versão original". Para o calendário social, o cronograma copia TODAS as linhas do calendário vigente (todas as
+    VERSÃO VIGENTE: use a seção "Versões vigentes (geradas automaticamente pelo código)" do registro_g2: a peça reemitida após o feedback humano
+    (aplicacao_g2_*) quando existir, senão a versão corrigida antes do portão (correcao_*). Peça listada em "Bloqueadas" não entra no cronograma. Para o calendário social, o cronograma copia TODAS as linhas do calendário vigente (todas as
     semanas), com a data e a plataforma de cada post; não deixe "a definir" onde o calendário já tem data e não use posts, datas ou
     temas do calendário substituído. Cada post do calendário vira UMA linha do cronograma, com a data (dd/mm/aaaa) e a rede dele; não crie posts nem títulos
     novos ("Post 1 – Mês da Saúde") e não repita a mesma data e rede além do que o calendário tem. Na coluna Peça de cada post escreva o formato e o hook do próprio post do calendário (nunca o título do conteúdo longo repetido em todas as linhas).
     Na coluna UTM de cada post escreva utm_source=<rede>&utm_medium=social&utm_campaign=<campanha>, em minúsculas e sem espaços, conforme o dicionário do plano de medição.
     A hora fica "a definir" quando o calendário não traz horário (não assuma 10:00); se trouxer, escreva HH:MM, e o fuso fica na coluna própria,
-    nunca colado na hora ("10:00-04:00"). Se o calendário social estiver entre as entregas bloqueadas em aplicacao_g2, o cronograma não lista posts de rede social.
+    nunca colado na hora ("10:00-04:00"). Se o calendário social estiver entre as entregas bloqueadas no registro_g2, o cronograma não lista posts de rede social.
     Escreva em português do Brasil e entregue só o documento.
   expected_output: >
     Documento Markdown com Índice do pacote, Cronograma de publicação (tabela) e Checklist
@@ -443,7 +613,7 @@ revisao_g3:
     'de ponta', 'à frente') sem fonte; promessa clínica; números sem fonte (projeções, percentuais, tamanhos de base).
     Qualquer um desses itens torna a dimensão veracidade ou setor regulado Reprovada para a peça.
     Linhas com "ALERTA DE QUALIDADE" nas entregas indicam problema que a trava automática não conseguiu corrigir: trate o trecho citado como achado e cite-o no parecer.
-    VERSÃO VIGENTE: revise a versão reemitida em aplicacao_g2 quando existir; um trecho só é achado se estiver presente nela (não cobre o que a reemissão já removeu).
+    VERSÃO VIGENTE: revise a versão listada como vigente no registro_g2 (reemissão pós-feedback quando existir, senão a corrigida); um trecho só é achado se estiver presente nela.
     PADRÃO PRÉ-PUBLICAÇÃO: Link "a definir após a publicação", Responsável "a definir" e Hora "a definir" são o preenchimento esperado antes de publicar, não achados;
     a dimensão UTMs só reprova se a coluna UTM estiver vazia, "a definir" ou fora do padrão utm_source/utm_medium/utm_campaign em minúsculas.
     Escreva todo o parecer, inclusive títulos de seção e rótulos, em português do Brasil (nada de "Legal and Claim Compliance"), e copie cada trecho citado letra por letra.
@@ -493,8 +663,8 @@ aplicacao_g3:
     restrições e condições para publicar. Cruze com o parecer final do Guardião: todo item bloqueante
     não resolvido impede o canal afetado, então liste os canais bloqueados e o que falta para liberá-los.
     O status NÃO pode ser APROVADO sem restrições se houver item bloqueante em aberto.
-    REGRA DE CANAIS: um canal só pode constar como autorizado se TODAS as suas peças pertencem a entregas liberadas em
-    aplicacao_g2 e não há item bloqueante do Guardião em aberto para ele. Peça de entrega bloqueada, ou checklist de
+    REGRA DE CANAIS: um canal só pode constar como autorizado se TODAS as suas peças pertencem a entregas não bloqueadas no
+    registro_g2 e não há item bloqueante do Guardião em aberto para ele. Peça de entrega bloqueada, ou checklist de
     conformidade pendente, coloca o canal em Canais bloqueados. Orçamento autorizado só existe para canais autorizados:
     se nenhum canal estiver autorizado, o orçamento autorizado é R$ 0 e o status é BLOQUEADO: NENHUM CANAL AUTORIZADO (nunca
     escreva APROVADO nem APROVADO COM RESTRIÇÕES nesse caso, mesmo que o humano tenha respondido Aprovado.). Valores marcados [VALIDAR] no briefing continuam [VALIDAR] no registro.
@@ -522,9 +692,9 @@ execucao_publicacao:
 sumario_executivo:
   description: >
     Consolide a campanha "{briefing_titulo}" em um sumário executivo de uma página: objetivo e
-    KPI norteador, o que foi entregue por canal, decisões dos portões (registros das tarefas aplicacao_g1, aplicacao_g2 e aplicacao_g3), riscos abertos, itens
+    KPI norteador, o que foi entregue por canal, decisões dos portões (registros das tarefas portao_g1/aplicacao_g1, registro_g2 e aplicacao_g3), riscos abertos, itens
     [VALIDAR]/[AVAL ESPECIALISTA] pendentes, plano de medição e próximos passos (relatório de
-    48h, semanal e final pelo Analista de Dados). Para cada portão copie o status exatamente como está no registro da tarefa aplicacao_gN (inclusive canais
+    48h, semanal e final pelo Analista de Dados). Para cada portão copie o status exatamente como está no registro da tarefa correspondente (aplicacao_g1, registro_g2, aplicacao_g3) (inclusive canais
     autorizados, bloqueados e orçamento autorizado no G3), sem reinterpretar nem suavizar: peça bloqueada ou canal sem
     autorização não pode ser descrita como pronta, aprovada ou liberada. Os KPIs operacionais da crew (número de
     iterações, retrabalhos, reprovações) só podem usar o que consta nos registros; sem registro, escreva \"não medido\".
