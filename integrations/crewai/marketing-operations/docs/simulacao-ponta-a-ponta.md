@@ -50,9 +50,7 @@ Simulação completa do fluxo (23 tarefas, 14 agentes, 3 portões) usando as sa�
 | rubrica_qa | Revisor | 91/95/95/59, mídia REFAZER | passa | quadro coerente |
 | aplicacao_g2 (1ª tentativa) | Gerente | esqueleto aceito com alerta | reprova | A saída traz comentário depois do documento ("Document completion is based entirely on provided instructions and gui"). O documento termina no fechamento do bloco ou na última seção: não escreva introdução, resumo, autoavaliação n |
 | aplicacao_g2 (2ª tentativa, sem inglês) | Gerente | — | reprova | A reemissão é um esqueleto: "..."; "[CONTINUAÇÃO do fluxo de e-mail original, aplicando ajustes nos superl"; "[Incluindo todas as semanas da campanha com pelo menos 3 posts por sem". Não aponte para a peça original nem resuma: cop |
-| aplicacao_g2 (3ª: saneador) | código | Liberadas: Conteúdo, Calendário, E-mail, Direção de Arte | aceita saneada | - **Liberadas: Direção de Arte | bloqueadas: ** Plano de Mídia - Pendência da rubrica: "Rotina operacional, projeções sem fonte"
----
- C |
+| aplicacao_g2 (3ª: saneador) | código | Liberadas: Conteúdo, Calendário, E-mail, Direção de Arte | aceita saneada | - **Liberadas: Direção de Arte | bloqueadas: ** Plano de Mídia - Pendência da rubrica: "Rotina operacional, projeções sem fonte"; Conteúdo longo, Calendário social, Fluxos de e-mail (reemissão incompleta) |
 | pacote_publicacao | Coordenador | 10 posts (ISO) aceitos sem alerta | reprova | O calendário social está entre as entregas bloqueadas em aplicacao_g2: o cronograma não pode listar posts de rede social. Liste só e-mail e artigo liberados, ou escreva que não há post liberado. |
 | pacote_publicacao (3ª: saneador) | código | — | aceita saneada | 0 posts no cronograma (calendário original: 24); passa na própria trava: True |
 | revisao_g3 | Guardião | citação inexistente; UTM reprovada por 'a definir' | reprova | A dimensão '3. UTMs Conformes (só cita trechos já marcados [VALIDAR] ou o objetivo do briefing)' está Reprovada, mas o próprio apontamento diz que está correta, ou só cita o objetivo do briefing (que está correto), trechos já marc |
