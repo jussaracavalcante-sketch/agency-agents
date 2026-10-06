@@ -10,7 +10,8 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_limpar_final", "_trecho_em_ingles", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_linhas_do_calendario", "_saneador_pacote_factory", "_REDES", "_HORA_COM_FUSO_COLADO", "_posts_da_tabela", "_bloqueadas_do_g2", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario", "_trechos_entre_aspas", "_fim_do_documento", "_PALAVRAS_TITULO_EN", "_PT_PT", "_PT_PT_RE", "_titulo_em_ingles", "_portugues_de_portugal", "_linhas_do_cronograma", "_problemas_cronograma", "_tamanho_util", "_pecas_encolhidas", "_MARCA_HISTORICO", "_orcamento_de_historico", "_ECRA_COM_ARTIGO", "_ECRA_ARTIGO", "_NOTA_FINAL", "_MARCADOR_MALFORMADO", "_nota_final", "_marcadores_malformados", "_numeros_informados", "_valores_rs_inventados", "_reprovadas_sem_trecho", "_PALAVRAS_COMUNS", "_ESQUELETO", "_esqueleto", "_retirar_das_liberadas", "_MARCA_AJUSTES", "_sem_bloco_ajustes",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_limpar_final", "_trecho_em_ingles", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_linhas_do_calendario", "_saneador_pacote_factory", "_REDES", "_HORA_COM_FUSO_COLADO", "_posts_da_tabela", "_bloqueadas_do_g2", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario", "_trechos_entre_aspas", "_fim_do_documento", "_PALAVRAS_TITULO_EN", "_PT_PT", "_PT_PT_RE", "_titulo_em_ingles", "_portugues_de_portugal", "_linhas_do_cronograma", "_problemas_cronograma", "_tamanho_util", "_pecas_encolhidas", "_MARCA_HISTORICO", "_orcamento_de_historico", "_ECRA_COM_ARTIGO", "_ECRA_ARTIGO", "_NOTA_FINAL", "_MARCADOR_MALFORMADO", "_nota_final", "_marcadores_malformados", "_numeros_informados", "_valores_rs_inventados", "_reprovadas_sem_trecho", "_PALAVRAS_COMUNS", "_ESQUELETO", "_esqueleto", "_retirar_das_liberadas", "_MARCA_AJUSTES", "_sem_bloco_ajustes", "_sanear_datas_passadas", "_sanear_calendario", "_CANAIS_ORGANICOS", "_verba_rateada_em_organico", "_projecao_em_bloco_sem_validar",
+    "_FEEDBACK", "_ha_feedback_humano", "_tem_feedback", "_Vigente", "_MARCA_PENDENTE", "_guardrail_reemissao_factory", "_saneador_reemissao_factory", "_bloco_versoes_g2", "_guardrail_registro_factory",
 }
 
 
@@ -1116,3 +1117,82 @@ def test_ajustes_do_administrador_nao_autorizam_termos():
     permitido = G._texto_permitido({"cliente": "Hospital", "contexto_cliente": ctx})
     assert "cirurgia robótica" not in permitido and "excelência médica" in permitido
     assert G._sem_bloco_ajustes("sem bloco") == "sem bloco"
+
+
+def test_calendario_barra_datas_passadas_antes_dos_claims_e_saneador_as_move():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+    cab = "| Semana | Data | Plataforma | Formato | Pilar | Hook e copy | CTA |\n|---|---|---|---|---|---|---|\n"
+    datas = [("1","2023-10-02","Instagram"),("1","2023-10-03","Facebook"),("1","2023-10-05","LinkedIn"),("2","2023-10-09","Instagram"),("2","2023-10-10","Facebook"),("2","2023-10-12","LinkedIn")]
+    corpo = "\n".join(f"| {s} | {d} | {p} | Post | Tecnologia | Combinamos cuidado humano com tecnologia de ponta. | Saiba mais |" for s,d,p in datas)
+    doc = "```markdown\n" + cab + corpo + "\n\n### Hashtags\n" + "texto de apoio do calendário em português do Brasil para completar o documento. " * 8 + "\n```\n"
+    r = G._guardrail_calendario(_saida(doc))
+    assert r[0] is False and "já passaram" in r[1]                      # data passada vem antes do claim "tecnologia de ponta"
+    novo, trocas = G._sanear_calendario(doc)
+    assert "2023" not in novo and "02/10/2026" in novo and any("datas passadas" in t for t in trocas) and "[VALIDAR" in novo
+    assert G._datas_passadas(novo) == []
+
+
+def test_midia_verba_rateada_em_organico_e_projecao_em_bloco():
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["orcamento_midia"] = "R$ 15.000 [VALIDAR]"; G._TEXTO_PERMITIDO["texto"] = ""
+    r = G._problemas_midia("- **Orçamento:** R$ 15.000 [VALIDAR] dividido entre Google Ads, Social Media e SEO.\n")
+    assert r and "canal orgânico" in r
+    assert G._problemas_midia("- **Orçamento:** R$ 15.000 [VALIDAR] integralmente em Google Ads (busca).\n") is None
+    bloco = "## Projeções\n### Cenário Base\n- **CPC Estimado:** R$ 2,00\n- **CTR Estimado:** 3%\n- **Conversão Estimada (CVR):** 5%\n"
+    r = G._problemas_midia(bloco)
+    assert r and "CPC, CTR e CVR" in r
+    assert G._problemas_midia("## Projeções [VALIDAR]\n" + bloco.split("\n", 1)[1]) is None
+    G._INPUTS_ATUAIS.clear()
+
+
+def _tarefa(txt):
+    return types.SimpleNamespace(output=types.SimpleNamespace(raw=txt) if txt is not None else None)
+
+
+def test_vigente_prefere_reemissao_pos_portao_senao_correcao():
+    cor, apl = _tarefa("versão corrigida"), _tarefa(None)
+    assert G._Vigente(cor, apl).output.raw == "versão corrigida"
+    apl = _tarefa("  ")
+    assert G._Vigente(cor, apl).output.raw == "versão corrigida"
+    apl = _tarefa("reemitida")
+    assert G._Vigente(cor, apl).output.raw == "reemitida"
+    assert G._Vigente(_tarefa(None), _tarefa(None)).output is None
+
+
+def test_feedback_humano_detectado_so_quando_ha_ajustes():
+    assert G._ha_feedback_humano("Decisão: Devolvido com feedback.\nAjustes pedidos: troque o título.") is True
+    assert G._ha_feedback_humano("Decisão: Aprovado.\nNenhum feedback humano.\nParecer do Guardião: ok") is False
+    G._FEEDBACK["G2"] = True
+    assert G._tem_feedback("G2") is True and G._tem_feedback("G1") is False
+    G._FEEDBACK["G2"] = False
+
+
+def test_reemissao_barra_esqueleto_registro_e_encolhimento():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+    orig = "Texto da peça original em português do Brasil com bastante conteúdo útil. " * 30
+    base = lambda saida: (True, saida)
+    g = G._guardrail_reemissao_factory(_tarefa(orig), "o conteúdo", base)
+    assert g(_saida(orig))[0] is True
+    r = g(_saida("Versão original mantida sem alterações."))
+    assert r[0] is False
+    r = g(_saida("Texto curto em português."))
+    assert r[0] is False and "%" in r[1]
+
+
+def test_saneador_reemissao_volta_a_versao_anterior_com_marca_pendente():
+    orig = "Texto da peça original em português do Brasil com bastante conteúdo útil. " * 30
+    san = G._saneador_reemissao_factory(_tarefa(orig), lambda t: (t, []))
+    novo, trocas = san("Texto curto.")
+    assert G._MARCA_PENDENTE in novo and orig.strip()[:40] in novo and trocas
+    novo, trocas = san(orig)
+    assert G._MARCA_PENDENTE not in novo
+
+
+def test_bloco_de_versoes_e_registro_g2_gerados_por_codigo():
+    pecas = {"Conteúdo": (_tarefa("corrigido"), _tarefa(None)), "E-mail": (_tarefa("corrigido"), _tarefa(G._MARCA_PENDENTE + ": incompleta\ntexto"))}
+    bloco = G._bloco_versoes_g2(pecas)
+    assert "Conteúdo: corrigida antes do portão e aprovada sem alterações" in bloco and "Bloqueadas: E-mail" in bloco
+    assert "Bloqueadas: nenhuma" in G._bloco_versoes_g2({"Conteúdo": (_tarefa("x"), _tarefa(None))})
+    G._INPUTS_ATUAIS.clear()
+    doc = "# Registro do G2\n" + "texto em português do Brasil com bastante conteúdo útil para o leitor. " * 12
+    r = G._guardrail_registro_factory(pecas)(_saida(doc + "\n## Versões vigentes (geradas automaticamente pelo código)\n- inventado\n"))
+    assert r[0] is True and "inventado" not in r[1] and r[1].count("## Versões vigentes") == 1 and "Bloqueadas: E-mail" in r[1]
