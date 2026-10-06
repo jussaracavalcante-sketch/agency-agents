@@ -837,8 +837,8 @@ _PLACEHOLDERS = re.compile(
     r"seguindo rigorosamente|(foi|foram) (criad|elaborad|redigid)\w+ seguindo|em total conformidade|"
     r"todas as (propostas|valida[çc][õo]es|corre[çc][õo]es) foram|n[ãa]o h[áa] ajustes pendentes|todos os feedbacks[^.\n]{0,40}(considerad|inclu[íi]d)|"
     r"todos os elementos foram|(foi|foram) (desenvolvid|produzid|constru[íi]d)\w+ em conformidade|respeitando a linguagem de|"
-    r"acreditamos que|est[áa] pronto para (a )?(aprova[çc][ãa]o|execu[çc][ãa]o)|caminho est[áa] pronto|com os ajustes realizados|"
-    r"este plano prop[õo]e|este parecer serve|este documento (foi|serve|segue)",
+    r"acreditamos que (o caminho|o documento|o brief|a campanha|as pe[çc]as|o plano)|est[áa] pronto para (a )?(aprova[çc][ãa]o|execu[çc][ãa]o)|caminho est[áa] pronto|"
+    r"com os ajustes realizados|este parecer serve|este documento (foi|serve|segue)",
     re.I,
 )
 
@@ -1283,7 +1283,19 @@ def _saneador_pacote_factory(calendario_task, aplicacao_task):
         original = _sem_alerta(getattr(getattr(calendario_task, "output", None), "raw", None) or "")
         nao_executada = "não executada" in aplicacao.lower() and "nenhuma peça foi reemitida" in aplicacao.lower()
         if nao_executada or re.search(r"calend", _bloqueadas_do_g2(aplicacao), re.I):
-            return texto, []
+            if not _posts_da_tabela(texto):
+                return texto, []
+            # calendário bloqueado: as linhas de post de rede social saem do cronograma
+            sociais = set(_linhas_social(texto))
+            corpo = [l for l in texto.splitlines() if l not in sociais]
+            aviso = "> Nenhum post de rede social liberado: o calendário social está bloqueado em aplicacao_g2 (reemissão incompleta ou aplicação não executada)."
+            for i, l in enumerate(corpo):
+                if re.match(r"\s*#{1,4}\s*.*cronograma", l, re.I):
+                    corpo.insert(i + 1, "\n" + aviso)
+                    break
+            else:
+                corpo.append(aviso)
+            return "\n".join(corpo), ["posts de rede social removidos do cronograma (calendário bloqueado)"]
         reemitido = _trecho_calendario_reemitido(aplicacao)
         posts = _linhas_do_calendario(reemitido if _posts_da_tabela(reemitido) else original)
         if not posts:
@@ -2013,7 +2025,7 @@ def _dimensoes_incoerentes(parecer):
         if reprovada and _SEM_PROBLEMA.search(corpo):
             achados.append(cab.strip("# ").strip()[:70])
         elif reprovada:
-            objetivo = _normalizar(str(_INPUTS_ATUAIS.get("objetivo", "")))
+            objetivo = _normalizar(str(_INPUTS_ATUAIS.get("objetivo", ""))).rstrip(". ")
             citados = [_normalizar(q) for q in re.findall(r"[\"“]([^\"”]{3,})[\"”]", corpo)]
             ncorpo = _normalizar(corpo)
             if re.search(r"coer", _normalizar(cab)) and objetivo and any(objetivo in q for q in citados) and re.search(

@@ -881,9 +881,10 @@ def test_cronograma_refeito_a_partir_do_calendario_na_ultima_tentativa():
     sem_titulo = _saida("# Índice\n" + ("peça listada com o status de liberação do pacote de publicação. " * 12) + "\n```\n")
     novo, trocas = G._saneador_pacote_factory(cal, apl)(sem_titulo.raw)
     assert "## Cronograma de Publicação" in novo and len(G._posts_da_tabela(novo)) == 6 and trocas
-    # calendário bloqueado: não mexe
+    # calendário bloqueado: não refaz o cronograma; tira os posts de rede social
     bloq = _tarefa("### Entregas Bloqueadas:\n- Calendário Social")
-    assert G._saneador_pacote_factory(cal, bloq)(inventado.raw) == (inventado.raw, [])
+    novo_b, trocas_b = G._saneador_pacote_factory(cal, bloq)(inventado.raw)
+    assert not G._posts_da_tabela(novo_b) and "bloqueado" in novo_b and trocas_b
 
 
 # ───────── correções do piloto 2896d45e ─────────
@@ -1088,3 +1089,23 @@ def test_canais_novos_run_rate_como_orcamento_e_autoavaliacao():
     assert not G._claims_proibidos("Antes da finalização, garanta aderência aos critérios de acessibilidade AA.")
     assert G._dimensoes_incoerentes("### 3. UTMs Conformes\n- **Status:** Reprovado\n- **Observações:** Os links permanecem indefinidos, \"a definir após a publicação\".\n")
     G._INPUTS_ATUAIS.clear()
+
+
+def test_autoavaliacao_nao_pega_copy_legitima_e_objetivo_com_ponto():
+    assert not G._placeholders("Nós acreditamos que a tecnologia deve andar de mãos dadas com o cuidado.")
+    assert G._placeholders("Com os ajustes realizados, acreditamos que o caminho está pronto para aprovação.")
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["objetivo"] = "Gerar 400 contatos qualificados em 8 semanas."
+    p = "### 1. Coerência com o Briefing\n- **Status:** Reprovado\n- **Apontamento:** O objetivo está conforme o briefing: \"Gerar 400 contatos qualificados em 8 semanas\". No entanto cita \"[VALIDAR: fonte]\".\n"
+    assert G._dimensoes_incoerentes(p)
+    G._INPUTS_ATUAIS.clear()
+
+
+def test_saneador_do_pacote_remove_posts_quando_o_calendario_esta_bloqueado():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+    bloq = _tarefa("### Entregas Bloqueadas:\n- Calendário Social\n- Plano de Mídia")
+    cal = _tarefa(_CAL_8)
+    com_posts = _post_cron(["| 01/11/2026 | a definir | America/Manaus | Instagram | Post | a definir após a publicação | utm_source=instagram&utm_medium=social&utm_campaign=c | a definir | A definir |",
+                            "| 21/11/2026 | a definir | America/Manaus | E-mail | Boas-vindas | a definir após a publicação | utm_source=email&utm_medium=email&utm_campaign=c | a definir | A definir |"])
+    novo, trocas = G._saneador_pacote_factory(cal, bloq)(com_posts.raw)
+    assert not G._posts_da_tabela(novo) and "E-mail" in novo and "calendário social está bloqueado" in novo and trocas
+    assert G._guardrail_pacote_factory(cal, bloq)(_saida(novo))[0] is True
