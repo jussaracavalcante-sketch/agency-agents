@@ -92,6 +92,8 @@ revisao_g1:
     [VALIDAR] JÁ MARCADO É PENDÊNCIA HUMANA, NÃO ERRO: item que o autor marcou [VALIDAR] não reprova a dimensão veracidade nem a dimensão de itens [VALIDAR]; ele só entra como "Aprovado com
     ajustes" com a lista das pendências para a decisão humana. Só reprova item inventado SEM marcação [VALIDAR] e SEM fonte nos dados fornecidos. Uma dimensão cujo apontamento diz que não há
     correção a fazer não pode ser Reprovada. Cada trecho entre aspas no parecer deve ser CÓPIA EXATA do documento revisado, sem parafrasear nem juntar palavras de trechos diferentes.
+    ORÇAMENTO DO BRIEFING: o orçamento total ({orcamento_total}) e a verba de mídia ({orcamento_midia}) são valores DO BRIEFING; repeti-los no brief, com [VALIDAR], é coerência, não divergência.
+    Um run-rate ou gasto histórico citado no briefing é referência, não a verba: não trate a diferença entre os dois como erro.
     Linhas com "ALERTA DE QUALIDADE" nas entregas indicam problema que a trava automática não conseguiu corrigir: trate o trecho citado como achado e cite-o no parecer.
   expected_output: >
     Parecer Markdown com resultado, checklist por dimensão (status, apontamento, regra,
@@ -175,7 +177,7 @@ calendario_social:
     estratégico e do conteúdo-base. FORMATO COMPACTO OBRIGATÓRIO (a resposta precisa caber inteira): uma única tabela
     Markdown com as colunas Semana | Data | Plataforma | Formato | Pilar | Hook e copy (até 25 palavras) | CTA, com ao
     menos 3 posts por semana em TODAS as {duracao_semanas} semanas (semanas 1 a {duracao_semanas}, sem pular nenhuma),
-    cada post datado. Cada "Hook e copy" é uma frase completa em português do Brasil, com sujeito e verbo, que faria sentido lida sozinha
+    cada post datado com dd/mm/aaaa no ANO CORRENTE OU SEGUINTE (a campanha começa depois da aprovação; nunca use anos passados como 2023 ou 2024). Cada "Hook e copy" é uma frase completa em português do Brasil, com sujeito e verbo, que faria sentido lida sozinha
     num post (nada de sequências de substantivos como "Culminação da confiança" ou "Seleções médicas complexas com inteligência"). Adapte a mensagem por plataforma (não replique). O objetivo de cada post vem do objetivo do
     briefing ({objetivo}), sem metas numéricas novas, e por isso não ganha coluna própria. Depois da tabela, em listas
     curtas: hashtags por plataforma, guia de engajamento (respostas-padrão, comunidades), posts candidatos a
@@ -213,7 +215,9 @@ plano_midia_paga:
     declaradas, rotina semanal de otimização e requisitos de rastreamento. Briefe os criativos
     necessários (formato, dimensão, quantidade). NÃO crie nem ative nada em plataforma.
     SERVIÇOS NÃO INFORMADOS: a seção [SERVIÇOS NÃO INFORMADOS] ao fim do contexto do cliente lista serviços e especialidades que o briefing e a base não citam; eles não podem ser tema, título, exemplo nem copy.
-    ORÇAMENTO: a verba de cada canal é parte do orçamento de {orcamento_midia}, marcada [VALIDAR]; gasto histórico (run-rate de 90 dias, por exemplo) é referência e nunca vira orçamento.
+    ORÇAMENTO: a verba de cada canal PAGO é parte do orçamento de {orcamento_midia}, marcada [VALIDAR]; gasto histórico (run-rate de 90 dias, por exemplo) é referência e nunca vira orçamento.
+    A verba de mídia não se divide com SEO, blog, conteúdo, e-mail nem social orgânico: esses saem do restante do orçamento total e não entram no plano de mídia. Canal pago só se o brief
+    aprovado o prevê (briefing "sem Meta Ads" = sem social pago). Toda projeção de CPC, CTR, CVR ou contatos leva [VALIDAR] na mesma linha ou no título do bloco de cenários.
   expected_output: >
     Documento Markdown "Plano de Mídia" com as 9 seções do template, mais "Insumos e pendências", "Rotina operacional (diária, semanal)"
     e "Alçadas e autorizações", tabela de estrutura de campanhas e briefing de criativos.

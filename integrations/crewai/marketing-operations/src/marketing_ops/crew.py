@@ -1134,12 +1134,74 @@ def _problemas_calendario(texto):
 
 
 def _guardrail_calendario(saida):
-    """O calendário deve cobrir todas as semanas da campanha (por datas ou por marcadores 'Semana N')."""
-    base = _guardrail_producao(saida)
+    """
+    O calendário deve cobrir todas as semanas da campanha com datas futuras. A estrutura e as datas são checadas ANTES dos claims: quando
+    só o primeiro problema é devolvido, o modelo corrige claims e deixa a data passada (observado: calendário inteiro em 2023 aceito).
+    """
+    base = _guardrail_documento(saida)
     if base[0] is False:
         return base
     erro = _problemas_calendario(getattr(saida, "raw", None) or str(saida) or "")
-    return (False, erro) if erro else (True, saida)
+    if erro:
+        return False, erro
+    return _guardrail_producao(saida)
+
+
+def _sanear_datas_passadas(texto):
+    """Última barreira do calendário: data passada vira a mesma data (dia e mês) no primeiro ano em que ela fica no futuro. Devolve (texto, trocas)."""
+    from datetime import datetime
+
+    hoje = _hoje()
+    trocas = []
+
+    def _ano_futuro(d, m):
+        for ano in (hoje.year, hoje.year + 1):
+            try:
+                if datetime(ano, m, d).date() >= hoje:
+                    return ano
+            except ValueError:
+                continue
+        return None
+
+    def _troca_iso(mt):
+        a, m, d = int(mt.group(1)), int(mt.group(2)), int(mt.group(3))
+        try:
+            if datetime(a, m, d).date() >= hoje:
+                return mt.group(0)
+        except ValueError:
+            return mt.group(0)
+        novo = _ano_futuro(d, m)
+        if novo is None:
+            return mt.group(0)
+        trocas.append("data passada")
+        return f"{d:02d}/{m:02d}/{novo}"
+
+    def _troca_br(mt):
+        d, m, a = int(mt.group(1)), int(mt.group(2)), int(mt.group(3))
+        try:
+            if datetime(a, m, d).date() >= hoje:
+                return mt.group(0)
+        except ValueError:
+            return mt.group(0)
+        novo = _ano_futuro(d, m)
+        if novo is None:
+            return mt.group(0)
+        trocas.append("data passada")
+        return f"{d:02d}/{m:02d}/{novo}"
+
+    linhas = []
+    for l in (texto or "").splitlines():
+        if l.strip().startswith("|") and _TAG_ALERTA not in l:
+            l = re.sub(r"\b(20\d{2})-(\d{2})-(\d{2})\b", _troca_iso, l)
+            l = re.sub(r"\b(\d{2})/(\d{2})/(20\d{2})\b", _troca_br, l)
+        linhas.append(l)
+    return "\n".join(linhas), (["datas passadas movidas para o próximo ano em que ficam no futuro"] if trocas else [])
+
+
+def _sanear_calendario(texto):
+    novo, trocas = _sanear_producao(texto)
+    novo, t2 = _sanear_datas_passadas(novo)
+    return novo, trocas + t2
 
 
 _CALENDARIO_REEMITIDO = re.compile(r"(pe[çc]a reemitida|reemiss[ãa]o)[^\n]*calend[áa]rio|calend[áa]rio[^\n]*reemitid", re.I)
@@ -1769,6 +1831,37 @@ def _orcamento_de_historico(texto):
     return None
 
 
+_CANAIS_ORGANICOS = re.compile(r"\bseo\b|org[âa]nic|blog|conte[úu]do|social media|redes sociais|e-?mail", re.I)
+
+
+def _verba_rateada_em_organico(texto):
+    """Mensagem quando a verba de mídia do briefing é dividida com canais orgânicos (SEO, blog, social orgânico, e-mail); None se não houver."""
+    aprovados = {_num(x) for x in re.findall(r"R\$\s*([\d.]+(?:,\d+)?)", str(_INPUTS_ATUAIS.get("orcamento_midia", "")))}
+    aprovados = {a for a in aprovados if a}
+    if not aprovados:
+        return None
+    for l in _sem_alerta(texto or "").splitlines():
+        valores = {_num(x) for x in re.findall(r"R\$\s*([\d.]+(?:,\d+)?)", l)}
+        if valores & aprovados and re.search(r"dividid|distribu|ratead|repartid|alocad[oa]s? entre|entre ", l, re.I) and _CANAIS_ORGANICOS.search(l):
+            return (
+                f"A linha \"{l.strip()[:110]}\" divide a verba de mídia do briefing com canal orgânico (SEO, blog, conteúdo, social orgânico ou e-mail). "
+                "A verba de mídia é só dos canais pagos do brief aprovado; produção, SEO e social orgânico saem do restante do orçamento total, marcados [VALIDAR]."
+            )
+    return None
+
+
+def _projecao_em_bloco_sem_validar(texto):
+    """Trecho de projeções CPC/CTR/CVR em linhas separadas (listas ou cenários) sem [VALIDAR] por perto; vazio se não houver."""
+    t = _sem_alerta(texto or "")
+    baixo = t.lower()
+    for m in re.finditer(r"\bcpc\b", baixo):
+        janela = baixo[max(0, m.start() - 200): m.start() + 450]
+        if re.search(r"\bctr\b", janela) and re.search(r"\bcvr\b|convers[ãa]o", janela) and re.search(r"r\$\s*\d|\d\s?%", janela) and "[validar" not in janela:
+            inicio = t.rfind("\n", 0, m.start()) + 1
+            return t[inicio: t.find("\n", m.start())].strip()[:90] or "cenários"
+    return ""
+
+
 def _problemas_midia(texto, brief_texto=""):
     """Mensagem de erro do plano de mídia (canal fora do brief, projeção sem fonte, conversões que não fecham) ou None."""
     texto = _sem_alerta(texto)
@@ -1784,6 +1877,15 @@ def _problemas_midia(texto, brief_texto=""):
     historico = _orcamento_de_historico(texto)
     if historico:
         return historico
+    rateio = _verba_rateada_em_organico(texto)
+    if rateio:
+        return rateio
+    bloco_sem_validar = _projecao_em_bloco_sem_validar(texto)
+    if bloco_sem_validar:
+        return (
+            "As projeções de CPC, CTR e CVR (" + bloco_sem_validar + ") não têm fonte nos dados do briefing. Marque o bloco de cenários como [VALIDAR] "
+            "(premissas a confirmar) ou cite a fonte; não apresente estimativa como dado."
+        )
     linhas = list(_LINHA_PROJECAO.finditer(texto or ""))
     lista = list(_LINHA_PROJECAO_LISTA.finditer(texto or ""))
     if linhas or lista:
@@ -2514,7 +2616,7 @@ class MarketingOpsCrew:
     @task
     def calendario_social(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_calendario, saneador=_sanear_producao), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_calendario, saneador=_sanear_calendario), guardrail_max_retries=2,
             config=self.tasks_config["calendario_social"],
             context=[self.aplicacao_g1(), self.producao_conteudo(), self.pesquisa_mercado()],
         )
