@@ -19,7 +19,7 @@
 | 12 | `revisao_g2` | 11 Guardião | 7–11 | |
 | 12b | `rubrica_qa` | 13 Revisor de qualidade | 6, 7–10 | Rubrica: 5 gates, nota de 0 a 100 e veredito por peça |
 | 13 | `portao_g2` | 01 Gerente (+ humano) | 12, 7–11 | **G2 · pedido** |
-| 14 | `aplicacao_g2` | 01 Gerente | 13, 12, 7–11 | **G2 · decisão** (ajustes obrigatórios por entrega) |
+| 14 | `aplicacao_g2_*` + `registro_g2` | 01 Gerente | 13, 12, 7–11 | **G2 · decisão**: reescrita só se houver feedback humano (condicional por peça); registro com versões vigentes gerado por código |
 | 15 | `plano_medicao` | 10 Analista | 6, 8, 9, 10 | |
 | 16 | `pacote_publicacao` | 12 Publicação | 14, 15, 11, 7–10 | |
 | 17 | `revisao_g3` | 11 Guardião | 16, 15, 14 | |
@@ -166,7 +166,7 @@ seguintes (observado: o Gerente afirmou que o brief havia sido reformulado sem r
 |-------|--------|--------------|-----------|
 | Pedido | `portao_gN` | Gerente | Pedido de aprovação; refeito a cada devolução, com o feedback transcrito literalmente |
 | Decisão | `aplicacao_g1` | Estrategista (dono do brief) | Registro de decisão G1 + **brief integral revisado** |
-| Decisão | `aplicacao_g2` | Gerente | Decisão por entrega, com ajustes obrigatórios em texto exato e tipo (pontual ou recriação); o `pacote_publicacao` aplica os pontuais |
+| Decisão | `aplicacao_g2_*`, `registro_g2` | Gerente | Aplicação condicional por peça (só com feedback humano); o `registro_g2` lista a versão vigente de cada peça e as bloqueadas |
 | Decisão | `aplicacao_g3` | Gerente | Status (aprovado, com restrições, reprovado ou pendente), canais e orçamento autorizados; o `execucao_publicacao` só age dentro disso |
 
 O texto das tarefas de aplicação recebe, em tempo de montagem, o **modo do portão**:
@@ -209,3 +209,12 @@ reescrevia o parecer do Guardião; o registro do G3 autorizava canais cujas peç
   cronograma posts do calendário liberado, envios de e-mail e o artigo no canal Site/Blog. Datas só do calendário.
 - **`revisao_g2`:** varredura do plano de mídia: serviço fora do briefing, plataforma fora das informadas, projeção sem
   fonte, soma de mídia diferente do orçamento e superlativo reprovam a peça.
+
+
+## Correção antes do portão, aprovação sem retrabalho
+
+Desenho vigente (36 tarefas): produção → revisão do Guardião → **correção automática** (cada autor reemite a própria peça com os apontamentos: `correcao_brief`, `correcao_conteudo/calendario/email/midia/arte`) → **revisão final do Guardião** (`revisao_g1_final`, `revisao_g2_final`) → portão humano, que já mostra a versão corrigida.
+
+- "Aprovado." não reescreve nada: as tarefas `aplicacao_g1`, `aplicacao_g2_*` e `aplicacao_g3` são `ConditionalTask` e só rodam quando o portão traz feedback humano (`_tem_feedback`).
+- A versão vigente de cada peça é a reemissão pós-portão, se houve, senão a versão corrigida (`_Vigente`).
+- Reemissão incompleta (esqueleto ou menos de 60% do tamanho) cai na versão anterior com a marca "AJUSTES PENDENTES"; a peça fica bloqueada no `registro_g2`, cujo bloco "Versões vigentes" é gerado por código.

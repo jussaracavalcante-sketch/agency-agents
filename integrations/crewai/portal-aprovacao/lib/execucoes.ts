@@ -34,9 +34,9 @@ const chaveDe = (e: Evento, m: Mapa) => m.get(e.kickoff_id) || e.payload?.execut
 
 function portaoDe(eventos: Evento[], pendente: Evento | null): Execucao["portao"] {
   if (!pendente) return null;
-  const anteriores = eventos.filter((e) => e.id < pendente.id && e.tipo === "task" && /^revisao_g[123]$/.test(e.task_name || ""));
+  const anteriores = eventos.filter((e) => e.id < pendente.id && e.tipo === "task" && /^revisao_g[123](_final)?$/.test(e.task_name || ""));
   const ultima = anteriores[anteriores.length - 1]?.task_name;
-  return ultima ? (("G" + ultima.slice(-1)) as "G1" | "G2" | "G3") : null;
+  return ultima ? (("G" + ultima.charAt(9)) as "G1" | "G2" | "G3") : null;
 }
 
 export async function listarExecucoes(limite = 400): Promise<Execucao[]> {

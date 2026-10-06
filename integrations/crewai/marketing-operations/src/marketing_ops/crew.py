@@ -1,7 +1,7 @@
 """
 crew.py — Equipe de Operação de Marketing (CrewAI)
 
-Define os 14 agentes e as 23 tarefas do pipeline de campanha (a 24ª, relatório de
+Define os 14 agentes e as 36 tarefas do pipeline de campanha (produção → revisão → correção automática → revisão final → portão; a aplicação pós-portão é condicional ao feedback humano) (a 24ª, relatório de
 performance, roda em uma crew separada pós-campanha). Os textos de role/goal/backstory e
 description/expected_output vivem em config/agents.yaml e config/tasks.yaml; este arquivo
 só liga agentes, tarefas, ferramentas, dependências (context) e processo.
@@ -21,6 +21,7 @@ import tempfile
 from pathlib import Path
 
 from crewai import Agent, Crew, Process, Task
+from crewai.tasks.conditional_task import ConditionalTask
 from crewai.project import CrewBase, agent, crew, task
 from crewai_tools import FileReadTool, ScrapeWebsiteTool, SerperDevTool
 
@@ -383,7 +384,120 @@ def _linhas_significativas(texto):
     return [n for n in (_normalizar(l) for l in (texto or "").splitlines()) if len(n) > 25]
 
 
-def _guardrail_portao_factory(revisao_task, rubrica_task=None, auditoria_task=None):
+# Portões: há feedback humano escrito? Preenchido pela trava do portão a partir da saída final dele. As tarefas de aplicação pós-portão
+# são condicionais a isso: aprovação pura ("Aprovado.") não reescreve nada, porque as correções já aconteceram antes do portão.
+_FEEDBACK = {"G1": False, "G2": False, "G3": False}
+
+
+def _ha_feedback_humano(texto):
+    n = _normalizar(texto)
+    return ("ajustes pedidos" in n or "devolvido com feedback" in n) and "nenhum feedback humano" not in n.split("parecer do guardi")[0]
+
+
+def _tem_feedback(portao):
+    return bool(_FEEDBACK.get(portao))
+
+
+class _Vigente:
+    """Versão vigente de uma peça: a última tarefa da lista que produziu texto (reemissão pós-portão, se rodou; senão a versão corrigida antes do portão)."""
+
+    def __init__(self, *tarefas):
+        self._tarefas = tarefas
+
+    @property
+    def output(self):
+        for t in reversed(self._tarefas):
+            raw = getattr(getattr(t, "output", None), "raw", None)
+            if raw and str(raw).strip():
+                return type("Saida", (), {"raw": raw})()
+        return None
+
+
+_MARCA_PENDENTE = "> AJUSTES PENDENTES"
+
+
+def _guardrail_reemissao_factory(original_task, nome, base):
+    """
+    Reemissão de uma peça (correção antes do portão ou aplicação do feedback humano): passa pela trava da própria peça (`base`), não pode ser esqueleto,
+    não pode encolher abaixo de 60% da versão anterior e tem de ser a peça, não um registro ("versão original", "sem necessidade de reemissão").
+    """
+
+    def guardrail(saida):
+        r = base(saida)
+        if r[0] is False:
+            return r
+        texto = _sem_alerta(getattr(saida, "raw", None) or str(saida) or "")
+        esq = _esqueleto(texto)
+        if esq:
+            return False, (
+                f"A reemissão de {nome} é um esqueleto: " + "; ".join(f'"{e}"' for e in esq[:3]) + ". Entregue a peça INTEIRA, com todas as seções, campos, "
+                "tabelas e textos, trocando só o que o ajuste pede."
+            )
+        if re.search(r"vers[ãa]o original|sem necessidade de reemiss|n[ãa]o (h[áa]|foi) (necess[áa]ri[ao]|preciso) reemitir|mantida sem altera", texto, re.I) and _tamanho_util(texto) < 1500:
+            return False, f"A saída é um registro, não a peça. Esta tarefa entrega {nome} completo, mesmo que o ajuste seja pequeno: copie a peça inteira com o ajuste aplicado."
+        orig = getattr(getattr(original_task, "output", None), "raw", None) or ""
+        if orig and _tamanho_util(orig) > 600 and _tamanho_util(texto) < 0.6 * _tamanho_util(orig):
+            pct = round(100 * _tamanho_util(texto) / _tamanho_util(orig))
+            return False, (
+                f"A reemissão de {nome} ficou com {pct}% do tamanho da versão anterior. Reemitir é copiar a peça inteira (metadados, texto, tabelas, todos os "
+                "e-mails e seções) trocando só o trecho ajustado; não resuma."
+            )
+        return True, saida
+
+    return guardrail
+
+
+def _saneador_reemissao_factory(original_task, saneador_peca):
+    """Última barreira da reemissão: se ela veio em esqueleto ou encolhida, vale a versão anterior (saneada) com a marca de ajustes pendentes; senão, o saneador da peça."""
+
+    def saneador(texto):
+        orig = _sem_alerta(getattr(getattr(original_task, "output", None), "raw", None) or "")
+        encolhida = orig and _tamanho_util(orig) > 600 and _tamanho_util(_sem_alerta(texto)) < 0.6 * _tamanho_util(orig)
+        if orig and (encolhida or _esqueleto(texto)):
+            novo, trocas = saneador_peca(orig)
+            aviso = f"{_MARCA_PENDENTE}: a reemissão veio incompleta; esta é a versão anterior, saneada, com os ajustes pedidos ainda por aplicar.\n\n"
+            return aviso + novo.lstrip(), list(trocas) + ["reemissão incompleta: mantida a versão anterior"]
+        return saneador_peca(texto)
+
+    return saneador
+
+
+def _bloco_versoes_g2(pecas):
+    """
+    Bloco gerado por código com a versão vigente de cada peça do G2 e a lista de bloqueadas. `pecas`: {nome: (tarefa de correção, tarefa condicional de aplicação)}.
+    Bloqueada = a versão vigente carrega a marca de ajustes pendentes (reemissão incompleta).
+    """
+    linhas, bloqueadas = [], []
+    for nome, (correcao, aplicacao) in pecas.items():
+        apl = getattr(getattr(aplicacao, "output", None), "raw", None) or ""
+        cor = getattr(getattr(correcao, "output", None), "raw", None) or ""
+        vigente = apl if apl.strip() else cor
+        origem = "reemitida após o feedback humano" if apl.strip() else "corrigida antes do portão e aprovada sem alterações"
+        pendente = _MARCA_PENDENTE in vigente
+        if pendente:
+            bloqueadas.append(nome)
+        linhas.append(f"- {nome}: {origem}" + (" — **BLOQUEADA** (reemissão incompleta, ajustes pendentes)" if pendente else ""))
+    return (
+        "\n\n## Versões vigentes (geradas automaticamente pelo código)\n" + "\n".join(linhas)
+        + "\n\nBloqueadas: " + (", ".join(bloqueadas) if bloqueadas else "nenhuma") + "\n"
+    )
+
+
+def _guardrail_registro_factory(pecas):
+    """Registro da decisão do G2: documento válido; o bloco de versões vigentes e bloqueadas é acrescentado por código, não pelo modelo."""
+
+    def guardrail(saida):
+        base = _guardrail_documento(saida)
+        if base[0] is False:
+            return base
+        raw = getattr(saida, "raw", None) or str(saida) or ""
+        texto = re.sub(r"\n## Versões vigentes \(geradas automaticamente pelo código\).*", "", raw, flags=re.S).rstrip()
+        return True, texto + _bloco_versoes_g2(pecas)
+
+    return guardrail
+
+
+def _guardrail_portao_factory(revisao_task, rubrica_task=None, auditoria_task=None, portao=None):
     """
     Portão humano: o pedido deve copiar o parecer do Guardião (mesmo resultado, pelo menos 70% das linhas) e ter as
     seções obrigatórias. Rejeita paráfrase e a troca de "Reprovado" por outro resultado.
@@ -392,6 +506,8 @@ def _guardrail_portao_factory(revisao_task, rubrica_task=None, auditoria_task=No
     tentativas = {"n": 0}
 
     def guardrail(saida):  # sem anotação de retorno (ver _guardrail_documento)
+        if portao:
+            _FEEDBACK[portao] = _ha_feedback_humano(getattr(saida, "raw", None) or str(saida) or "")
         veredito = _checar_portao(saida)
         if veredito[0] is False:
             veredito = (False, _PREFIXO_AUTO + str(veredito[1]))
@@ -2565,6 +2681,8 @@ class MarketingOpsCrew:
         )
 
     # ───────────────────────── Tarefas · Fase 1 ─────────────────────────
+    # Desenho "aprovar sem corrigir depois": produção → revisão preliminar → CORREÇÃO automática (cada autor reemite a própria peça) →
+    # revisão final → portão. Depois do portão só há reescrita se o humano escreveu ajustes (tarefas condicionais); "Aprovado." não reescreve nada.
 
     @task
     def pesquisa_mercado(self) -> Task:
@@ -2588,20 +2706,40 @@ class MarketingOpsCrew:
                     config=self.tasks_config["revisao_g1"], context=[self.brief_estrategico()])
 
     @task
-    def portao_g1(self) -> Task:
+    def correcao_brief(self) -> Task:
         return Task(
-            guardrail=_guardrail_portao_factory(self.revisao_g1()), guardrail_max_retries=2,
-            config=self.tasks_config["portao_g1"],
+            guardrail=_com_limite_de_rejeicoes(_guardrail_reemissao_factory(self.brief_estrategico(), "o brief", _guardrail_brief),
+                                               saneador=_saneador_reemissao_factory(self.brief_estrategico(), _sanear_brief)), guardrail_max_retries=2,
+            config=self.tasks_config["correcao_brief"],
             context=[self.brief_estrategico(), self.revisao_g1()],
         )
 
     @task
-    def aplicacao_g1(self) -> Task:
+    def revisao_g1_final(self) -> Task:
+        return Task(guardrail=_com_limite_de_rejeicoes(_guardrail_parecer_factory([self.correcao_brief()])), guardrail_max_retries=2,
+                    config=self.tasks_config["revisao_g1_final"], context=[self.correcao_brief()])
+
+    @task
+    def portao_g1(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g1_factory(self.brief_estrategico(), self.portao_g1()), saneador=_saneador_aplicacao_g1_factory(self.brief_estrategico(), self.portao_g1())), guardrail_max_retries=2,
-            config=self.tasks_config["aplicacao_g1"],
-            context=[self.brief_estrategico(), self.revisao_g1(), self.portao_g1()],
+            guardrail=_guardrail_portao_factory(self.revisao_g1_final(), portao="G1"), guardrail_max_retries=2,
+            config=self.tasks_config["portao_g1"],
+            context=[self.correcao_brief(), self.revisao_g1_final()],
         )
+
+    @task
+    def aplicacao_g1(self) -> Task:
+        # Só roda quando o humano devolveu com ajustes; "Aprovado." mantém o brief corrigido como está.
+        return ConditionalTask(
+            condition=lambda _saida: _tem_feedback("G1"),
+            guardrail=_com_limite_de_rejeicoes(_guardrail_reemissao_factory(self.correcao_brief(), "o brief", _guardrail_brief),
+                                               saneador=_saneador_reemissao_factory(self.correcao_brief(), _sanear_brief)), guardrail_max_retries=2,
+            config=self.tasks_config["aplicacao_g1"],
+            context=[self.correcao_brief(), self.portao_g1()],
+        )
+
+    def _brief_vigente(self):
+        return _Vigente(self.correcao_brief(), self.aplicacao_g1())
 
     # ───────────────────────── Tarefas · Fase 2 ─────────────────────────
 
@@ -2610,7 +2748,7 @@ class MarketingOpsCrew:
         return Task(
             guardrail=_g_prod(), guardrail_max_retries=2,
             config=self.tasks_config["producao_conteudo"],
-            context=[self.aplicacao_g1(), self.mapa_seo()],
+            context=[self.correcao_brief(), self.aplicacao_g1(), self.mapa_seo(), self.pesquisa_mercado()],
         )
 
     @task
@@ -2618,7 +2756,7 @@ class MarketingOpsCrew:
         return Task(
             guardrail=_com_limite_de_rejeicoes(_guardrail_calendario, saneador=_sanear_calendario), guardrail_max_retries=2,
             config=self.tasks_config["calendario_social"],
-            context=[self.aplicacao_g1(), self.producao_conteudo(), self.pesquisa_mercado()],
+            context=[self.correcao_brief(), self.aplicacao_g1(), self.producao_conteudo(), self.pesquisa_mercado()],
         )
 
     @task
@@ -2626,7 +2764,7 @@ class MarketingOpsCrew:
         return Task(
             guardrail=_g_prod(), guardrail_max_retries=2,
             config=self.tasks_config["fluxos_email"],
-            context=[self.aplicacao_g1(), self.producao_conteudo()],
+            context=[self.correcao_brief(), self.aplicacao_g1(), self.producao_conteudo()],
         )
 
     def _com_rotina(self, nome, bloco):
@@ -2638,17 +2776,17 @@ class MarketingOpsCrew:
     @task
     def plano_midia_paga(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_midia_factory(self.aplicacao_g1()), saneador=_sanear_midia), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_midia_factory(self._brief_vigente()), saneador=_sanear_midia), guardrail_max_retries=2,
             config=self._com_rotina("plano_midia_paga", _bloco_operacao()),
-            context=[self.aplicacao_g1(), self.mapa_seo(), self.pesquisa_mercado(), self.fluxos_email()],
+            context=[self.correcao_brief(), self.aplicacao_g1(), self.mapa_seo(), self.pesquisa_mercado(), self.fluxos_email()],
         )
 
     @task
     def auditoria_midia(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_auditoria_factory(self.plano_midia_paga(), self.aplicacao_g1())), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_auditoria_factory(self.plano_midia_paga(), self._brief_vigente())), guardrail_max_retries=2,
             config=self._com_rotina("auditoria_midia", _bloco_auditoria()),
-            context=[self.plano_midia_paga(), self.aplicacao_g1()],
+            context=[self.plano_midia_paga(), self.correcao_brief(), self.aplicacao_g1()],
         )
 
     @task
@@ -2656,13 +2794,7 @@ class MarketingOpsCrew:
         return Task(
             guardrail=_g_prod(), guardrail_max_retries=2,
             config=self.tasks_config["direcao_arte"],
-            context=[
-                self.aplicacao_g1(),
-                self.producao_conteudo(),
-                self.calendario_social(),
-                self.fluxos_email(),
-                self.plano_midia_paga(),
-            ],
+            context=[self.correcao_brief(), self.aplicacao_g1(), self.producao_conteudo(), self.calendario_social(), self.fluxos_email(), self.plano_midia_paga()],
         )
 
     @task
@@ -2672,17 +2804,10 @@ class MarketingOpsCrew:
                 "CONTEUDO": (self.producao_conteudo(), None),
                 "CALENDARIO": (self.calendario_social(), None),
                 "EMAIL": (self.fluxos_email(), None),
-                "MIDIA": (self.plano_midia_paga(), self.aplicacao_g1()),
+                "MIDIA": (self.plano_midia_paga(), self._brief_vigente()),
             })), guardrail_max_retries=2,
             config=self.tasks_config["rubrica_qa"],
-            context=[
-                self.auditoria_midia(),
-                self.aplicacao_g1(),
-                self.producao_conteudo(),
-                self.calendario_social(),
-                self.fluxos_email(),
-                self.plano_midia_paga(),
-            ],
+            context=[self.auditoria_midia(), self.correcao_brief(), self.aplicacao_g1(), self.producao_conteudo(), self.calendario_social(), self.fluxos_email(), self.plano_midia_paga()],
         )
 
     @task
@@ -2691,99 +2816,163 @@ class MarketingOpsCrew:
             guardrail=_com_limite_de_rejeicoes(_guardrail_parecer_factory(
                 [self.producao_conteudo(), self.calendario_social(), self.fluxos_email(), self.plano_midia_paga(), self.direcao_arte()])), guardrail_max_retries=2,
             config=self.tasks_config["revisao_g2"],
-            context=[
-                self.producao_conteudo(),
-                self.calendario_social(),
-                self.fluxos_email(),
-                self.plano_midia_paga(),
-                self.direcao_arte(),
-            ],
+            context=[self.producao_conteudo(), self.calendario_social(), self.fluxos_email(), self.plano_midia_paga(), self.direcao_arte()],
+        )
+
+    # Correções automáticas antes do portão: cada autor reemite a própria peça com os apontamentos do Guardião, da rubrica e da auditoria.
+
+    @task
+    def correcao_conteudo(self) -> Task:
+        return Task(
+            guardrail=_com_limite_de_rejeicoes(_guardrail_reemissao_factory(self.producao_conteudo(), "o conteúdo", _guardrail_producao),
+                                               saneador=_saneador_reemissao_factory(self.producao_conteudo(), _sanear_producao)), guardrail_max_retries=2,
+            config=self.tasks_config["correcao_conteudo"],
+            context=[self.producao_conteudo(), self.revisao_g2(), self.rubrica_qa(), self.correcao_brief(), self.aplicacao_g1()],
+        )
+
+    @task
+    def correcao_calendario(self) -> Task:
+        return Task(
+            guardrail=_com_limite_de_rejeicoes(_guardrail_reemissao_factory(self.calendario_social(), "o calendário", _guardrail_calendario),
+                                               saneador=_saneador_reemissao_factory(self.calendario_social(), _sanear_calendario)), guardrail_max_retries=2,
+            config=self.tasks_config["correcao_calendario"],
+            context=[self.calendario_social(), self.revisao_g2(), self.rubrica_qa(), self.correcao_brief(), self.aplicacao_g1()],
+        )
+
+    @task
+    def correcao_email(self) -> Task:
+        return Task(
+            guardrail=_com_limite_de_rejeicoes(_guardrail_reemissao_factory(self.fluxos_email(), "os fluxos de e-mail", _guardrail_producao),
+                                               saneador=_saneador_reemissao_factory(self.fluxos_email(), _sanear_producao)), guardrail_max_retries=2,
+            config=self.tasks_config["correcao_email"],
+            context=[self.fluxos_email(), self.revisao_g2(), self.rubrica_qa(), self.correcao_brief(), self.aplicacao_g1()],
+        )
+
+    @task
+    def correcao_midia(self) -> Task:
+        return Task(
+            guardrail=_com_limite_de_rejeicoes(_guardrail_reemissao_factory(self.plano_midia_paga(), "o plano de mídia", _guardrail_midia_factory(self._brief_vigente())),
+                                               saneador=_saneador_reemissao_factory(self.plano_midia_paga(), _sanear_midia)), guardrail_max_retries=2,
+            config=self._com_rotina("correcao_midia", _bloco_operacao()),
+            context=[self.plano_midia_paga(), self.auditoria_midia(), self.revisao_g2(), self.rubrica_qa(), self.correcao_brief(), self.aplicacao_g1()],
+        )
+
+    @task
+    def correcao_arte(self) -> Task:
+        return Task(
+            guardrail=_com_limite_de_rejeicoes(_guardrail_reemissao_factory(self.direcao_arte(), "a direção de arte", _guardrail_producao),
+                                               saneador=_saneador_reemissao_factory(self.direcao_arte(), _sanear_producao)), guardrail_max_retries=2,
+            config=self.tasks_config["correcao_arte"],
+            context=[self.direcao_arte(), self.revisao_g2(), self.correcao_conteudo(), self.correcao_calendario(), self.correcao_email(), self.correcao_midia()],
+        )
+
+    def _pecas_corrigidas(self):
+        return [self.correcao_conteudo(), self.correcao_calendario(), self.correcao_email(), self.correcao_midia(), self.correcao_arte()]
+
+    @task
+    def revisao_g2_final(self) -> Task:
+        return Task(
+            guardrail=_com_limite_de_rejeicoes(_guardrail_parecer_factory(self._pecas_corrigidas())), guardrail_max_retries=2,
+            config=self.tasks_config["revisao_g2_final"],
+            context=self._pecas_corrigidas(),
         )
 
     @task
     def portao_g2(self) -> Task:
         return Task(
-            guardrail=_guardrail_portao_factory(self.revisao_g2(), self.rubrica_qa(), self.auditoria_midia()), guardrail_max_retries=2,
+            guardrail=_guardrail_portao_factory(self.revisao_g2_final(), self.rubrica_qa(), self.auditoria_midia(), portao="G2"), guardrail_max_retries=2,
             config=self.tasks_config["portao_g2"],
-            context=[
-                self.revisao_g2(),
-                self.rubrica_qa(),
-                self.auditoria_midia(),
-                self.producao_conteudo(),
-                self.calendario_social(),
-                self.fluxos_email(),
-                self.plano_midia_paga(),
-                self.direcao_arte(),
-            ],
+            context=[self.revisao_g2_final(), self.rubrica_qa(), self.auditoria_midia()] + self._pecas_corrigidas(),
         )
 
-    def _pecas_originais(self):
-        """Peças de produção na versão original (para conferir que a reemissão do G2 não encolheu a peça)."""
-        return {
-            "Conteúdo longo": (r"conte[úu]do", self.producao_conteudo()),
-            "Calendário social": (r"calend[áa]rio", self.calendario_social()),
-            "Fluxos de e-mail": (r"e-?mail", self.fluxos_email()),
-            "Plano de mídia paga": (r"m[íi]dia", self.plano_midia_paga()),
-        }
+    # Aplicação do feedback humano, por peça e só quando houve feedback (condicionais). "Aprovado." não executa nenhuma delas.
+
+    def _aplicacao(self, nome_cfg, correcao, rotulo, base, saneador, extras=()):
+        return ConditionalTask(
+            condition=lambda _saida: _tem_feedback("G2"),
+            guardrail=_com_limite_de_rejeicoes(_guardrail_reemissao_factory(correcao, rotulo, base), saneador=_saneador_reemissao_factory(correcao, saneador)), guardrail_max_retries=2,
+            config=self.tasks_config[nome_cfg],
+            context=[correcao, self.portao_g2(), *extras],
+        )
 
     @task
-    def aplicacao_g2(self) -> Task:
+    def aplicacao_g2_conteudo(self) -> Task:
+        return self._aplicacao("aplicacao_g2_conteudo", self.correcao_conteudo(), "o conteúdo", _guardrail_producao, _sanear_producao)
+
+    @task
+    def aplicacao_g2_calendario(self) -> Task:
+        return self._aplicacao("aplicacao_g2_calendario", self.correcao_calendario(), "o calendário", _guardrail_calendario, _sanear_calendario)
+
+    @task
+    def aplicacao_g2_email(self) -> Task:
+        return self._aplicacao("aplicacao_g2_email", self.correcao_email(), "os fluxos de e-mail", _guardrail_producao, _sanear_producao)
+
+    @task
+    def aplicacao_g2_midia(self) -> Task:
+        return self._aplicacao("aplicacao_g2_midia", self.correcao_midia(), "o plano de mídia", _guardrail_midia_factory(self._brief_vigente()), _sanear_midia,
+                               extras=(self.auditoria_midia(),))
+
+    @task
+    def aplicacao_g2_arte(self) -> Task:
+        return self._aplicacao("aplicacao_g2_arte", self.correcao_arte(), "a direção de arte", _guardrail_producao, _sanear_producao)
+
+    def _pecas_g2(self):
+        """{nome: (correção, aplicação condicional)} para o registro, o pacote e o sumário."""
+        return {
+            "Conteúdo longo": (self.correcao_conteudo(), self.aplicacao_g2_conteudo()),
+            "Calendário social": (self.correcao_calendario(), self.aplicacao_g2_calendario()),
+            "Fluxos de e-mail": (self.correcao_email(), self.aplicacao_g2_email()),
+            "Plano de mídia paga": (self.correcao_midia(), self.aplicacao_g2_midia()),
+            "Direção de arte": (self.correcao_arte(), self.aplicacao_g2_arte()),
+        }
+
+    def _calendario_vigente(self):
+        return _Vigente(self.correcao_calendario(), self.aplicacao_g2_calendario())
+
+    @task
+    def registro_g2(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_aplicacao_g2_factory(self.rubrica_qa(), self.portao_g2(), self._pecas_originais()), saneador=_saneador_aplicacao_g2_factory(self.portao_g2(), self._pecas_originais())), guardrail_max_retries=2,
-            config=self.tasks_config["aplicacao_g2"],
-            context=[
-                self.portao_g2(),
-                self.revisao_g2(),
-                self.rubrica_qa(),
-                self.auditoria_midia(),
-                self.producao_conteudo(),
-                self.calendario_social(),
-                self.fluxos_email(),
-                self.plano_midia_paga(),
-                self.direcao_arte(),
-            ],
+            guardrail=_com_limite_de_rejeicoes(_guardrail_registro_factory(self._pecas_g2())), guardrail_max_retries=2,
+            config=self.tasks_config["registro_g2"],
+            context=[self.portao_g2(), self.revisao_g2_final()] + [t for par in self._pecas_g2().values() for t in par],
         )
 
     # ───────────────────────── Tarefas · Fase 3 ─────────────────────────
+
+    def _vigentes_g2(self):
+        return [t for par in self._pecas_g2().values() for t in par]
 
     @task
     def plano_medicao(self) -> Task:
         return Task(
             guardrail=_g_doc(), guardrail_max_retries=2,
             config=self._com_rotina("plano_medicao", _bloco_medicao()),
-            context=[self.aplicacao_g1(), self.calendario_social(), self.fluxos_email(), self.plano_midia_paga()],
+            context=[self.correcao_brief(), self.aplicacao_g1(), self.registro_g2()] + self._vigentes_g2(),
         )
 
     @task
     def pacote_publicacao(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_pacote_factory(self.calendario_social(), self.aplicacao_g2()), saneador=_saneador_pacote_factory(self.calendario_social(), self.aplicacao_g2())), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_pacote_factory(self._calendario_vigente(), self.registro_g2()),
+                                               saneador=_saneador_pacote_factory(self._calendario_vigente(), self.registro_g2())), guardrail_max_retries=2,
             config=self.tasks_config["pacote_publicacao"],
-            context=[
-                self.aplicacao_g2(),
-                self.plano_medicao(),
-                self.direcao_arte(),
-                self.producao_conteudo(),
-                self.calendario_social(),
-                self.fluxos_email(),
-                self.plano_midia_paga(),
-            ],
+            context=[self.registro_g2(), self.plano_medicao()] + self._vigentes_g2(),
         )
 
     @task
     def revisao_g3(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_parecer_factory([self.pacote_publicacao(), self.plano_medicao(), self.aplicacao_g2()])), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_parecer_factory([self.pacote_publicacao(), self.plano_medicao(), self.registro_g2()] + self._vigentes_g2())), guardrail_max_retries=2,
             config=self.tasks_config["revisao_g3"],
-            context=[self.pacote_publicacao(), self.plano_medicao(), self.aplicacao_g2()],
+            context=[self.pacote_publicacao(), self.plano_medicao(), self.registro_g2()],
         )
 
     @task
     def portao_g3(self) -> Task:
         return Task(
-            guardrail=_guardrail_portao_factory(self.revisao_g3()), guardrail_max_retries=2,
+            guardrail=_guardrail_portao_factory(self.revisao_g3(), portao="G3"), guardrail_max_retries=2,
             config=self.tasks_config["portao_g3"],
-            context=[self.pacote_publicacao(), self.revisao_g3(), self.plano_midia_paga()],
+            context=[self.pacote_publicacao(), self.revisao_g3(), self.correcao_midia(), self.aplicacao_g2_midia()],
         )
 
     @task
@@ -2791,12 +2980,7 @@ class MarketingOpsCrew:
         return Task(
             guardrail=_g_doc(), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g3"],
-            context=[
-                self.portao_g3(),
-                self.pacote_publicacao(),
-                self.revisao_g3(),
-                self.plano_midia_paga(),
-            ],
+            context=[self.portao_g3(), self.pacote_publicacao(), self.revisao_g3(), self.registro_g2(), self.correcao_midia(), self.aplicacao_g2_midia()],
         )
 
     @task
@@ -2812,13 +2996,7 @@ class MarketingOpsCrew:
         return Task(
             guardrail=_g_doc(), guardrail_max_retries=2,
             config=self.tasks_config["sumario_executivo"],
-            context=[
-                self.aplicacao_g1(),
-                self.aplicacao_g2(),
-                self.aplicacao_g3(),
-                self.execucao_publicacao(),
-                self.plano_medicao(),
-            ],
+            context=[self.correcao_brief(), self.aplicacao_g1(), self.registro_g2(), self.aplicacao_g3(), self.execucao_publicacao(), self.plano_medicao()],
         )
 
     # ───────────────────────── Crew ─────────────────────────
