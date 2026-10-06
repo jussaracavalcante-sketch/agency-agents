@@ -1362,6 +1362,7 @@ _PCT_NOVO = re.compile(r"(?<![\d.,])(\d{1,3}(?:,\d+)?)\s?%")
 
 _MARCADOR_FALSO = re.compile(r"\[\s*(confirmad|validad|aprovad|verificad|checad|ok\b)\w*\s*\]", re.I)
 _FONTE_SECAO = re.compile(r"^#{1,4}\s*(\d+\.\s*)?fontes?\b", re.I)
+_PALAVRAS_COMUNS = frozenset("este esta estes estas esse essa isso isto aquele aquela todos todas nenhum nenhuma algumas alguns conforme segundo dados fonte fontes documento documentos sem com para por nas nos das dos uma umas uns observação nota".split())
 _ROTULO_FONTE = frozenset("guia identidade visual briefing marca hospital base conhecimento cliente baseline fonte fontes tendências tendencias dados mercado relatório relatorio nekt".split())
 
 
@@ -1397,9 +1398,11 @@ def _fontes_nao_informadas(texto):
             continue
         corpo = re.sub(r"^[-*\d.\s]+", "", l)
         corpo = re.sub(r"^\*{0,2}[^:*]{1,40}\*{0,2}\s*:\s*", "", corpo)       # tira o rótulo ("Tendências:")
-        for nome in re.findall(r"\b[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\wÁÉÍÓÚÂÊÔÃÕÇáéíóúâêôãõç]{2,}", corpo):
+        for m in re.finditer(r"\b[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\wÁÉÍÓÚÂÊÔÃÕÇáéíóúâêôãõç]{2,}", corpo):
+            nome = m.group(0)
             n = _normalizar(nome)
-            if n in _ROTULO_FONTE or n in permitido or _sem_acento(nome).lower() in _ROTULO_FONTE:
+            inicio_de_frase = m.start() > 0 and corpo[:m.start()].rstrip().endswith((".", "!", "?", ";"))
+            if n in _ROTULO_FONTE or n in permitido or _sem_acento(nome).lower() in _ROTULO_FONTE or n in _PALAVRAS_COMUNS or inicio_de_frase:
                 continue
             achados.append(nome)
     return sorted(set(achados))
@@ -1952,11 +1955,15 @@ def _dimensoes_incoerentes(parecer):
         reprovada = "reprovad" in _normalizar(cab) or re.search(r"status\W{0,6}\s*reprovad", _normalizar(corpo))
         if reprovada and _SEM_PROBLEMA.search(corpo):
             achados.append(cab.strip("# ").strip()[:70])
-        elif reprovada and re.search(r"coer", _normalizar(cab)) and re.search(r"diverg|difere|n[ãa]o corresponde", _normalizar(corpo)):
+        elif reprovada:
             objetivo = _normalizar(str(_INPUTS_ATUAIS.get("objetivo", "")))
-            citados = [_normalizar(q) for q in re.findall(r"[\"“]([^\"”]{20,})[\"”]", corpo)]
-            if objetivo and any(objetivo in q for q in citados):
+            citados = [_normalizar(q) for q in re.findall(r"[\"“]([^\"”]{3,})[\"”]", corpo)]
+            ncorpo = _normalizar(corpo)
+            if re.search(r"coer", _normalizar(cab)) and objetivo and any(objetivo in q for q in citados) and re.search(
+                    r"diverg|difere|n[ãa]o corresponde|est[áa] conforme|est[áa] alinhad|id[êe]ntic|igual ao briefing|foi mantido", ncorpo):
                 achados.append(cab.strip("# ").strip()[:70] + " (o trecho citado é idêntico ao objetivo do briefing)")
+            elif citados and all((q.startswith("validar") and len(q) < 40) or (objetivo and objetivo in q) for q in citados):
+                achados.append(cab.strip("# ").strip()[:70] + " (só cita trechos já marcados [VALIDAR] ou o objetivo do briefing)")
     return achados
 
 
@@ -1996,8 +2003,9 @@ def _guardrail_parecer_factory(fontes):
         inc = _dimensoes_incoerentes(texto)
         if inc:
             return False, (
-                f"A dimensão '{inc[0]}' está Reprovada, mas o próprio apontamento diz que está correta (nenhuma correção necessária). "
-                "Se não há problema a corrigir, o status não pode ser Reprovado; se há, descreva o problema com o trecho literal."
+                f"A dimensão '{inc[0]}' está Reprovada, mas o próprio apontamento diz que está correta, ou só cita o objetivo do briefing (que está "
+                "correto) e trechos já marcados [VALIDAR] (pendência humana, não erro). Se não há problema a corrigir, o status não pode ser Reprovado; "
+                "se há, descreva o problema com o trecho literal que está errado."
             )
         sem_trecho = _reprovadas_sem_trecho(texto)
         if sem_trecho:
