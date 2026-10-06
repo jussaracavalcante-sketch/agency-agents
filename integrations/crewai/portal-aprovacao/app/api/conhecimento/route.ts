@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { admin, usuarioAtual } from "@/lib/supabase";
+import { registrar } from "@/lib/auditoria";
 import { BASE_CHAVE, BASE_TITULO, LIMITE_DOC, MAX_ADICIONADOS, atualizarMetadadosDoCliente, slugDoTitulo, textoDoRepo } from "@/lib/conhecimento";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
       if (error) return erro("Não foi possível salvar", 500);
     }
     await atualizarMetadadosDoCliente(slug);
+    await registrar(u, { acao: acao === "novo" ? "conhecimento.salvar" : `conhecimento.${acao}`, entidade: "portal_conhecimento", entidade_id: `${slug}/${chave}`, antes: atual ? { titulo: atual.titulo, versao: atual.versao, chars: String(atual.conteudo).length } : null, depois: { titulo, versao: atual ? atual.versao + 1 : 1, chars: conteudo.length }, detalhe: `${cliente!.nome}: documento ${chave} (${acao}).` });
     return NextResponse.json({ ok: true, mensagem: "Salvo. A próxima campanha disparada já usa esta versão." });
   }
 
@@ -68,6 +70,7 @@ export async function POST(req: Request) {
       await snapshot(atual, "restaurar_original");
       await db.from("portal_conhecimento").delete().eq("id", atual.id);
       await atualizarMetadadosDoCliente(slug);
+      await registrar(u, { acao: "conhecimento.restaurar_original", entidade: "portal_conhecimento", entidade_id: `${slug}/${BASE_CHAVE}`, antes: { versao: atual.versao, chars: String(atual.conteudo).length }, detalhe: `${cliente.nome}: guia restaurado ao original.` });
       return NextResponse.json({ ok: true, mensagem: "Guia restaurado para a versão do repositório." });
     }
     case "excluir": {
@@ -78,6 +81,7 @@ export async function POST(req: Request) {
       await snapshot(atual, "excluir");
       await db.from("portal_conhecimento").delete().eq("id", atual.id);
       await atualizarMetadadosDoCliente(slug);
+      await registrar(u, { acao: "conhecimento.excluir", entidade: "portal_conhecimento", entidade_id: `${slug}/${chave}`, antes: { titulo: atual.titulo, versao: atual.versao, chars: String(atual.conteudo).length }, detalhe: `${cliente.nome}: documento excluído.` });
       return NextResponse.json({ ok: true, mensagem: "Documento excluído (a versão fica no histórico)." });
     }
     case "restaurar_versao": {
@@ -87,6 +91,7 @@ export async function POST(req: Request) {
     }
     case "completo": {
       await db.from("portal_clientes").update({ guia_completo: !!b.completo, atualizado_em: new Date().toISOString() }).eq("slug", slug);
+      await registrar(u, { acao: "conhecimento.completo", entidade: "portal_clientes", entidade_id: slug, depois: { guia_completo: !!b.completo }, detalhe: `${cliente.nome}: guia marcado como ${b.completo ? "completo" : "incompleto"}.` });
       return NextResponse.json({ ok: true, mensagem: b.completo ? "Guia marcado como completo." : "Guia marcado como incompleto." });
     }
     default:

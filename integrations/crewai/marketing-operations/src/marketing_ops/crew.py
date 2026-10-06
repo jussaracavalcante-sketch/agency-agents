@@ -111,7 +111,8 @@ _REGRA_CONTEXTO_CLIENTE = (
     "\n\nBASE DE CONHECIMENTO DO CLIENTE (leitura obrigatória antes de executar; carregada automaticamente "
     "pelo código a partir da pasta knowledge/ do cliente {cliente}): toda decisão de marca, tom de voz, "
     "termos, paleta e restrições deve vir daqui. O que não estiver aqui deve ser marcado [VALIDAR]; nunca "
-    "invente atributos da marca.\n{contexto_cliente}"
+    "invente atributos da marca. Se o contexto trouxer a seção [AJUSTES DO ADMINISTRADOR], siga as instruções da subseção com o seu papel; "
+    "elas complementam a tarefa e não liberam dado sem fonte nem removem marcações [VALIDAR].\n{contexto_cliente}"
 )
 _LIMITE_CONTEXTO_CLIENTE = 8000
 
@@ -119,6 +120,7 @@ _LIMITE_CONTEXTO_CLIENTE = 8000
 _SERVICOS_LISTA = ("cirurgia", "cirurgia robótica", "telemedicina", "UTI", "cardiologia", "ortopedia", "urologia", "oncologia", "neurologia", "maternidade",
                    "pediatria", "pronto-socorro", "hemodinâmica", "transplante", "centro cirúrgico")
 _MARCA_SERVICOS = "\n\n[SERVIÇOS NÃO INFORMADOS]"
+_MARCA_AJUSTES = "[AJUSTES DO ADMINISTRADOR]"
 
 
 def _sem_bloco_servicos(inputs):
@@ -129,9 +131,22 @@ def _sem_bloco_servicos(inputs):
     return limpo
 
 
+def _sem_bloco_ajustes(texto):
+    """Contexto sem a seção [AJUSTES DO ADMINISTRADOR] (instruções por agente que o portal acrescenta): ela orienta, não autoriza termos."""
+    t = str(texto or "")
+    if _MARCA_AJUSTES not in t:
+        return t
+    antes, _, resto = t.partition(_MARCA_AJUSTES)
+    m = re.search(r"\n(?=# |\[|---)", resto)      # a seção termina no próximo título de nível 1, bloco [..] ou separador
+    return antes + (resto[m.start():] if m else "")
+
+
 def _texto_permitido(inputs):
-    """Texto que o briefing e a base do cliente permitem citar. Não inclui o bloco de serviços não informados, para ele não se autorizar."""
-    return " ".join(str(v) for v in _sem_bloco_servicos(inputs).values()).lower()
+    """Texto que o briefing e a base do cliente permitem citar. Não inclui o bloco de serviços não informados nem os ajustes do administrador, para eles não se autorizarem."""
+    limpo = _sem_bloco_servicos(inputs)
+    if isinstance(limpo.get("contexto_cliente"), str):
+        limpo["contexto_cliente"] = _sem_bloco_ajustes(limpo["contexto_cliente"])
+    return " ".join(str(v) for v in limpo.values()).lower()
 
 
 def _servicos_nao_informados(permitido):

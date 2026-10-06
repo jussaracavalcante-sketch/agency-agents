@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function Disparar() {
   const u = await usuarioAtual();
   if (!u) redirect("/login");
-  if (u.papel !== "aprovador") {
+  if (u.papel !== "aprovador" && u.papel !== "admin") {
     return <div className="card"><h1>Disparar campanha</h1><p className="mut">Apenas aprovadores disparam campanhas. Peça a um aprovador.</p></div>;
   }
   const { data: clientes } = await admin().from("portal_clientes").select("slug,nome,guia_completo").order("nome");
