@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { admin, usuarioAtual } from "@/lib/supabase";
+import { admin, usuarioAtual, ehAprovador } from "@/lib/supabase";
+import { registrar } from "@/lib/auditoria";
+import { textoDosAjustes } from "@/lib/admin";
 import { execucaoAtiva } from "@/lib/execucoes";
 import { iniciar } from "@/lib/crewai";
 import { CHAVES, validar } from "@/lib/briefing";
@@ -10,7 +12,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   const u = await usuarioAtual();
   if (!u) return NextResponse.json({ erro: "Sessão inválida" }, { status: 401 });
-  if (u.papel !== "aprovador") return NextResponse.json({ erro: "Apenas aprovadores disparam campanhas" }, { status: 403 });
+  if (!ehAprovador(u)) return NextResponse.json({ erro: "Apenas aprovadores disparam campanhas" }, { status: 403 });
 
   const { briefing, confirmou } = (await req.json()) as { briefing?: Record<string, unknown>; confirmou?: boolean };
   if (!briefing || confirmou !== true) return NextResponse.json({ erro: "Confirmação obrigatória" }, { status: 400 });
@@ -31,13 +33,17 @@ export async function POST(req: Request) {
   // Base de conhecimento editada no portal: vai como contexto_cliente (o crew já usa esse insumo quando vem preenchido).
   const ctx = await contextoDoCliente(cliente.slug);
   if (ctx.erro) return NextResponse.json({ erro: ctx.erro }, { status: 502 });
-  const enviados = ctx.texto ? { ...inputs, contexto_cliente: ctx.texto } : inputs;
+  // Ajustes do administrador por agente: entram no mesmo contexto (seção [AJUSTES DO ADMINISTRADOR]), antes da base de marca.
+  const ajustes = await textoDosAjustes();
+  const contexto = [ajustes, ctx.texto].filter(Boolean).join("\n\n");
+  const enviados = contexto ? { ...inputs, contexto_cliente: contexto } : inputs;
   const r = await iniciar(enviados);
-  const registro = ctx.texto ? { ...inputs, _conhecimento: { hash: ctx.hash, docs: ctx.docs, chars: ctx.chars, truncado: ctx.truncado } } : inputs;
+  const registro = { ...inputs, ...(ctx.texto ? { _conhecimento: { hash: ctx.hash, docs: ctx.docs, chars: ctx.chars, truncado: ctx.truncado } } : {}), ...(ajustes ? { _ajustes_agentes: ajustes.length } : {}) };
   await db.from("portal_disparos").insert({
     humano_id: u.id, humano_nome: u.nome, cliente_slug: cliente.slug, briefing: registro,
     enviado_ao_crewai: r.ok, kickoff_id: r.kickoff, resposta_crewai: r.texto,
   });
+  await registrar(u, { acao: "disparo.criar", entidade: "portal_disparos", entidade_id: r.kickoff ?? cliente.slug, depois: { cliente: cliente.nome, briefing_titulo: inputs.briefing_titulo, enviado_ao_crewai: r.ok, kickoff_id: r.kickoff, ajustes_agentes: !!ajustes }, detalhe: `Campanha disparada para ${cliente.nome}${r.ok ? "" : " (plataforma recusou)"}.` });
   if (!r.ok) return NextResponse.json({ erro: "A plataforma recusou o disparo", detalhe: r.texto }, { status: 502 });
   return NextResponse.json({ ok: true, kickoff: r.kickoff, mensagem: "Campanha disparada." + (ctx.texto ? ` Usando a base de conhecimento editada no portal (${ctx.docs} documento(s)${ctx.truncado ? ", texto cortado no limite" : ""}).` : "") + " O primeiro portão (G1) aparece na fila em alguns minutos." });
 }

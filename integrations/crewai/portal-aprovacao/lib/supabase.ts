@@ -22,7 +22,7 @@ export function admin() {
   });
 }
 
-export type Papel = "leitor" | "revisor" | "aprovador";
+export type Papel = "leitor" | "revisor" | "aprovador" | "admin";
 export type Usuario = { id: string; nome: string; papel: Papel; portoes: string[] | null };
 
 export async function usuarioAtual(): Promise<Usuario | null> {
@@ -39,9 +39,25 @@ export async function usuarioAtual(): Promise<Usuario | null> {
   return { id: u.id, nome: convite.nome, papel: convite.papel as Papel, portoes: convite.portoes ?? null };
 }
 
-/** Aprovador pode decidir o portão? `portoes` nulo = todos. */
+/** Aprovador (ou admin) pode decidir o portão? `portoes` nulo = todos. */
 export function podeDecidir(u: Usuario, portao: string | null) {
+  if (u.papel === "admin") return true;
   if (u.papel !== "aprovador") return false;
   if (!u.portoes || !u.portoes.length) return true;
   return !!portao && u.portoes.includes(portao);
+}
+
+export const ehAdmin = (u: Usuario | null) => !!u && u.papel === "admin";
+/** Aprovador ou admin: dispara campanhas e decide portões. */
+export const ehAprovador = (u: Usuario | null) => !!u && (u.papel === "aprovador" || u.papel === "admin");
+
+/** Id da sessão de login (claim session_id do token do Supabase), para a trilha de auditoria. */
+export async function sessaoId(): Promise<string | null> {
+  const { data } = await sessao().auth.getSession();
+  const tok = data.session?.access_token;
+  if (!tok) return null;
+  try {
+    const corpo = JSON.parse(Buffer.from(tok.split(".")[1], "base64url").toString("utf8")) as { session_id?: string };
+    return corpo.session_id ?? null;
+  } catch { return null; }
 }

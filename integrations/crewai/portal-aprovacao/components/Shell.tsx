@@ -10,9 +10,12 @@ const ITENS = [
   { href: "/aprovacoes", rot: "Aprovações", ic: "✔" },
   { href: "/atividade", rot: "Atividade", ic: "▤" },
   { href: "/conhecimento", rot: "Conhecimento", ic: "📖" },
-  { href: "/disparar", rot: "Disparar campanha", ic: "➤", so: "aprovador" },
+  { href: "/disparar", rot: "Disparar campanha", ic: "➤", so: ["aprovador", "admin"] },
+  { href: "/roi", rot: "ROI e custos", ic: "◔", so: ["aprovador", "admin"] },
+  { href: "/auditoria", rot: "Auditoria", ic: "☰", so: ["aprovador", "admin"] },
+  { href: "/admin", rot: "Administração", ic: "⚙", so: ["admin"] },
 ];
-const MIGALHA: Record<string, string> = { agentes: "Agentes", aprovacoes: "Aprovações", execucao: "Aprovações", atividade: "Atividade", conhecimento: "Conhecimento", disparar: "Disparar campanha" };
+const MIGALHA: Record<string, string> = { agentes: "Agentes", aprovacoes: "Aprovações", execucao: "Aprovações", atividade: "Atividade", conhecimento: "Conhecimento", disparar: "Disparar campanha", roi: "ROI e custos", auditoria: "Auditoria", admin: "Administração" };
 
 export default function Shell({ nome, papel, children }: { nome: string; papel: string; children: React.ReactNode }) {
   const p = usePathname() || "/";
@@ -23,7 +26,7 @@ export default function Shell({ nome, papel, children }: { nome: string; papel: 
       <aside className="side">
         <Link href="/" className="brand"><img src="/logo-vanguarda.png" alt="" className="logo" width={36} height={36} /><span>Marketing Ops<small>Vanguarda</small></span></Link>
         <nav className="nav">
-          {ITENS.filter((i) => !i.so || i.so === papel).map((i) => (
+          {ITENS.filter((i) => !i.so || i.so.includes(papel)).map((i) => (
             <Link key={i.href} href={i.href} className={ativo(i.href) ? "on" : ""}><span className="ic">{i.ic}</span>{i.rot}</Link>
           ))}
         </nav>

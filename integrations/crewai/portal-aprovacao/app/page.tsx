@@ -28,7 +28,7 @@ export default async function VisaoGeral() {
     <>
       <div className="head">
         <div><h1>Visão geral</h1><p className="sub" style={{ margin: 0 }}>Acompanhe a equipe de agentes e saiba onde agir.</p></div>
-        {u.papel === "aprovador" && <Link className="btn p" href="/disparar">＋ Disparar campanha</Link>}
+        {(u.papel === "aprovador" || u.papel === "admin") && <Link className="btn p" href="/disparar">＋ Disparar campanha</Link>}
       </div>
 
       <div className="kpis">

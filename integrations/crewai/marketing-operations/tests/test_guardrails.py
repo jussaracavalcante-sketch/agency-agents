@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_limpar_final", "_trecho_em_ingles", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_linhas_do_calendario", "_saneador_pacote_factory", "_REDES", "_HORA_COM_FUSO_COLADO", "_posts_da_tabela", "_bloqueadas_do_g2", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario", "_trechos_entre_aspas", "_fim_do_documento", "_PALAVRAS_TITULO_EN", "_PT_PT", "_PT_PT_RE", "_titulo_em_ingles", "_portugues_de_portugal", "_linhas_do_cronograma", "_problemas_cronograma", "_tamanho_util", "_pecas_encolhidas", "_MARCA_HISTORICO", "_orcamento_de_historico", "_ECRA_COM_ARTIGO", "_ECRA_ARTIGO", "_NOTA_FINAL", "_MARCADOR_MALFORMADO", "_nota_final", "_marcadores_malformados", "_numeros_informados", "_valores_rs_inventados", "_reprovadas_sem_trecho", "_PALAVRAS_COMUNS", "_ESQUELETO", "_esqueleto", "_retirar_das_liberadas",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_limpar_final", "_trecho_em_ingles", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_linhas_do_calendario", "_saneador_pacote_factory", "_REDES", "_HORA_COM_FUSO_COLADO", "_posts_da_tabela", "_bloqueadas_do_g2", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario", "_trechos_entre_aspas", "_fim_do_documento", "_PALAVRAS_TITULO_EN", "_PT_PT", "_PT_PT_RE", "_titulo_em_ingles", "_portugues_de_portugal", "_linhas_do_cronograma", "_problemas_cronograma", "_tamanho_util", "_pecas_encolhidas", "_MARCA_HISTORICO", "_orcamento_de_historico", "_ECRA_COM_ARTIGO", "_ECRA_ARTIGO", "_NOTA_FINAL", "_MARCADOR_MALFORMADO", "_nota_final", "_marcadores_malformados", "_numeros_informados", "_valores_rs_inventados", "_reprovadas_sem_trecho", "_PALAVRAS_COMUNS", "_ESQUELETO", "_esqueleto", "_retirar_das_liberadas", "_MARCA_AJUSTES", "_sem_bloco_ajustes",
 }
 
 
@@ -881,9 +881,10 @@ def test_cronograma_refeito_a_partir_do_calendario_na_ultima_tentativa():
     sem_titulo = _saida("# Índice\n" + ("peça listada com o status de liberação do pacote de publicação. " * 12) + "\n```\n")
     novo, trocas = G._saneador_pacote_factory(cal, apl)(sem_titulo.raw)
     assert "## Cronograma de Publicação" in novo and len(G._posts_da_tabela(novo)) == 6 and trocas
-    # calendário bloqueado: não mexe
+    # calendário bloqueado: não refaz o cronograma; tira os posts de rede social
     bloq = _tarefa("### Entregas Bloqueadas:\n- Calendário Social")
-    assert G._saneador_pacote_factory(cal, bloq)(inventado.raw) == (inventado.raw, [])
+    novo_b, trocas_b = G._saneador_pacote_factory(cal, bloq)(inventado.raw)
+    assert not G._posts_da_tabela(novo_b) and "bloqueado" in novo_b and trocas_b
 
 
 # ───────── correções do piloto 2896d45e ─────────
@@ -1088,3 +1089,30 @@ def test_canais_novos_run_rate_como_orcamento_e_autoavaliacao():
     assert not G._claims_proibidos("Antes da finalização, garanta aderência aos critérios de acessibilidade AA.")
     assert G._dimensoes_incoerentes("### 3. UTMs Conformes\n- **Status:** Reprovado\n- **Observações:** Os links permanecem indefinidos, \"a definir após a publicação\".\n")
     G._INPUTS_ATUAIS.clear()
+
+
+def test_autoavaliacao_nao_pega_copy_legitima_e_objetivo_com_ponto():
+    assert not G._placeholders("Nós acreditamos que a tecnologia deve andar de mãos dadas com o cuidado.")
+    assert G._placeholders("Com os ajustes realizados, acreditamos que o caminho está pronto para aprovação.")
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["objetivo"] = "Gerar 400 contatos qualificados em 8 semanas."
+    p = "### 1. Coerência com o Briefing\n- **Status:** Reprovado\n- **Apontamento:** O objetivo está conforme o briefing: \"Gerar 400 contatos qualificados em 8 semanas\". No entanto cita \"[VALIDAR: fonte]\".\n"
+    assert G._dimensoes_incoerentes(p)
+    G._INPUTS_ATUAIS.clear()
+
+
+def test_saneador_do_pacote_remove_posts_quando_o_calendario_esta_bloqueado():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+    bloq = _tarefa("### Entregas Bloqueadas:\n- Calendário Social\n- Plano de Mídia")
+    cal = _tarefa(_CAL_8)
+    com_posts = _post_cron(["| 01/11/2026 | a definir | America/Manaus | Instagram | Post | a definir após a publicação | utm_source=instagram&utm_medium=social&utm_campaign=c | a definir | A definir |",
+                            "| 21/11/2026 | a definir | America/Manaus | E-mail | Boas-vindas | a definir após a publicação | utm_source=email&utm_medium=email&utm_campaign=c | a definir | A definir |"])
+    novo, trocas = G._saneador_pacote_factory(cal, bloq)(com_posts.raw)
+    assert not G._posts_da_tabela(novo) and "E-mail" in novo and "calendário social está bloqueado" in novo and trocas
+    assert G._guardrail_pacote_factory(cal, bloq)(_saida(novo))[0] is True
+
+
+def test_ajustes_do_administrador_nao_autorizam_termos():
+    ctx = "[AJUSTES DO ADMINISTRADOR]\nInstruções por agente.\n\n### Redator(a)\nFale de cirurgia robótica.\n\n# Guia de Identidade Visual\nExcelência médica e cuidado humano."
+    permitido = G._texto_permitido({"cliente": "Hospital", "contexto_cliente": ctx})
+    assert "cirurgia robótica" not in permitido and "excelência médica" in permitido
+    assert G._sem_bloco_ajustes("sem bloco") == "sem bloco"
