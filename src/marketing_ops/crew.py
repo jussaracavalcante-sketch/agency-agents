@@ -21,7 +21,6 @@ import tempfile
 from pathlib import Path
 
 from crewai import Agent, Crew, Process, Task
-from crewai.tasks.conditional_task import ConditionalTask
 from crewai.project import CrewBase, agent, crew, task
 from crewai_tools import FileReadTool, ScrapeWebsiteTool, SerperDevTool
 
@@ -416,6 +415,23 @@ class _Vigente:
 _MARCA_PENDENTE = "> AJUSTES PENDENTES"
 
 
+def _com_copia_sem_feedback(portao_task, correcao_task, guardrail):
+    """
+    Aplicação pós-portão sem ConditionalTask (a CrewAI AMP falha ao retomar o fluxo com ela: AttributeError 'reloaded'). Se o portão foi aprovado sem
+    feedback humano, a saída é a versão corrigida COPIADA POR CÓDIGO (o modelo não reescreve nada); com feedback, vale a reemissão e a trava normal.
+    """
+
+    def g(saida):
+        portao = getattr(getattr(portao_task, "output", None), "raw", None) or ""
+        if not _ha_feedback_humano(portao):
+            orig = getattr(getattr(correcao_task, "output", None), "raw", None) or ""
+            if orig.strip():
+                return True, orig
+        return guardrail(saida)
+
+    return g
+
+
 def _guardrail_reemissao_factory(original_task, nome, base):
     """
     Reemissão de uma peça (correção antes do portão ou aplicação do feedback humano): passa pela trava da própria peça (`base`), não pode ser esqueleto,
@@ -471,8 +487,9 @@ def _bloco_versoes_g2(pecas):
     for nome, (correcao, aplicacao) in pecas.items():
         apl = getattr(getattr(aplicacao, "output", None), "raw", None) or ""
         cor = getattr(getattr(correcao, "output", None), "raw", None) or ""
+        reemitida = bool(apl.strip()) and apl.strip() != cor.strip()
         vigente = apl if apl.strip() else cor
-        origem = "reemitida após o feedback humano" if apl.strip() else "corrigida antes do portão e aprovada sem alterações"
+        origem = "reemitida após o feedback humano" if reemitida else "corrigida antes do portão e aprovada sem alterações"
         pendente = _MARCA_PENDENTE in vigente
         if pendente:
             bloqueadas.append(nome)
@@ -2729,11 +2746,11 @@ class MarketingOpsCrew:
 
     @task
     def aplicacao_g1(self) -> Task:
-        # Só roda quando o humano devolveu com ajustes; "Aprovado." mantém o brief corrigido como está.
-        return ConditionalTask(
-            condition=lambda _saida: _tem_feedback("G1"),
-            guardrail=_com_limite_de_rejeicoes(_guardrail_reemissao_factory(self.correcao_brief(), "o brief", _guardrail_brief),
-                                               saneador=_saneador_reemissao_factory(self.correcao_brief(), _sanear_brief)), guardrail_max_retries=2,
+        # Só reescreve quando o humano devolveu com ajustes; "Aprovado." mantém o brief corrigido, copiado por código.
+        return Task(
+            guardrail=_com_copia_sem_feedback(self.portao_g1(), self.correcao_brief(), _com_limite_de_rejeicoes(
+                _guardrail_reemissao_factory(self.correcao_brief(), "o brief", _guardrail_brief),
+                saneador=_saneador_reemissao_factory(self.correcao_brief(), _sanear_brief))), guardrail_max_retries=2,
             config=self.tasks_config["aplicacao_g1"],
             context=[self.correcao_brief(), self.portao_g1()],
         )
@@ -2885,12 +2902,12 @@ class MarketingOpsCrew:
             context=[self.revisao_g2_final(), self.rubrica_qa(), self.auditoria_midia()] + self._pecas_corrigidas(),
         )
 
-    # Aplicação do feedback humano, por peça e só quando houve feedback (condicionais). "Aprovado." não executa nenhuma delas.
+    # Aplicação do feedback humano, por peça; sem feedback a saída é a cópia literal da versão corrigida (feita em código). "Aprovado." não executa nenhuma delas.
 
     def _aplicacao(self, nome_cfg, correcao, rotulo, base, saneador, extras=()):
-        return ConditionalTask(
-            condition=lambda _saida: _tem_feedback("G2"),
-            guardrail=_com_limite_de_rejeicoes(_guardrail_reemissao_factory(correcao, rotulo, base), saneador=_saneador_reemissao_factory(correcao, saneador)), guardrail_max_retries=2,
+        return Task(
+            guardrail=_com_copia_sem_feedback(self.portao_g2(), correcao, _com_limite_de_rejeicoes(
+                _guardrail_reemissao_factory(correcao, rotulo, base), saneador=_saneador_reemissao_factory(correcao, saneador))), guardrail_max_retries=2,
             config=self.tasks_config[nome_cfg],
             context=[correcao, self.portao_g2(), *extras],
         )
