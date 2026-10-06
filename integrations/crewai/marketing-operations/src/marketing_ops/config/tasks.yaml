@@ -175,7 +175,8 @@ calendario_social:
     estratégico e do conteúdo-base. FORMATO COMPACTO OBRIGATÓRIO (a resposta precisa caber inteira): uma única tabela
     Markdown com as colunas Semana | Data | Plataforma | Formato | Pilar | Hook e copy (até 25 palavras) | CTA, com ao
     menos 3 posts por semana em TODAS as {duracao_semanas} semanas (semanas 1 a {duracao_semanas}, sem pular nenhuma),
-    cada post datado. Adapte a mensagem por plataforma (não replique). O objetivo de cada post vem do objetivo do
+    cada post datado. Cada "Hook e copy" é uma frase completa em português do Brasil, com sujeito e verbo, que faria sentido lida sozinha
+    num post (nada de sequências de substantivos como "Culminação da confiança" ou "Seleções médicas complexas com inteligência"). Adapte a mensagem por plataforma (não replique). O objetivo de cada post vem do objetivo do
     briefing ({objetivo}), sem metas numéricas novas, e por isso não ganha coluna própria. Depois da tabela, em listas
     curtas: hashtags por plataforma, guia de engajamento (respostas-padrão, comunidades), posts candidatos a
     impulsionamento e lista consolidada de assets para o Diretor de Arte (formato, dimensões, quantidade). Não escreva

@@ -10,7 +10,7 @@ _NOMES = {
     "_guardrail_aplicacao_g2", "_TEXTO_PERMITIDO", "_TERMOS_SENSIVEIS", "_guardrail_producao", "_CLAIMS_PROIBIDOS",
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
-    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_limpar_final", "_trecho_em_ingles", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_linhas_do_calendario", "_saneador_pacote_factory", "_REDES", "_HORA_COM_FUSO_COLADO", "_posts_da_tabela", "_bloqueadas_do_g2", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario", "_trechos_entre_aspas", "_fim_do_documento", "_PALAVRAS_TITULO_EN", "_PT_PT", "_PT_PT_RE", "_titulo_em_ingles", "_portugues_de_portugal", "_linhas_do_cronograma", "_problemas_cronograma", "_tamanho_util", "_pecas_encolhidas", "_MARCA_HISTORICO", "_orcamento_de_historico", "_ECRA_COM_ARTIGO", "_ECRA_ARTIGO",
+    "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_limpar_final", "_trecho_em_ingles", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_linhas_do_calendario", "_saneador_pacote_factory", "_REDES", "_HORA_COM_FUSO_COLADO", "_posts_da_tabela", "_bloqueadas_do_g2", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario", "_trechos_entre_aspas", "_fim_do_documento", "_PALAVRAS_TITULO_EN", "_PT_PT", "_PT_PT_RE", "_titulo_em_ingles", "_portugues_de_portugal", "_linhas_do_cronograma", "_problemas_cronograma", "_tamanho_util", "_pecas_encolhidas", "_MARCA_HISTORICO", "_orcamento_de_historico", "_ECRA_COM_ARTIGO", "_ECRA_ARTIGO", "_NOTA_FINAL", "_MARCADOR_MALFORMADO", "_nota_final", "_marcadores_malformados", "_numeros_informados", "_valores_rs_inventados", "_reprovadas_sem_trecho",
 }
 
 
@@ -986,3 +986,48 @@ def test_gasto_historico_nao_pode_ser_orcamento_do_canal():
     bom = "## Insumos\n- **Breakdown:** Google Ads com run-rate de R$ 11.654 em 90 dias (referência).\n## Estrutura\n- **Orçamento do Google Ads:** parte dos R$ 15.000 [VALIDAR]\n"
     assert G._problemas_midia(bom) is None
     G._INPUTS_ATUAIS.clear()
+
+
+def test_nota_final_e_marcador_malformado():
+    doc = "# Brief\n" + "texto em português do Brasil com bastante conteúdo útil para o leitor do brief. " * 12 + "\n## Fontes\n- Nekt Refined\n\n**Nota:** Algumas seções requerem confirmação dos dados e estão marcadas como [VALIDAR] no documento."
+    r = G._guardrail_documento(_saida(doc))
+    assert r[0] is False and "nota do agente" in r[1]
+    limpo, feitos = G._limpar_final(doc)
+    assert "Nota:" not in limpo and limpo.rstrip().endswith("- Nekt Refined") and "nota final" in " ".join(feitos)
+    assert G._guardrail_documento(_saida(limpo))[0] is True
+    ruim = doc.replace("**Nota:** Algumas", "Fim.\n\nValidar o tom de voz [VALIDAR NOS UM].").replace("[VALIDAR] no documento.", "")
+    r = G._guardrail_documento(_saida(ruim))
+    assert r[0] is False and "[VALIDAR NOS UM]" in r[1]
+    limpo, _ = G._limpar_final(ruim)
+    assert "[VALIDAR NOS UM]" not in limpo and "[VALIDAR]" in limpo
+    for ok in ("[VALIDAR]", "[VALIDAR MÉDICO]", "[VALIDAR: fonte]", "[VALIDAR: canal fora do brief]"):
+        assert G._marcadores_malformados("x " + ok + " y") == [], ok
+
+
+def test_valor_em_reais_inventado_no_brief():
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS.update({"objetivo": "Gerar 400 contatos", "orcamento_total": "R$ 25.000 [VALIDAR]", "orcamento_midia": "R$ 15.000 [VALIDAR]"})
+    G._TEXTO_PERMITIDO["texto"] = "briefing: orçamento total R$ 25.000, mídia R$ 15.000. Google Ads: R$ 11.654 em 90 dias."
+    base = "# Brief\n> Gerar 400 contatos\n" + "texto do brief em português do Brasil com bastante conteúdo útil. " * 12 + "\n## Orçamento\n- Total: R$ 25.000 [VALIDAR]\n- Mídia Paga: R$ 15.000 [VALIDAR] (Google Ads: R$ 11.654 em 90 dias)\n"
+    assert G._guardrail_brief(_saida(base))[0] is True
+    ruim = base + "- Produção e Conteúdo: R$ 6.000\n- Gestão: R$ 4.000 [VALIDAR]\n"
+    r = G._guardrail_brief(_saida(ruim))
+    assert r[0] is False and "R$ 6.000" in r[1] and "4.000" not in r[1]
+    novo, trocas = G._sanear_brief(ruim)
+    assert "R$ 6.000 [VALIDAR]" in novo and "valor em R$ não informado" in trocas
+    assert G._guardrail_brief(_saida(novo))[0] is True
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+
+
+def test_dimensao_reprovada_sem_trecho_literal():
+    base = "# Parecer\n## Resultado: Reprovado\n" + "texto do parecer em português do Brasil com conteúdo suficiente para o guardião. " * 10 + "\n"
+    sem = base + "### 2. Objetivos Mensuráveis com Baseline (Status: Reprovado)\n- **Apontamento:** O orçamento detalhado não consta no teor revisado.\n- **Correção Sugerida:** Inserir o orçamento.\n### 4. Riscos (Status: Reprovado)\n- **Trecho:** \"Experiência premium\", \"Precisão médica\".\n"
+    assert G._reprovadas_sem_trecho(sem) == ["2. Objetivos Mensuráveis com Baseline (Status: Reprovado)"]
+    g = G._guardrail_parecer_factory([_tarefa("Brief com Experiência premium e Precisão médica no texto. " * 5)])
+    r = g(_saida(sem))
+    assert r[0] is False and "sem citar nenhum trecho" in r[1]
+    com = sem.replace("não consta no teor revisado.", "não consta: \"Gestão de Campanhas: R$ 4.000\".")
+    assert G._reprovadas_sem_trecho(com) == []
+    # revisao_g2: entrega reprovada com trechos em lista separada no mesmo bloco
+    g2 = "## 1. Produção de Conteúdo\n### Parecer\n- **Resultado:** Reprovado\n- **Trechos Problemáticos Citados:**\n  - \"garantir cuidados eficazes\"\n### Correção Sugerida\n- Remover.\n"
+    assert G._reprovadas_sem_trecho(g2) == []
+    assert G._claims_proibidos("Guia Definitivo para escolher um hospital") and not G._claims_proibidos("Guia para escolher um hospital")
