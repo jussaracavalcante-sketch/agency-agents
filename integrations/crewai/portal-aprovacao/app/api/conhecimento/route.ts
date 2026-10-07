@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { admin, usuarioAtual } from "@/lib/supabase";
 import { registrar } from "@/lib/auditoria";
+import { dadosPessoais, mensagemDadosPessoais } from "@/lib/dadosPessoais";
 import { BASE_CHAVE, BASE_TITULO, LIMITE_DOC, MAX_ADICIONADOS, atualizarMetadadosDoCliente, slugDoTitulo, textoDoRepo } from "@/lib/conhecimento";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,7 @@ export async function POST(req: Request) {
   const u = await usuarioAtual();
   if (!u) return erro("Sessão inválida", 401);
   if (u.papel === "leitor") return erro("Seu papel não permite editar a base de conhecimento", 403);
-  const b = (await req.json()) as Corpo;
+  const b = ((await req.json().catch(() => null)) || {}) as Corpo;
   const db = admin();
   const slug = String(b.slug || "");
   const { data: cliente } = await db.from("portal_clientes").select("slug,nome").eq("slug", slug).maybeSingle();
@@ -51,6 +52,8 @@ export async function POST(req: Request) {
       const conteudo = String(b.conteudo || "");
       if (!titulo || titulo.length > 120) return erro("Informe um título de até 120 caracteres");
       if (!conteudo.trim()) return erro("O conteúdo não pode ficar vazio");
+      const achados = dadosPessoais(`${titulo}\n${conteudo}`, { contatos: false });
+      if (achados.length) return erro(mensagemDadosPessoais(achados));
       if (conteudo.length > LIMITE_DOC) return erro(`O documento passa de ${LIMITE_DOC.toLocaleString("pt-BR")} caracteres`);
       let chave = String(b.chave || "");
       if (!chave) { // documento novo

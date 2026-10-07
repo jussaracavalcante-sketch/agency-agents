@@ -17,14 +17,16 @@ function cpfValido(digitos: string): boolean {
 export type AchadoPessoal = { tipo: string; trecho: string };
 
 /** Devolve o que parece dado pessoal, com o trecho mascarado para não repetir o dado em mensagens e logs. */
-export function dadosPessoais(texto: string): AchadoPessoal[] {
+/** `contatos: false` ignora e-mail e telefone (guias de marca trazem contatos institucionais) e pega só o que identifica pessoa física. */
+export function dadosPessoais(texto: string, opcoes: { contatos?: boolean } = {}): AchadoPessoal[] {
+  const contatos = opcoes.contatos !== false;
   const achados: AchadoPessoal[] = [];
   const mascara = (s: string) => (s.length <= 4 ? "****" : s.slice(0, 2) + "***" + s.slice(-2));
   for (const m of texto.matchAll(/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g)) {
     if (cpfValido(m[0].replace(/\D/g, ""))) achados.push({ tipo: "CPF", trecho: mascara(m[0]) });
   }
-  for (const m of texto.matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g)) achados.push({ tipo: "e-mail", trecho: mascara(m[0]) });
-  for (const m of texto.matchAll(/(?<!\d)(?:\+?55\s?)?\(?\d{2}\)?\s?9?\d{4}[-\s]?\d{4}(?!\d)/g)) {
+  if (contatos) for (const m of texto.matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g)) achados.push({ tipo: "e-mail", trecho: mascara(m[0]) });
+  if (contatos) for (const m of texto.matchAll(/(?<!\d)(?:\+?55\s?)?\(?\d{2}\)?\s?9?\d{4}[-\s]?\d{4}(?!\d)/g)) {
     const so = m[0].replace(/\D/g, "");
     if (so.length >= 10 && so.length <= 13) achados.push({ tipo: "telefone", trecho: mascara(m[0]) });
   }

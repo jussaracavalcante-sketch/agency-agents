@@ -2,7 +2,8 @@
 """
 Gera lib/documentos.ts a partir da fonte única dos textos legais em marketing-operations/docs/lgpd/:
   - aviso-de-privacidade.md  → página /privacidade
-  - termo-de-conduta.md      → página /termo (a tabela de assinatura em papel, "## 7. Aceite", não vai para a web: o aceite é registrado no portal)
+  - termo-de-conduta.md      → página /termo
+  - ../guia-do-analista.md   → página /guia (sem aceite) (a tabela de assinatura em papel, "## 7. Aceite", não vai para a web: o aceite é registrado no portal)
 O hash do texto identifica a versão aceita: mudou o texto, as pessoas aceitam de novo.
 Rode de novo sempre que um dos textos mudar:  python3 scripts/gerar_documentos.py
 """
@@ -29,4 +30,8 @@ for chave, (titulo, arquivo, corte) in DOCS.items():
     saida.append(f"  {chave}: {{ chave: {json.dumps(chave)}, titulo: {json.dumps(titulo, ensure_ascii=False)}, versao: {json.dumps(versao)}, hash: {json.dumps(h)}, md: {json.dumps(texto, ensure_ascii=False)} }},")
     print(chave, "versão", versao, "hash", h)
 saida.append("};")
+guia = (FONTE.parent / "guia-do-analista.md").read_text(encoding="utf-8")
+saida.append("/** Guia de uso: página /guia, sem aceite. */")
+saida.append(f"export const GUIA = {{ titulo: \"Guia do analista\", md: {json.dumps(guia, ensure_ascii=False)} }};")
+print("guia", len(guia), "caracteres")
 SAIDA.write_text("\n".join(saida) + "\n", encoding="utf-8")

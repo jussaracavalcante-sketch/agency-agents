@@ -21,7 +21,7 @@ export async function textoDosAjustes(): Promise<string> {
 }
 
 export type Config = Record<string, string>;
-export const CHAVES_CONFIG = ["preco_entrada_usd_por_milhao", "preco_saida_usd_por_milhao", "preco_cache_usd_por_milhao", "cambio_usd_brl", "valor_campanha_referencia_brl", "horas_humanas_por_campanha", "custo_hora_humana_brl"] as const;
+export const CHAVES_CONFIG = ["preco_entrada_usd_por_milhao", "preco_saida_usd_por_milhao", "preco_cache_usd_por_milhao", "cambio_usd_brl", "valor_campanha_referencia_brl", "horas_humanas_por_campanha", "custo_hora_humana_brl", "limite_disparos_dia"] as const;
 
 export async function lerConfig(): Promise<{ valores: Config; descricoes: Config }> {
   const { data } = await admin().from("portal_config").select("chave,valor,descricao");

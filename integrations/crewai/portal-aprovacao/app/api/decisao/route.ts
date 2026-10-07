@@ -3,6 +3,7 @@ import { admin, usuarioAtual, podeDecidir, ehAprovador } from "@/lib/supabase";
 import { registrar } from "@/lib/auditoria";
 import { obterExecucao } from "@/lib/execucoes";
 import { retomar, textoDeDecisao } from "@/lib/crewai";
+import { MAX_FEEDBACK } from "@/lib/limites";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +12,15 @@ export async function POST(req: Request) {
   if (!usuario) return NextResponse.json({ erro: "Sessão inválida" }, { status: 401 });
   if (!ehAprovador(usuario)) return NextResponse.json({ erro: "Apenas aprovadores decidem" }, { status: 403 });
 
-  const { execucaoId, decisao, instrucoes, ignorarTexto } = (await req.json()) as {
-    execucaoId: string; decisao: "aprovar" | "devolver" | "reprovar"; instrucoes?: string; ignorarTexto?: boolean;
-  };
+  const corpo = (await req.json().catch(() => null)) as { execucaoId?: unknown; decisao?: unknown; instrucoes?: unknown; ignorarTexto?: unknown } | null;
+  if (!corpo || typeof corpo.execucaoId !== "string" || !corpo.execucaoId || (corpo.instrucoes != null && typeof corpo.instrucoes !== "string")) {
+    return NextResponse.json({ erro: "Pedido inválido" }, { status: 400 });
+  }
+  const execucaoId = corpo.execucaoId;
+  const decisao = corpo.decisao as "aprovar" | "devolver" | "reprovar";
+  const instrucoes = corpo.instrucoes as string | undefined;
+  const ignorarTexto = corpo.ignorarTexto === true;
+  if ((instrucoes || "").length > MAX_FEEDBACK) return NextResponse.json({ erro: `As instruções passam de ${MAX_FEEDBACK} caracteres` }, { status: 400 });
   if (!["aprovar", "devolver", "reprovar"].includes(decisao)) return NextResponse.json({ erro: "Decisão inválida" }, { status: 400 });
   if (decisao === "devolver" && !(instrucoes || "").trim()) {
     return NextResponse.json({ erro: "Informe as instruções ao devolver" }, { status: 400 });
@@ -66,6 +73,6 @@ export async function POST(req: Request) {
     ...registro, enviado_ao_crewai: r.ok, novo_kickoff_id: r.kickoff, resposta_crewai: r.texto,
   });
   await registrar(usuario, { acao: `decisao.${decisao}`, entidade: "portal_decisoes", entidade_id: execucaoId, depois: { portao: exec.portao, decisao, instrucoes: instrucoes || "", enviado_ao_crewai: r.ok, novo_kickoff_id: r.kickoff }, detalhe: `Portão ${exec.portao ?? ""}: ${decisao === "aprovar" ? "aprovado" : "devolvido com ajustes"}${r.ok ? "" : " (plataforma recusou o envio)"}.` });
-  if (!r.ok) return NextResponse.json({ erro: "A plataforma recusou o envio", detalhe: r.texto }, { status: 502 });
+  if (!r.ok) return NextResponse.json({ erro: "A plataforma recusou o envio. O detalhe técnico ficou registrado; avise o administrador." }, { status: 502 });
   return NextResponse.json({ ok: true, mensagem: "Decisão enviada. A execução foi retomada.", kickoff: r.kickoff });
 }

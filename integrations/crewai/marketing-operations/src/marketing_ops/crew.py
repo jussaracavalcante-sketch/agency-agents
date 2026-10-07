@@ -514,6 +514,38 @@ def _guardrail_registro_factory(pecas):
     return guardrail
 
 
+_NOTA_VERSAO_INICIAL = "> Atenção: esta avaliação foi feita sobre a VERSÃO INICIAL das peças, antes da correção automática. Vale o parecer final do Guardião acima."
+
+
+def _notas_de_versao_g2(texto):
+    """
+    No G2 a rubrica e a auditoria de mídia avaliam as peças ANTES da correção automática, e o parecer final avalia as versões corrigidas.
+    O código acrescenta uma nota logo abaixo do título dessas duas seções, para o aprovador não tomar os dois como a mesma versão.
+    """
+    if _NOTA_VERSAO_INICIAL in texto:
+        return texto
+    return re.sub(
+        r"^([ \t]*(?:#+[ \t]*)?(?:Quadro da rubrica de qualidade|Auditoria técnica de mídia)[^\n]*\n)",
+        lambda m: m.group(1) + _NOTA_VERSAO_INICIAL + "\n",
+        texto, flags=re.M | re.I,
+    )
+
+
+def _guardrail_cobertura_g2_factory(base):
+    """Revisão final do G2: as cinco entregas precisam de parecer, a direção de arte inclusive (já saiu um parecer sem ela no portão)."""
+
+    def guardrail(saida):
+        r = base(saida)
+        if r[0] is False:
+            return r
+        n = _normalizar(_sem_alerta(getattr(saida, "raw", None) or str(saida) or ""))
+        if not re.search(r"dire[cç][aã]o de arte|conceito criativo|pe[cç]as criativas|criativo", n):
+            return False, "Falta o parecer da DIREÇÃO DE ARTE. A revisão final cobre as cinco entregas: conteúdo, calendário, e-mail, plano de mídia e direção de arte, com cinco linhas no quadro-resumo."
+        return r
+
+    return guardrail
+
+
 def _guardrail_portao_factory(revisao_task, rubrica_task=None, auditoria_task=None, portao=None):
     """
     Portão humano: o pedido deve copiar o parecer do Guardião (mesmo resultado, pelo menos 70% das linhas) e ter as
@@ -532,7 +564,10 @@ def _guardrail_portao_factory(revisao_task, rubrica_task=None, auditoria_task=No
             # tentativas, e a plataforma não recupera uma execução pausada que falhou (observado em 02/10).
             tentativas["n"] += 1
             if tentativas["n"] > 2:
-                return True, saida
+                return True, (_notas_de_versao_g2(getattr(saida, "raw", None) or str(saida) or "") if portao == "G2" else saida)
+            return veredito
+        if portao == "G2":
+            return True, _notas_de_versao_g2(getattr(saida, "raw", None) or str(saida) or "")
         return veredito
 
     def _checar_portao(saida):
@@ -1822,7 +1857,7 @@ def _guardrail_brief(saida):
 
 _PECAS_RUBRICA = ("CONTEUDO", "CALENDARIO", "EMAIL", "MIDIA")
 _RESUMO_RUBRICA = re.compile(
-    r"^[\s*`>-]*RESUMO\s*\|\s*(?P<peca>[^|]+?)\s*\|\s*(?P<gates>[^|]+?)\s*\|\s*NOTA\s*=\s*(?P<nota>\d{1,3})\s*/\s*100\s*\|\s*"
+    r"^[\s*`>-]*RESUMO\s*\|\s*(?P<peca>[^|]+?)\s*\|\s*(?P<gates>[^|]+?)\s*\|\s*NOTA\s*=\s*(?P<nota>\d{1,3})\s*/\s*(?P<den>\d{2,3})\s*\|\s*"
     r"VEREDITO\s*=\s*(?P<ver>APROVAR COM AJUSTES MENORES|APROVAR|DEVOLVER|REFAZER)\s*\|\s*REVIS[ÃA]O\s+(?P<ciclo>[12])\s+DE\s+2[\s*`]*$",
     re.I | re.M,
 )
@@ -1887,7 +1922,11 @@ def _guardrail_rubrica(saida):
         gates = dict(re.findall(r"G([1-5])\s*=\s*(OK|FALHA|NA)", m.group("gates"), re.I))
         if sorted(gates) != ["1", "2", "3", "4", "5"]:
             return False, f"A linha RESUMO de {peca} precisa dos 5 gates (G1 a G5), cada um OK, FALHA ou NA."
-        nota = int(m.group("nota"))
+        # Com gate NA a rubrica às vezes escala o denominador (90/90, 80/100): a nota vale em percentual do denominador declarado.
+        den = int(m.group("den"))
+        if den <= 0 or den > 100:
+            return False, f"A nota de {peca} usa denominador {den}: escreva NOTA=NN/100."
+        nota = round(100 * int(m.group("nota")) / den)
         ver = m.group("ver").upper()
         falhou = any(v.upper() == "FALHA" for v in gates.values())
         if nota > 100:
@@ -2889,7 +2928,7 @@ class MarketingOpsCrew:
     @task
     def revisao_g2_final(self) -> Task:
         return Task(
-            guardrail=_com_limite_de_rejeicoes(_guardrail_parecer_factory(self._pecas_corrigidas())), guardrail_max_retries=2,
+            guardrail=_com_limite_de_rejeicoes(_guardrail_cobertura_g2_factory(_guardrail_parecer_factory(self._pecas_corrigidas()))), guardrail_max_retries=2,
             config=self.tasks_config["revisao_g2_final"],
             context=self._pecas_corrigidas(),
         )
