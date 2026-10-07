@@ -11,7 +11,7 @@ _NOMES = {
     "_LINHA_NEUTRA", "_PLACEHOLDERS", "_placeholders", "_claims_proibidos", "_guardrail_sem_claims", "_INPUTS_ATUAIS",
     "_guardrail_brief", "_cobertura_calendario", "_CALENDARIO_REEMITIDO", "_trecho_calendario_reemitido",
     "_PECAS_RUBRICA", "_RESUMO_RUBRICA", "_SEGMENTO_SAUDE", "_sem_acento", "_linhas_resumo_rubrica", "_guardrail_rubrica", "_FONTE_INTERNA", "_CANAIS_PAGOS", "_LINHA_PROJECAO", "_num", "_problemas_midia", "_guardrail_midia_factory", "_ocorrencias_proibidas", "_guardrail_rubrica_factory", "_TAG_ALERTA", "_sem_alerta", "_com_alerta", "_com_limite_de_rejeicoes", "_LINHA_PROJECAO_LISTA", "_ABERTURA_DE_CONVERSA", "_rank_status", "_guardrail_parecer_geral", "_texto_apos_documento", "_FONTE_MERCADO", "_ORGAO_REGULADOR", "_cmp", "_citacoes_inexistentes", "_SEM_PROBLEMA", "_dimensoes_incoerentes", "_guardrail_parecer_factory", "_guardrail_aplicacao_g1_factory", "_lista", "_bloco_operacao", "_bloco_auditoria", "_bloco_medicao", "_FALTAS_ROTINA", "_faltas_rotina_midia", "_guardrail_auditoria_factory", "_PREFIXO_AUTO", "_PCT_NOVO", "_guardrail_portao_factory", "_linhas_significativas", "_PALAVRAS_EN", "_PALAVRAS_PT", "_limpar_final", "_trecho_em_ingles", "_linha_em_ingles", "_CHAVE_PECA", "_pecas_para_refazer", "_guardrail_aplicacao_g2_factory", "_linhas_social", "_guardrail_pacote_factory", "_datas_do_texto", "_acrescentar_marca", "_sanear_claims", "_sanear_producao", "_sanear_reemissao", "_sanear_midia", "_hoje", "_linhas_do_calendario", "_saneador_pacote_factory", "_REDES", "_HORA_COM_FUSO_COLADO", "_posts_da_tabela", "_bloqueadas_do_g2", "_trecho_reemitido", "_a_partir_da_reemissao", "_HISTORIAS_PACIENTES", "_historias_de_pacientes", "_tabela_sem_coluna_data", "_SERVICOS_LISTA", "_MARCA_SERVICOS", "_sem_bloco_servicos", "_LIMITE_CONTEXTO_CLIENTE", "_injetar_contexto_cliente", "_texto_permitido", "_servicos_nao_informados", "_saneador_aplicacao_g1_factory", "_MARCADOR_FALSO", "_FONTE_SECAO", "_ROTULO_FONTE", "_fontes_nao_informadas", "_sanear_brief", "_ARTIGO_MASCULINO", "_TERMOS_COM_ARTIGO", "_secoes_rotina_midia", "_validar_punido_pela_rubrica", "_extrair_datas", "_PECAS_G2", "_feedback_do_portao", "_saneador_aplicacao_g2_factory", "_SEM_PROBLEMA", "_datas_passadas", "_linha_solta_na_tabela", "_problemas_calendario", "_guardrail_calendario", "_trechos_entre_aspas", "_fim_do_documento", "_PALAVRAS_TITULO_EN", "_PT_PT", "_PT_PT_RE", "_titulo_em_ingles", "_portugues_de_portugal", "_linhas_do_cronograma", "_problemas_cronograma", "_tamanho_util", "_pecas_encolhidas", "_MARCA_HISTORICO", "_orcamento_de_historico", "_ECRA_COM_ARTIGO", "_ECRA_ARTIGO", "_NOTA_FINAL", "_MARCADOR_MALFORMADO", "_nota_final", "_marcadores_malformados", "_numeros_informados", "_valores_rs_inventados", "_reprovadas_sem_trecho", "_PALAVRAS_COMUNS", "_ESQUELETO", "_esqueleto", "_retirar_das_liberadas", "_MARCA_AJUSTES", "_sem_bloco_ajustes", "_sanear_datas_passadas", "_sanear_calendario", "_CANAIS_ORGANICOS", "_verba_rateada_em_organico", "_projecao_em_bloco_sem_validar",
-    "_FEEDBACK", "_ha_feedback_humano", "_tem_feedback", "_Vigente", "_MARCA_PENDENTE", "_guardrail_reemissao_factory", "_saneador_reemissao_factory", "_bloco_versoes_g2", "_guardrail_registro_factory", "_com_copia_sem_feedback", "_guardrail_cobertura_g2_factory", "_NOTA_VERSAO_INICIAL", "_notas_de_versao_g2", "_LISTA_NEGATIVA", "_sem_secoes_negativas",
+    "_FEEDBACK", "_ha_feedback_humano", "_tem_feedback", "_Vigente", "_MARCA_PENDENTE", "_guardrail_reemissao_factory", "_saneador_reemissao_factory", "_bloco_versoes_g2", "_guardrail_registro_factory", "_com_copia_sem_feedback", "_guardrail_cobertura_g2_factory", "_NOTA_VERSAO_INICIAL", "_notas_de_versao_g2", "_LISTA_NEGATIVA", "_sem_secoes_negativas", "_LIMITE_CRESCIMENTO", "_sem_autocertificacao", "_AUTOCERTIFICACAO", "_sem_secao_ajustes", "_bloco_ajustes_g2",
 }
 
 
@@ -1252,3 +1252,46 @@ def test_listas_negativas_do_setup_do_vjob_nao_autorizam_termos():
     assert "mobilidade segura" in limpo.lower() and "claro e humano" in limpo.lower()
     permitido = G._texto_permitido({"cliente": "Move", "contexto_cliente": ctx})
     assert "melhor locadora" not in permitido and "mobilidade segura" in permitido
+
+
+def test_reemissao_inchada_e_barrada_e_saneador_volta_a_versao_anterior():
+    G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+    orig = "Texto da peça original em português do Brasil com bastante conteúdo útil. " * 30
+    g = G._guardrail_reemissao_factory(_tarefa(orig), "o calendário", lambda s: (True, s))
+    assert g(_saida(orig + " Trecho novo com ajuste pedido. " * 5))[0] is True
+    r = g(_saida(orig * 2))
+    assert r[0] is False and "cresceu" in r[1]
+    san = G._saneador_reemissao_factory(_tarefa(orig), lambda t: (t, []))
+    novo, trocas = san(orig * 2)
+    assert G._MARCA_PENDENTE in novo and "inchada" in trocas[-1]
+
+
+def test_saneador_remove_autocertificacao_da_reemissao():
+    orig = "Texto da peça original em português do Brasil com bastante conteúdo útil. " * 30
+    san = G._saneador_reemissao_factory(_tarefa(orig), lambda t: (t, []))
+    novo, trocas = san(orig + "\nTodos os ajustes solicitados foram aplicados e a peça está em total conformidade.\n| 1 | post |")
+    assert "Todos os ajustes" not in novo and "| 1 | post |" in novo and "autocertificação removida" in trocas
+
+
+def test_calendario_com_valor_em_reais_inventado_e_barrado_e_marcado():
+    G._INPUTS_ATUAIS.clear(); G._INPUTS_ATUAIS["orcamento_total"] = "R$ 15.000"
+    G._TEXTO_PERMITIDO["texto"] = "orçamento total r$ 15.000"
+    try:
+        assert G._valores_rs_inventados("Verba de R$ 500 por semana no LinkedIn", G._normalizar(G._TEXTO_PERMITIDO["texto"])) == ["R$ 500"]
+        novo, trocas = G._sanear_calendario("Texto.\nVerba de R$ 500 por semana\nTotal R$ 15.000")
+        assert "R$ 500 por semana [VALIDAR]" in novo.replace("  ", " ") or "[VALIDAR]" in novo.splitlines()[1]
+        assert "valor em R$ não informado" in trocas
+    finally:
+        G._INPUTS_ATUAIS.clear(); G._TEXTO_PERMITIDO["texto"] = ""
+
+
+def test_ajustes_aplicados_do_registro_g2_sao_gerados_por_codigo():
+    cor = "linha um\nlinha dois\nlinha tres"
+    pecas = {"Conteúdo": (_tarefa(cor), _tarefa(None)), "Calendário": (_tarefa(cor), _tarefa(cor + "\nlinha nova")),
+             "E-mail": (_tarefa(cor), _tarefa(G._MARCA_PENDENTE + ": incompleta\ntexto"))}
+    bloco = G._bloco_ajustes_g2(pecas)
+    assert "Conteúdo: nenhum ajuste humano aplicado" in bloco and "Calendário: reemitida" in bloco and "1 linhas diferentes" in bloco
+    assert "E-mail: reemissão incompleta; ajustes NÃO aplicados" in bloco
+    inventado = "# Registro\ntexto\n## Ajustes aplicados\n- tudo foi corrigido\n## Resultado\nok"
+    limpo = G._sem_secao_ajustes(inventado)
+    assert "tudo foi corrigido" not in limpo and "## Resultado" in limpo
