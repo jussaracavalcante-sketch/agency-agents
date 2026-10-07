@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { admin, usuarioAtual, podeDecidir, ehAprovador } from "@/lib/supabase";
 import { registrar } from "@/lib/auditoria";
 import { obterExecucao } from "@/lib/execucoes";
-import { retomar, textoDeDecisao } from "@/lib/crewai";
+import { retomar, encerrar, textoDeDecisao, motivoDaRecusa } from "@/lib/crewai";
 import { MAX_FEEDBACK } from "@/lib/limites";
 
 export const dynamic = "force-dynamic";
@@ -48,6 +48,7 @@ export async function POST(req: Request) {
     .select("id")
     .eq("task_id", taskId)
     .gt("criado_em", exec.pendente.recebido_em)
+    .or("enviado_ao_crewai.eq.true,decisao.eq.reprovar")   // envio recusado pela plataforma (ex.: limite do plano) não trava nova tentativa
     .limit(1);
   if (jaDecidido?.length) return NextResponse.json({ erro: "Este pedido já recebeu uma decisão" }, { status: 409 });
 
@@ -60,6 +61,7 @@ export async function POST(req: Request) {
     // Reprovar não chama a plataforma (não existe cancelamento): a decisão fica registrada e o portal passa a tratar a
     // execução como encerrada (ver execucoes.ts), então ela sai de "Aguardando". Nada é publicado.
     await db.from("portal_decisoes").insert({ ...registro, enviado_ao_crewai: false });
+    await encerrar(execucaoId);
     await registrar(usuario, { acao: "decisao.reprovar", entidade: "portal_decisoes", entidade_id: execucaoId, depois: { portao: exec.portao, decisao, instrucoes: instrucoes || "" }, detalhe: `Portão ${exec.portao ?? ""} reprovado; execução encerrada no portal.` });
     return NextResponse.json({ ok: true, mensagem: "Reprovado e registrado. A execução foi encerrada no portal e não será retomada." });
   }
@@ -73,6 +75,9 @@ export async function POST(req: Request) {
     ...registro, enviado_ao_crewai: r.ok, novo_kickoff_id: r.kickoff, resposta_crewai: r.texto,
   });
   await registrar(usuario, { acao: `decisao.${decisao}`, entidade: "portal_decisoes", entidade_id: execucaoId, depois: { portao: exec.portao, decisao, instrucoes: instrucoes || "", enviado_ao_crewai: r.ok, novo_kickoff_id: r.kickoff }, detalhe: `Portão ${exec.portao ?? ""}: ${decisao === "aprovar" ? "aprovado" : "devolvido com ajustes"}${r.ok ? "" : " (plataforma recusou o envio)"}.` });
-  if (!r.ok) return NextResponse.json({ erro: "A plataforma recusou o envio. O detalhe técnico ficou registrado; avise o administrador." }, { status: 502 });
+  if (!r.ok) {
+    const m = motivoDaRecusa(r.texto);
+    return NextResponse.json({ erro: `${m.mensagem} Sua decisão ficou registrada como NÃO enviada; o portão continua aberto e você poderá decidir de novo.`, motivo: m.tipo }, { status: m.tipo === "limite" ? 503 : 502 });
+  }
   return NextResponse.json({ ok: true, mensagem: "Decisão enviada. A execução foi retomada.", kickoff: r.kickoff });
 }

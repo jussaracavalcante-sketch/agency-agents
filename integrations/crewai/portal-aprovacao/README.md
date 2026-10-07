@@ -28,7 +28,7 @@ Interface para a equipe validar os portões G1, G2 e G3 do fluxo de marketing no
 2. Criar usuários em Supabase Auth e uma linha em `portal_perfis` por pessoa (nome e papel).
 3. Na Vercel: importar o repositório, **Root Directory = `integrations/crewai/portal-aprovacao`**.
 4. Variáveis de ambiente (ver `.env.example`): as públicas do Supabase e, **somente no servidor**,
-   `SUPABASE_SERVICE_ROLE_KEY`, `CREWAI_API_URL`, `CREWAI_TOKEN`, `WEBHOOK_BASE`, `WEBHOOK_KEY`, `WEBHOOK_AUTOMACAO`.
+   `SUPABASE_SERVICE_ROLE_KEY`, `CREWAI_API_URL`, `CREWAI_TOKEN`, `WEBHOOK_BASE`, `WEBHOOK_KEY`, `WEBHOOK_AUTOMACAO`. Para executar no runner do Render em vez da AMP: `EXECUTOR=runner`, `RUNNER_URL`, `RUNNER_TOKEN` (ver `marketing-operations/docs/runner-render.md`).
 5. Antes: **resetar o token do CrewAI** que foi exposto durante os testes e usar o novo.
 
 ## Limites conhecidos

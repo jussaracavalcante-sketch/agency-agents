@@ -3,7 +3,7 @@ import { admin, usuarioAtual, ehAprovador } from "@/lib/supabase";
 import { registrar } from "@/lib/auditoria";
 import { textoDosAjustes } from "@/lib/admin";
 import { execucaoAtiva } from "@/lib/execucoes";
-import { iniciar } from "@/lib/crewai";
+import { iniciar, motivoDaRecusa } from "@/lib/crewai";
 import { CHAVES, validar } from "@/lib/briefing";
 import { contextoDoCliente } from "@/lib/conhecimento";
 import { disparosNas24h, limiteDiario } from "@/lib/limites";
@@ -49,6 +49,9 @@ export async function POST(req: Request) {
     enviado_ao_crewai: r.ok, kickoff_id: r.kickoff, resposta_crewai: r.texto,
   });
   await registrar(u, { acao: "disparo.criar", entidade: "portal_disparos", entidade_id: r.kickoff ?? cliente.slug, depois: { cliente: cliente.nome, briefing_titulo: inputs.briefing_titulo, enviado_ao_crewai: r.ok, kickoff_id: r.kickoff, ajustes_agentes: !!ajustes }, detalhe: `Campanha disparada para ${cliente.nome}${r.ok ? "" : " (plataforma recusou)"}.` });
-  if (!r.ok) return NextResponse.json({ erro: "A plataforma recusou o disparo. O detalhe técnico ficou registrado; avise o administrador." }, { status: 502 });
+  if (!r.ok) {
+    const m = motivoDaRecusa(r.texto);
+    return NextResponse.json({ erro: m.mensagem.replace("o envio", "o disparo"), motivo: m.tipo }, { status: m.tipo === "limite" ? 503 : 502 });
+  }
   return NextResponse.json({ ok: true, kickoff: r.kickoff, mensagem: "Campanha disparada." + (ctx.texto ? ` Usando a base de conhecimento editada no portal (${ctx.docs} documento(s)${ctx.truncado ? ", texto cortado no limite" : ""}).` : "") + " O primeiro portão (G1) aparece na fila em alguns minutos." });
 }
