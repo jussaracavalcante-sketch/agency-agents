@@ -51,6 +51,6 @@ export const ACOES: Record<string, string> = {
   "disparo.criar": "Disparou campanha", "conhecimento.salvar": "Salvou documento de marca", "conhecimento.excluir": "Excluiu documento",
   "conhecimento.restaurar_original": "Restaurou guia original", "conhecimento.restaurar_versao": "Restaurou versão", "conhecimento.completo": "Marcou guia completo/incompleto",
   "admin.convite_salvar": "Salvou convite de acesso", "admin.convite_excluir": "Excluiu convite", "admin.perfil_papel": "Alterou papel/portões", "admin.perfil_excluir": "Removeu acesso",
-  "admin.agente_salvar": "Ajustou agente", "admin.config_salvar": "Alterou configuração", "admin.execucao_encerrar": "Encerrou execução", "admin.limpar_testes": "Limpou eventos de teste",
+  "admin.agente_salvar": "Ajustou agente", "admin.config_salvar": "Alterou configuração", "admin.execucao_encerrar": "Encerrou execução", "admin.limpar_testes": "Limpou eventos de teste", "aceite.registrar": "Aceitou documento (privacidade ou conduta)",
 };
 export const rotuloAcao = (a: string) => ACOES[a] ?? a;
