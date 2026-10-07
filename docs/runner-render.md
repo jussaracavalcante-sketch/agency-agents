@@ -84,3 +84,19 @@ Trocar `EXECUTOR` para `amp` e fazer redeploy do portal devolve o disparo e as d
 | Gasto de tokens sem teto | Limite mensal e alertas na OpenAI; limite diário de disparos já existe no portal |
 | Serviço fora do ar | Render Starter com health check e reinício automático; o portal mostra o aviso de executor inacessível |
 | Custo do Render | Plano Starter (valor a confirmar no painel do Render) |
+
+## 8. Rodar no plano gratuito do Render (sem cartão)
+
+O `render.yaml` usa `plan: free`. Limites e como contorná-los:
+
+| Limite do plano gratuito | Consequência | Contorno |
+|---|---|---|
+| Hiberna após 15 min sem requisição de fora | Uma campanha parada num portão **se perde** (o processo é encerrado) | Pinger externo gratuito chamando `https://<servico>.onrender.com/health` a cada 5 min (UptimeRobot, cron-job.org ou um workflow agendado do GitHub). Com o ping, o serviço não hiberna |
+| 750 horas gratuitas por mês | Um serviço ligado o mês todo cabe (cerca de 744 h) | Não crie outros serviços gratuitos na mesma conta |
+| 512 MB de memória | A crew construída ocupa cerca de 250 MB nos meus testes; durante a execução pode subir | Se o serviço reiniciar por falta de memória (o log do Render mostra "out of memory"), é preciso um plano pago |
+| Reinícios periódicos pela plataforma | Perdem campanha parada num portão | Não há contorno gratuito. Evite deixar um portão aberto por muitas horas; decida o mais rápido possível |
+| Primeira chamada após hibernar leva cerca de 1 min | O disparo pode demorar | O pinger evita isso |
+
+**Conclusão:** o plano gratuito serve para o piloto de teste. Para os analistas, com a garantia de que a operação não para, use o plano pago de entrada: o custo é pequeno perto do gasto de tokens, e o valor atual deve ser conferido no painel do Render.
+
+Alternativas gratuitas para o runner, se o Render não servir: uma máquina virtual always-free (por exemplo, a Oracle Cloud) ou um Space privado no Hugging Face. Ambas pedem outro passo a passo; me avise antes de escolher.
