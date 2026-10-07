@@ -411,3 +411,13 @@ Números: 32 eventos de tarefa, 6 pedidos de decisão humana, 14 tarefas com ALE
 3. Registro do G2: a seção "Ajustes aplicados" escrita pelo modelo é descartada; o código gera a seção por comparação das versões (sem ajuste, reemitida com tamanhos e linhas diferentes, ou bloqueada).
 4. Portão G2: o prompt exige a cópia integral do parecer do Guardião e a nota de versão inicial no texto que o aprovador lê (a trava em código continua como segunda barreira).
 92 testes; carga da crew sem erro de interpolação.
+
+## Décimo sétimo disparo (execução bd9adb74, Hospital Santa Júlia): bloqueio por limite mensal da plataforma
+
+Disparo nº 24 às 18:15 UTC com o build das correções 1 a 4 (commit 11be12a). O cliente foi o Santa Júlia, não a Move, então a base VJOB e a lista negativa continuam sem teste em execução real. O G1 chegou em cerca de 2 min, sem alerta de qualidade, com o histórico "Nenhum feedback humano recebido" e o parecer do Guardião copiado inteiro (Reprovado por itens [VALIDAR] em aberto). Defeitos de conteúdo no brief: run-rate de R$ 11.654 apresentado como orçamento do Google Ads, "Hipóteses" só com [VALIDAR], escopo de Content Marketing e Mídias Sociais indefinido, "Excelência médica" e "premium" na matriz de mensagens.
+
+Às 18:18 a decisão nº 72 (G1 devolver) foi gravada, mas a CrewAI AMP recusou a retomada: `Monthly execution limit reached`. Nenhum kickoff novo; execução parada no G1.
+
+Consumo observado: uma campanha completa com devolução em G1, G2 e G3 consumiu 6 execuções encadeadas (03d3065a, 41e5d5ac, aac502c6, dc564721, d306e927, 5eebed4f), uma por retomada. A capacidade mensal do plano precisa ser dimensionada por campanha (de 2 execuções, sem devoluções, a 6 ou mais, com devoluções) antes do piloto com analistas.
+
+Correção no portal: a recusa por limite agora mostra mensagem específica ("limite mensal de execuções do plano… avise o administrador"), a decisão fica registrada como não enviada, e uma decisão recusada pela plataforma não trava mais uma nova tentativa no mesmo portão (antes o portal responderia "Este pedido já recebeu uma decisão").
