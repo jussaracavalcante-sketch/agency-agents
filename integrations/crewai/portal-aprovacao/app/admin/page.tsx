@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { admin, ehAdmin, usuarioAtual } from "@/lib/supabase";
 import { ajustesDosAgentes, estadoDaPlataforma, lerConfig } from "@/lib/admin";
 import { AGENTES } from "@/lib/agentes";
@@ -11,7 +11,8 @@ export const dynamic = "force-dynamic";
 export default async function Administracao() {
   const u = await usuarioAtual();
   if (!u) redirect("/login");
-  if (!ehAdmin(u)) return <div className="card"><h1>Administração</h1><p className="mut">Só o administrador do sistema acessa esta área.</p></div>;
+  // Quem não é administrador não vê nem que a área existe: a rota responde 404, igual a um endereço inexistente.
+  if (!ehAdmin(u)) notFound();
   const db = admin();
   const [{ data: perfis }, { data: convites }, ajustes, config, execs, clientes, { count: testes }] = await Promise.all([
     db.from("portal_perfis").select("user_id,nome,papel,portoes,criado_em").order("nome"),
