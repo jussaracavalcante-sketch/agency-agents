@@ -4,7 +4,7 @@ services:
   - type: web
     name: marketing-ops-runner
     runtime: docker
-    plan: starter          # sempre ligado; o plano gratuito hiberna e perderia a campanha que espera no portão
+    plan: free             # gratuito: hiberna após 15 min sem requisição. Mantenha-o acordado com um pinger no /health a cada 5 min (docs/runner-render.md, seção 8). Para produção, troque por starter
     region: oregon         # confirme a região exigida pela política de dados (ver docs/runner-render.md)
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health
