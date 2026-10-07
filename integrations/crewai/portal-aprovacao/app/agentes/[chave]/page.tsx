@@ -7,7 +7,9 @@ import { fmt } from "@/lib/dados";
 export const dynamic = "force-dynamic";
 const ABAS: [string, string][] = [["config", "Configuração"], ["conhecimento", "Conhecimento"], ["acoes", "Ações"], ["historico", "Histórico"]];
 
-export default async function Agente({ params, searchParams }: { params: { chave: string }; searchParams: { aba?: string } }) {
+export default async function Agente({ params: pr, searchParams: sp }: { params: Promise<{ chave: string }>; searchParams: Promise<{ aba?: string }> }) {
+  const params = await pr;
+  const searchParams = await sp;
   const u = await usuarioAtual();
   if (!u) redirect("/login");
   const a = AGENTES.find((x) => x.chave === params.chave);

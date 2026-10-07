@@ -5,7 +5,8 @@ import { fmt } from "@/lib/dados";
 
 export const dynamic = "force-dynamic";
 
-export default async function Conhecimento({ searchParams }: { searchParams: { f?: string; q?: string } }) {
+export default async function Conhecimento({ searchParams: sp }: { searchParams: Promise<{ f?: string; q?: string }> }) {
+  const searchParams = await sp;
   const u = await usuarioAtual();
   if (!u) redirect("/login");
   const [{ data }, { data: edits }] = await Promise.all([

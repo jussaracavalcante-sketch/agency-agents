@@ -5,7 +5,8 @@ import PainelAprovacoes from "@/components/PainelAprovacoes";
 
 export const dynamic = "force-dynamic";
 
-export default async function Revisao({ params }: { params: { id: string } }) {
+export default async function Revisao({ params: pr }: { params: Promise<{ id: string }> }) {
+  const params = await pr;
   const u = await usuarioAtual();
   if (!u) redirect("/login");
   const exec = await obterExecucao(params.id);

@@ -6,7 +6,8 @@ import { fmt } from "@/lib/dados";
 export const dynamic = "force-dynamic";
 type Busca = { usuario?: string; acao?: string; entidade?: string; de?: string; ate?: string; q?: string };
 
-export default async function Auditoria({ searchParams }: { searchParams: Busca }) {
+export default async function Auditoria({ searchParams: sp }: { searchParams: Promise<Busca> }) {
+  const searchParams = await sp;
   const u = await usuarioAtual();
   if (!u) redirect("/login");
   if (!ehAdmin(u) && !ehAprovador(u)) return <div className="card"><h1>Logs de auditoria</h1><p className="mut">Seu papel não acessa a auditoria. Peça ao administrador.</p></div>;
