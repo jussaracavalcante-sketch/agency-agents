@@ -374,3 +374,40 @@ Correções (este PR): esqueleto de reemissão reprovado e, na última tentativa
 
 ### Simulação de ponta a ponta (06/10/2026)
 Reexecução das travas atuais sobre as 23 saídas reais da execução af286084 (ver `docs/simulacao-ponta-a-ponta.md`). Encontrou e corrigiu: objetivo com ponto final não casava na regra de coerência do Guardião; autoavaliação pegava copy legítima; saneador do pacote mantinha posts com calendário bloqueado. 75 testes.
+
+## Décimo sexto disparo (execução 03d3065a, deploy d2bbe83/8b120d1, Hospital Santa Júlia): relatório final
+
+Janela: 15:50 a 17:49 UTC de 07/10/2026 (cerca de 2 h). Cadeia de execuções após as retomadas: 03d3065a, 41e5d5ac, aac502c6, dc564721, d306e927, 5eebed4f. Nada publicado.
+
+Decisões humanas (portal_decisoes): nº 66 G1 devolver (636 caracteres); nº 67 G1 aprovar; nº 68 e 69 G2 devolver (o segundo clique abriu execução paralela; aguardar a confirmação antes de repetir); nº 70 G2 aprovar; nº 71 G3 reprovar. Cliente: Santa Júlia, portanto a base VJOB (Move) não foi exercitada.
+
+Números: 32 eventos de tarefa, 6 pedidos de decisão humana, 14 tarefas com ALERTA DE QUALIDADE. Custo e tokens: indisponíveis (a plataforma não emite esses eventos ao webhook).
+
+### Funcionou
+- Webhook autenticado v4 recebeu os eventos reais; retomada após decisão funcionou nos três portões.
+- G1: caminho aprovar e caminho devolver com reescrita aplicada.
+- G2: devolver seguido de aprovar, com cinco reemissões; quatro boas (conteúdo, e-mail, mídia, arte). Bloco `registro_g2` correto.
+- Guardião do G3 reprovou o pacote com evidência, e a reprovação humana coincidiu com o parecer.
+
+### Falhou
+- Reemissão do calendário: 5.610 para 9.556 caracteres, oito cabeçalhos de semana, valores em R$ inventados (R$ 500 por semana, LinkedIn R$ 300) e posts de projeto social já vindos da correção, linha de autocertificação, "Excelência médica" nas palavras-chave.
+- "Ajustes aplicados" do `registro_g2`, escrito pelo modelo, descreve ajustes que não ocorreram.
+- Pacote do G3: cronograma com datas (20/10, 25/10, 30/10) que não constam do calendário; resumo cita R$ 15.000 como total.
+- O portão G2 mostra o texto bruto do modelo (human_input roda antes do guardrail): notas de versão e substituições feitas em código não chegam ao olhar humano.
+
+### Backlog proposto
+1. Reprovar reemissão que cresça mais de 30% e remover autocertificação.
+2. Aplicar `_valores_rs_inventados` ao calendário.
+3. Gerar "Ajustes aplicados" do `registro_g2` por código.
+4. Prompt do portão G2 deve copiar o parecer do Guardião e incluir a nota de versão.
+5. Decisão da Head: palavra-chave "Excelência médica" no Guia de Marca ([VALIDAR MÉDICO]).
+
+### Pendências de lançamento (não técnicas)
+2FA e proteção de senhas vazadas no Supabase; segundo administrador; rodar o bloco 4 de `seguranca_lgpd.sql` (expurgo de 180 dias); preencher os 23 campos [PREENCHER]/[CONFIRMAR] do aviso e do termo; confirmar cliente "Move" como Move Rental Cars; Therezinha Ruiz fora do piloto (pré-candidata, compliance eleitoral).
+
+### Correções 1 a 4 do backlog (07/10/2026)
+1. Reemissão que cresce mais de 30% sobre a versão anterior é reprovada; na última tentativa vale a versão anterior com a marca de ajustes pendentes. Linhas de autocertificação ("todos os ajustes foram aplicados", "em total conformidade") são removidas da reemissão.
+2. Calendário: valores em R$ que o briefing não informa são reprovados e, na última tentativa, marcados [VALIDAR].
+3. Registro do G2: a seção "Ajustes aplicados" escrita pelo modelo é descartada; o código gera a seção por comparação das versões (sem ajuste, reemitida com tamanhos e linhas diferentes, ou bloqueada).
+4. Portão G2: o prompt exige a cópia integral do parecer do Guardião e a nota de versão inicial no texto que o aprovador lê (a trava em código continua como segunda barreira).
+92 testes; carga da crew sem erro de interpolação.

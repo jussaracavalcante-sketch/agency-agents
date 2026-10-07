@@ -449,7 +449,9 @@ portao_g2:
     apresente o quadro-resumo do parecer final por entrega (resultado e número de ajustes), as pendências [VALIDAR] e amostras reais extraídas das
     versões corrigidas (1 título, 1 post, 1 e-mail, 1 anúncio). Peça a decisão: aprovar (as peças seguem como estão), devolver com ajustes (só então
     cada peça citada é reescrita pelo próprio autor, aplicando o texto do aprovador) ou reprovar. NÃO reescreva peças aqui.
-    O quadro da rubrica e a auditoria de mídia copiados abaixo são da VERSÃO INICIAL das peças (antes das correções automáticas): rotule-os assim. Se esta tarefa for refeita após feedback humano, comece a
+    O quadro da rubrica e a auditoria de mídia copiados abaixo são da VERSÃO INICIAL das peças (antes das correções automáticas): logo abaixo do título de cada uma dessas duas
+    seções escreva literalmente a linha "> Atenção: esta avaliação foi feita sobre a VERSÃO INICIAL das peças, antes da correção automática. Vale o parecer final do Guardião acima."
+    O que o aprovador lê é ESTE texto, antes de qualquer trava: o parecer do Guardião tem de estar inteiro aqui, palavra por palavra, e a nota de versão também. Se esta tarefa for refeita após feedback humano, comece a
     saída com o registro literal do feedback recebido. Nunca invente aprovador, data ou decisão.
     Reproduza o parecer do Guardião literalmente, como foi emitido: você não pode alterá-lo nem afirmar que ajustes
     foram cumpridos ou que o Guardião revisou de novo, porque isso só acontece na tarefa de revisão.
@@ -548,11 +550,11 @@ aplicacao_g2_arte:
 registro_g2:
   description: >
     REGISTRO DA DECISÃO G2. Em um documento curto, registre: a decisão humana transcrita do pedido do portão (histórico de feedbacks), o
-    resultado do parecer final por entrega, e, para cada uma das cinco entregas (conteúdo, calendário, e-mail, plano de mídia, direção de arte),
-    quais ajustes humanos foram aplicados e por qual tarefa. NÃO reescreva peças nem resuma o conteúdo delas; não afirme conformidade; não liste
+    resultado do parecer final por entrega. NÃO escreva seção de "Ajustes aplicados", nem diga quais ajustes foram cumpridos: o código gera essa seção comparando as
+    versões. NÃO reescreva peças nem resuma o conteúdo delas; não afirme conformidade; não liste
     versões vigentes nem bloqueadas (o código acrescenta essa lista). Nunca invente aprovador, data ou decisão. Português do Brasil, sem comentário final.
   expected_output: >
-    Documento Markdown "Registro de decisão G2" com decisão humana, resultado por entrega e ajustes aplicados por entrega.
+    Documento Markdown "Registro de decisão G2" com decisão humana e resultado por entrega (a seção de ajustes aplicados é gerada pelo código).
   agent: gerente_operacoes
   output_file: output/12_registro_g2.md
 
