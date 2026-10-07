@@ -4,7 +4,8 @@ import PainelAprovacoes from "@/components/PainelAprovacoes";
 
 export const dynamic = "force-dynamic";
 
-export default async function Aprovacoes({ searchParams }: { searchParams: { aba?: string } }) {
+export default async function Aprovacoes({ searchParams: sp }: { searchParams: Promise<{ aba?: string }> }) {
+  const searchParams = await sp;
   const u = await usuarioAtual();
   if (!u) redirect("/login");
   const aba = searchParams.aba === "andamento" || searchParams.aba === "concluidas" ? searchParams.aba : "aguardando";

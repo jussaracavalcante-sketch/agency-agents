@@ -6,7 +6,8 @@ import Editor from "./Editor";
 
 export const dynamic = "force-dynamic";
 
-export default async function Cliente({ params }: { params: { slug: string } }) {
+export default async function Cliente({ params: pr }: { params: Promise<{ slug: string }> }) {
+  const params = await pr;
   const u = await usuarioAtual();
   if (!u) redirect("/login");
   const db = admin();

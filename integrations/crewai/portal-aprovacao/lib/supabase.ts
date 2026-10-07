@@ -4,12 +4,12 @@ import { cookies } from "next/headers";
 
 /** Cliente com a sessão do usuário (cookies). Serve só para saber quem está logado. */
 export function sessao() {
-  const jar = cookies();
+  // Next 15: cookies() é assíncrono; o cliente aceita os métodos assíncronos.
   return createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
     cookies: {
-      getAll: () => jar.getAll(),
-      setAll: (lista: { name: string; value: string; options?: Record<string, unknown> }[]) => {
-        try { lista.forEach(({ name, value, options }) => jar.set(name, value, options as never)); } catch { /* componente de servidor */ }
+      getAll: async () => (await cookies()).getAll(),
+      setAll: async (lista: { name: string; value: string; options?: Record<string, unknown> }[]) => {
+        try { const jar = await cookies(); lista.forEach(({ name, value, options }) => jar.set(name, value, options as never)); } catch { /* componente de servidor */ }
       },
     },
   });

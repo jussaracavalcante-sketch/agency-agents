@@ -6,6 +6,7 @@ import GuardaSessao from "./GuardaSessao";
 
 const ITENS = [
   { href: "/", rot: "Visão geral", ic: "⌂" },
+  { href: "/guia", rot: "Guia de uso", ic: "?" },
   { href: "/agentes", rot: "Agentes", ic: "🤖" },
   { href: "/aprovacoes", rot: "Aprovações", ic: "✔" },
   { href: "/atividade", rot: "Atividade", ic: "▤" },
@@ -15,7 +16,7 @@ const ITENS = [
   { href: "/auditoria", rot: "Auditoria", ic: "☰", so: ["aprovador", "admin"] },
   { href: "/admin", rot: "Administração", ic: "⚙", so: ["admin"] },
 ];
-const MIGALHA: Record<string, string> = { privacidade: "Aviso de privacidade", termo: "Termo de conduta", agentes: "Agentes", aprovacoes: "Aprovações", execucao: "Aprovações", atividade: "Atividade", conhecimento: "Conhecimento", disparar: "Disparar campanha", roi: "ROI e custos", auditoria: "Auditoria", admin: "Administração" };
+const MIGALHA: Record<string, string> = { guia: "Guia de uso", privacidade: "Aviso de privacidade", termo: "Termo de conduta", agentes: "Agentes", aprovacoes: "Aprovações", execucao: "Aprovações", atividade: "Atividade", conhecimento: "Conhecimento", disparar: "Disparar campanha", roi: "ROI e custos", auditoria: "Auditoria", admin: "Administração" };
 
 export default function Shell({ nome, papel, children }: { nome: string; papel: string; children: React.ReactNode }) {
   const p = usePathname() || "/";

@@ -1,4 +1,5 @@
 import { dadosPessoais, mensagemDadosPessoais } from "./dadosPessoais";
+import { MAX_CAMPO, MAX_CAMPO_LONGO } from "./tamanhos";
 
 /** Os 17 campos do briefing (chaves = variáveis {…} de config/tasks.yaml e inputs da automação). */
 export type Campo = { chave: string; rotulo: string; dica: string; longo?: boolean; padrao?: string };
@@ -29,6 +30,10 @@ export function validar(b: Record<string, unknown>): string | null {
   for (const k of CHAVES) {
     const v = typeof b[k] === "string" ? (b[k] as string).trim() : "";
     if (!v) return `Preencha o campo: ${k}`;
+  }
+  for (const c of CAMPOS) {
+    const teto = c.longo ? MAX_CAMPO_LONGO : MAX_CAMPO;
+    if (String(b[c.chave]).trim().length > teto) return `O campo "${c.rotulo}" passa de ${teto} caracteres`;
   }
   const achados = dadosPessoais(CHAVES.map((k) => String(b[k] ?? "")).join("\n"));
   if (achados.length) return mensagemDadosPessoais(achados);

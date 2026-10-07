@@ -9,6 +9,11 @@ const LIVRES = ["/aceite", "/api", "/privacidade", "/termo", "/login", "/auth", 
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  // Defesa contra requisição forjada de outro site: chamada que altera estado precisa vir do próprio portal.
+  if (pathname.startsWith("/api/") && !["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+    const origem = req.headers.get("origin");
+    if (origem && origem !== req.nextUrl.origin) return NextResponse.json({ erro: "Origem não permitida" }, { status: 403 });
+  }
   if (LIVRES.some((p) => pathname === p || pathname.startsWith(p + "/"))) return NextResponse.next();
   const temSessao = req.cookies.getAll().some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
   if (!temSessao) return NextResponse.next();

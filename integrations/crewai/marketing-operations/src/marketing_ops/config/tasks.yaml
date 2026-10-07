@@ -434,9 +434,11 @@ revisao_g2_final:
     veracidade e fontes, LGPD, CONAR/CDC, políticas de plataforma, setor regulado), sobre o texto das versões corrigidas que estão no CONTEXTO.
     RESULTADO POR ENTREGA = pior dimensão. Não reabra apontamento já resolvido; cada apontamento cita o trecho literal da versão corrigida.
     [VALIDAR] já marcado é pendência humana, não erro. Link "a definir após a publicação" e hora "a definir" são o padrão antes de publicar.
-    Cada trecho entre aspas é CÓPIA EXATA do documento revisado. Português do Brasil, sem comentário final.
+    Cada trecho entre aspas é CÓPIA EXATA do documento revisado. Emita UM parecer para CADA uma das CINCO entregas, nesta ordem: Conteúdo,
+    Calendário, E-mail, Plano de mídia e Direção de arte (a direção de arte também recebe parecer). Português do Brasil, sem comentário final.
   expected_output: >
-    Documento Markdown com um parecer por entrega e um quadro-resumo final: entrega × resultado × nº de ajustes.
+    Documento Markdown com cinco pareceres (conteúdo, calendário, e-mail, plano de mídia e direção de arte) e um quadro-resumo final de cinco
+    linhas: entrega × resultado × nº de ajustes.
   agent: guardiao_marca_compliance
   output_file: output/11b_parecer_g2_final.md
 
