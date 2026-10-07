@@ -1,0 +1,28 @@
+# Blueprint do Render para o runner. O repositório/branch de deploy é a `crewai-marketing-ops` (a raiz dela é esta pasta).
+# Os valores marcados sync:false são secretos: preencha no painel do Render, nunca neste arquivo.
+services:
+  - type: web
+    name: marketing-ops-runner
+    runtime: docker
+    plan: starter          # sempre ligado; o plano gratuito hiberna e perderia a campanha que espera no portão
+    region: oregon         # confirme a região exigida pela política de dados (ver docs/runner-render.md)
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: false      # um deploy reinicia o processo e perde campanha parada num portão: faça só com o portal sem campanha aberta
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: MODEL
+        value: openai/gpt-4o
+      - key: MODEL_LIGHT
+        value: openai/gpt-4o-mini
+      - key: RUNNER_TOKEN
+        sync: false
+      - key: WEBHOOK_BASE
+        sync: false
+      - key: WEBHOOK_KEY
+        sync: false
+      - key: WEBHOOK_AUTOMACAO
+        value: runner-render
+      - key: CREW_HUMAN_GATES
+        value: "true"

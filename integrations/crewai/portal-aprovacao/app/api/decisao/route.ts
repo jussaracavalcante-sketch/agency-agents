@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { admin, usuarioAtual, podeDecidir, ehAprovador } from "@/lib/supabase";
 import { registrar } from "@/lib/auditoria";
 import { obterExecucao } from "@/lib/execucoes";
-import { retomar, textoDeDecisao, motivoDaRecusa } from "@/lib/crewai";
+import { retomar, encerrar, textoDeDecisao, motivoDaRecusa } from "@/lib/crewai";
 import { MAX_FEEDBACK } from "@/lib/limites";
 
 export const dynamic = "force-dynamic";
@@ -61,6 +61,7 @@ export async function POST(req: Request) {
     // Reprovar não chama a plataforma (não existe cancelamento): a decisão fica registrada e o portal passa a tratar a
     // execução como encerrada (ver execucoes.ts), então ela sai de "Aguardando". Nada é publicado.
     await db.from("portal_decisoes").insert({ ...registro, enviado_ao_crewai: false });
+    await encerrar(execucaoId);
     await registrar(usuario, { acao: "decisao.reprovar", entidade: "portal_decisoes", entidade_id: execucaoId, depois: { portao: exec.portao, decisao, instrucoes: instrucoes || "" }, detalhe: `Portão ${exec.portao ?? ""} reprovado; execução encerrada no portal.` });
     return NextResponse.json({ ok: true, mensagem: "Reprovado e registrado. A execução foi encerrada no portal e não será retomada." });
   }

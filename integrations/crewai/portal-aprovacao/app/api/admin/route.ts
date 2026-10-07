@@ -4,6 +4,7 @@ import { registrar } from "@/lib/auditoria";
 import { CHAVES_CONFIG, LIMITE_AJUSTE } from "@/lib/admin";
 import { AGENTES } from "@/lib/agentes";
 import { obterExecucao } from "@/lib/execucoes";
+import { encerrar } from "@/lib/crewai";
 
 export const dynamic = "force-dynamic";
 const erro = (m: string, status = 400) => NextResponse.json({ erro: m }, { status });
@@ -97,7 +98,8 @@ export async function POST(req: Request) {
       if (!exec.pendente) return erro("Só é possível encerrar execução parada em um portão (em andamento, aguarde o portão)");
       const motivo = String(b.motivo || "Encerrada pelo administrador do sistema").trim();
       await db.from("portal_decisoes").insert({ execucao_id: id, task_id: exec.pendente.task_name, portao: exec.portao, decisao: "reprovar", instrucoes: motivo, humano_id: u.id, humano_nome: u.nome, enviado_ao_crewai: false });
-      await registrar(u, { acao: "admin.execucao_encerrar", entidade: "portal_decisoes", entidade_id: id, depois: { portao: exec.portao, motivo }, detalhe: `Execução ${id.slice(0, 8)} encerrada no portal (plataforma segue pausada; nada é publicado).` });
+      await registrar(u, { acao: "admin.execucao_encerrar", entidade: "portal_decisoes", entidade_id: id, depois: { portao: exec.portao, motivo }, detalhe: `Execução ${id.slice(0, 8)} encerrada no portal (nada é publicado).` });
+      await encerrar(id);
       return NextResponse.json({ ok: true, mensagem: "Execução encerrada no portal." });
     }
     case "limpar_testes": {
