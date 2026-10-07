@@ -477,9 +477,38 @@ def _guardrail_reemissao_factory(original_task, nome, base):
                 f"A reemissão de {nome} ficou com {pct}% do tamanho da versão anterior. Reemitir é copiar a peça inteira (metadados, texto, tabelas, todos os "
                 "e-mails e seções) trocando só o trecho ajustado; não resuma."
             )
+        if orig and _tamanho_util(orig) > 600 and _tamanho_util(texto) > _LIMITE_CRESCIMENTO * _tamanho_util(orig):
+            pct = round(100 * _tamanho_util(texto) / _tamanho_util(orig))
+            return False, (
+                f"A reemissão de {nome} ficou com {pct}% do tamanho da versão anterior: cresceu demais. Reemitir é trocar só o trecho que o ajuste pede; "
+                "não acrescente semanas, posts, valores, canais nem seções que a versão anterior não tinha."
+            )
         return True, saida
 
     return guardrail
+
+
+_LIMITE_CRESCIMENTO = 1.3
+
+
+def _sem_autocertificacao(texto):
+    """Remove da reemissão as linhas (fora de tabela) em que o próprio agente certifica conformidade ou afirma que os ajustes foram cumpridos."""
+    saida, tirou = [], False
+    for linha in (texto or "").splitlines():
+        if not linha.strip().startswith("|") and (_PLACEHOLDERS.search(linha) or _AUTOCERTIFICACAO.search(linha)):
+            tirou = True
+            continue
+        saida.append(linha)
+    return "\n".join(saida), tirou
+
+
+_AUTOCERTIFICACAO = re.compile(
+    r"(ajustes|corre[çc][õo]es|altera[çc][õo]es)[^.\n]{0,40}(foram|foi) (aplicad|incorporad|realizad|feit)\w+|"
+    r"todos os (ajustes|pontos|feedbacks)[^.\n]{0,60}(atendid|aplicad|incorporad|considerad)\w*|"
+    r"(conforme|em conformidade com) (o )?(feedback|pedido|cfm|conar|anvisa|lgpd)|"
+    r"(pe[çc]a|calend[áa]rio|conte[úu]do|plano)[^.\n]{0,40}(est[áa]|fica) (em conformidade|conforme|aprovad)",
+    re.I,
+)
 
 
 def _saneador_reemissao_factory(original_task, saneador_peca):
@@ -488,11 +517,18 @@ def _saneador_reemissao_factory(original_task, saneador_peca):
     def saneador(texto):
         orig = _sem_alerta(getattr(getattr(original_task, "output", None), "raw", None) or "")
         encolhida = orig and _tamanho_util(orig) > 600 and _tamanho_util(_sem_alerta(texto)) < 0.6 * _tamanho_util(orig)
+        inchada = orig and _tamanho_util(orig) > 600 and _tamanho_util(_sem_alerta(texto)) > _LIMITE_CRESCIMENTO * _tamanho_util(orig)
+        if orig and inchada:
+            novo, trocas = saneador_peca(orig)
+            aviso = f"{_MARCA_PENDENTE}: a reemissão cresceu além do limite e acrescentou conteúdo novo; esta é a versão anterior, saneada, com os ajustes pedidos ainda por aplicar.\n\n"
+            return aviso + novo.lstrip(), list(trocas) + ["reemissão inchada: mantida a versão anterior"]
         if orig and (encolhida or _esqueleto(texto)):
             novo, trocas = saneador_peca(orig)
             aviso = f"{_MARCA_PENDENTE}: a reemissão veio incompleta; esta é a versão anterior, saneada, com os ajustes pedidos ainda por aplicar.\n\n"
             return aviso + novo.lstrip(), list(trocas) + ["reemissão incompleta: mantida a versão anterior"]
-        return saneador_peca(texto)
+        limpo, tirou = _sem_autocertificacao(texto)
+        novo, trocas = saneador_peca(limpo)
+        return novo, list(trocas) + (["autocertificação removida"] if tirou else [])
 
     return saneador
 
@@ -519,6 +555,34 @@ def _bloco_versoes_g2(pecas):
     )
 
 
+def _sem_secao_ajustes(texto):
+    """Tira do registro as seções "Ajustes aplicados" escritas pelo modelo: o código as gera a partir da comparação das versões."""
+    return re.sub(r"(?ims)^#{1,4}[ \t]*[^\n]*ajustes (humanos )?aplicados[^\n]*\n.*?(?=^#{1,4}[ \t]|\Z)", "", texto).rstrip()
+
+
+def _bloco_ajustes_g2(pecas):
+    """
+    "Ajustes aplicados" por entrega, gerado por código: compara a versão vigente com a corrigida antes do portão. Não descreve o que mudou
+    (o código não sabe), só o que é verificável: reemitida ou não, tamanho e quantidade de linhas diferentes.
+    """
+    import difflib
+
+    linhas = []
+    for nome, (correcao, aplicacao) in pecas.items():
+        apl = _sem_alerta(getattr(getattr(aplicacao, "output", None), "raw", None) or "")
+        cor = _sem_alerta(getattr(getattr(correcao, "output", None), "raw", None) or "")
+        if not apl.strip() or apl.strip() == cor.strip():
+            linhas.append(f"- {nome}: nenhum ajuste humano aplicado; versão corrigida mantida sem alteração.")
+            continue
+        a, b = cor.splitlines(), apl.splitlines()
+        trocadas = sum(1 for l in difflib.ndiff(a, b) if l[:2] in ("- ", "+ "))
+        if _MARCA_PENDENTE in apl:
+            linhas.append(f"- {nome}: reemissão incompleta; ajustes NÃO aplicados (bloqueada).")
+        else:
+            linhas.append(f"- {nome}: reemitida após o feedback ({_tamanho_util(cor)} para {_tamanho_util(apl)} caracteres; {trocadas} linhas diferentes). Conferir o diff antes de aprovar.")
+    return "\n\n## Ajustes aplicados (gerado automaticamente pelo código)\n" + "\n".join(linhas) + "\n"
+
+
 def _guardrail_registro_factory(pecas):
     """Registro da decisão do G2: documento válido; o bloco de versões vigentes e bloqueadas é acrescentado por código, não pelo modelo."""
 
@@ -527,8 +591,9 @@ def _guardrail_registro_factory(pecas):
         if base[0] is False:
             return base
         raw = getattr(saida, "raw", None) or str(saida) or ""
-        texto = re.sub(r"\n## Versões vigentes \(geradas automaticamente pelo código\).*", "", raw, flags=re.S).rstrip()
-        return True, texto + _bloco_versoes_g2(pecas)
+        texto = re.sub(r"\n## (Ajustes aplicados|Versões vigentes) \(gerad[oa]s? automaticamente pelo código\).*", "", raw, flags=re.S).rstrip()
+        texto = _sem_secao_ajustes(texto)
+        return True, texto + _bloco_ajustes_g2(pecas) + _bloco_versoes_g2(pecas)
 
     return guardrail
 
@@ -1331,6 +1396,12 @@ def _guardrail_calendario(saida):
     erro = _problemas_calendario(getattr(saida, "raw", None) or str(saida) or "")
     if erro:
         return False, erro
+    inventados = _valores_rs_inventados(getattr(saida, "raw", None) or str(saida) or "", _normalizar(_TEXTO_PERMITIDO["texto"]))
+    if inventados:
+        return False, (
+            "O calendário traz valores em R$ que o briefing não informa: " + ", ".join(inventados) + ". Verba por semana ou por rede é decisão do plano de mídia, "
+            "não do calendário: retire o valor ou marque [VALIDAR] na mesma linha."
+        )
     return _guardrail_producao(saida)
 
 
@@ -1388,7 +1459,13 @@ def _sanear_datas_passadas(texto):
 def _sanear_calendario(texto):
     novo, trocas = _sanear_producao(texto)
     novo, t2 = _sanear_datas_passadas(novo)
-    return novo, trocas + t2
+    permitido, t3, linhas = _normalizar(_TEXTO_PERMITIDO["texto"]), [], []
+    for linha in novo.splitlines():
+        if _valores_rs_inventados(linha, permitido):
+            t3 = ["valor em R$ não informado"]
+            linha = _acrescentar_marca(linha, "[VALIDAR]")
+        linhas.append(linha)
+    return "\n".join(linhas), trocas + t2 + t3
 
 
 _CALENDARIO_REEMITIDO = re.compile(r"(pe[çc]a reemitida|reemiss[ãa]o)[^\n]*calend[áa]rio|calend[áa]rio[^\n]*reemitid", re.I)

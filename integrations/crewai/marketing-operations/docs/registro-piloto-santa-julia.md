@@ -404,3 +404,10 @@ Números: 32 eventos de tarefa, 6 pedidos de decisão humana, 14 tarefas com ALE
 
 ### Pendências de lançamento (não técnicas)
 2FA e proteção de senhas vazadas no Supabase; segundo administrador; rodar o bloco 4 de `seguranca_lgpd.sql` (expurgo de 180 dias); preencher os 23 campos [PREENCHER]/[CONFIRMAR] do aviso e do termo; confirmar cliente "Move" como Move Rental Cars; Therezinha Ruiz fora do piloto (pré-candidata, compliance eleitoral).
+
+### Correções 1 a 4 do backlog (07/10/2026)
+1. Reemissão que cresce mais de 30% sobre a versão anterior é reprovada; na última tentativa vale a versão anterior com a marca de ajustes pendentes. Linhas de autocertificação ("todos os ajustes foram aplicados", "em total conformidade") são removidas da reemissão.
+2. Calendário: valores em R$ que o briefing não informa são reprovados e, na última tentativa, marcados [VALIDAR].
+3. Registro do G2: a seção "Ajustes aplicados" escrita pelo modelo é descartada; o código gera a seção por comparação das versões (sem ajuste, reemitida com tamanhos e linhas diferentes, ou bloqueada).
+4. Portão G2: o prompt exige a cópia integral do parecer do Guardião e a nota de versão inicial no texto que o aprovador lê (a trava em código continua como segunda barreira).
+92 testes; carga da crew sem erro de interpolação.
