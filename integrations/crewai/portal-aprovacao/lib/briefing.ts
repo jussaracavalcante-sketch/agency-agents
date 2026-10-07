@@ -1,3 +1,5 @@
+import { dadosPessoais, mensagemDadosPessoais } from "./dadosPessoais";
+
 /** Os 17 campos do briefing (chaves = variáveis {…} de config/tasks.yaml e inputs da automação). */
 export type Campo = { chave: string; rotulo: string; dica: string; longo?: boolean; padrao?: string };
 
@@ -28,6 +30,8 @@ export function validar(b: Record<string, unknown>): string | null {
     const v = typeof b[k] === "string" ? (b[k] as string).trim() : "";
     if (!v) return `Preencha o campo: ${k}`;
   }
+  const achados = dadosPessoais(CHAVES.map((k) => String(b[k] ?? "")).join("\n"));
+  if (achados.length) return mensagemDadosPessoais(achados);
   if (!/^\d{1,2}$/.test(String(b.duracao_semanas).trim())) return "Duração (semanas) deve ser um número de 1 a 99";
   if ((b.objetivo as string).trim().length < 30) return "Objetivo muito curto: escreva o objetivo literal, com meta e baseline";
   return null;
