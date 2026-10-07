@@ -151,3 +151,5 @@ O piloto pode seguir para os analistas em formato **interno, restrito e assistid
 | V13 | Papel `app_head` com todos os privilégios nas tabelas | A confirmar | Confirmar a quem pertence | Pendente |
 
 **Verificado e sem achado:** sem segredo no repositório nem no histórico do código da crew; arquivos `.env` fora do controle de versão; nenhuma chamada de execução de comando, desserialização insegura ou leitura de caminho controlado pelo usuário na crew; a ferramenta de publicação nasce desligada; a ferramenta de guia de marca usa nome normalizado e só lê pastas listadas.
+
+| V14 | Setup de IA do VJOB (L3 confidencial na Nekt) passa a seguir para os agentes | Média | Cópia só no Supabase (sem acesso do navegador), nunca no repositório público; checagem de dado pessoal antes de sincronizar; listas negativas fora do texto permitido. Depende da validação dos fornecedores do modelo | Tratado; ver `nekt-vjob-setup.md` |

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { admin, usuarioAtual } from "@/lib/supabase";
 import { registrar } from "@/lib/auditoria";
 import { dadosPessoais, mensagemDadosPessoais } from "@/lib/dadosPessoais";
-import { BASE_CHAVE, BASE_TITULO, LIMITE_DOC, MAX_ADICIONADOS, atualizarMetadadosDoCliente, slugDoTitulo, textoDoRepo } from "@/lib/conhecimento";
+import { BASE_CHAVE, BASE_TITULO, VJOB_CHAVE, LIMITE_DOC, MAX_ADICIONADOS, atualizarMetadadosDoCliente, slugDoTitulo, textoDoRepo } from "@/lib/conhecimento";
 
 export const dynamic = "force-dynamic";
 
@@ -61,9 +61,10 @@ export async function POST(req: Request) {
         const { data: existentes } = await db.from("portal_conhecimento").select("doc_chave").eq("cliente_slug", slug);
         const usadas = new Set((existentes || []).map((x) => x.doc_chave as string));
         chave = `${base}.md`;
-        for (let i = 2; usadas.has(chave) || chave === BASE_CHAVE; i++) chave = `${base}_${i}.md`;
+        for (let i = 2; usadas.has(chave) || chave === BASE_CHAVE || chave === VJOB_CHAVE; i++) chave = `${base}_${i}.md`;
         return gravar(chave, titulo, conteudo, undefined, "novo");
       }
+      if (chave === VJOB_CHAVE) return erro("O setup do VJOB é sincronizado da Nekt e não se edita aqui. Altere no VJOB.");
       if (chave !== BASE_CHAVE && !/^[a-z0-9_]+\.md$/.test(chave)) return erro("Documento inválido");
       return gravar(chave, chave === BASE_CHAVE ? BASE_TITULO : titulo, conteudo, b.versao, "salvar");
     }

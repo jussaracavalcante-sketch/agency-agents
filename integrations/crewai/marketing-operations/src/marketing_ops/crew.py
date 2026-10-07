@@ -141,11 +141,30 @@ def _sem_bloco_ajustes(texto):
     return antes + (resto[m.start():] if m else "")
 
 
+_LISTA_NEGATIVA = "[lista negativa"
+
+
+def _sem_secoes_negativas(texto):
+    """
+    Remove do contexto as seções marcadas "[LISTA NEGATIVA ...]" (regras inegociáveis e "evitar" do setup do cliente no VJOB). Elas citam termos
+    justamente para PROIBI-LOS ("a melhor locadora da Flórida", "garantia total"); se contassem como texto permitido, a trava de claims os liberaria.
+    A seção vai do título marcado até o próximo título de nível 1 ou 2.
+    """
+    saida, pulando = [], False
+    for linha in str(texto or "").split("\n"):
+        titulo = re.match(r"^#{1,2}\s", linha) is not None
+        if titulo:
+            pulando = _LISTA_NEGATIVA in linha.lower()
+        if not pulando:
+            saida.append(linha)
+    return "\n".join(saida)
+
+
 def _texto_permitido(inputs):
     """Texto que o briefing e a base do cliente permitem citar. Não inclui o bloco de serviços não informados nem os ajustes do administrador, para eles não se autorizarem."""
     limpo = _sem_bloco_servicos(inputs)
     if isinstance(limpo.get("contexto_cliente"), str):
-        limpo["contexto_cliente"] = _sem_bloco_ajustes(limpo["contexto_cliente"])
+        limpo["contexto_cliente"] = _sem_secoes_negativas(_sem_bloco_ajustes(limpo["contexto_cliente"]))
     return " ".join(str(v) for v in limpo.values()).lower()
 
 
