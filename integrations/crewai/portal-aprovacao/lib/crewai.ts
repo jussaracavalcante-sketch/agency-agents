@@ -43,3 +43,11 @@ export function textoDeDecisao(d: { decisao: "aprovar" | "devolver"; portao: str
   const hoje = new Date().toISOString().slice(0, 10);
   return `DECISÃO ${d.portao ?? "do portão"}: DEVOLVIDO COM FEEDBACK por ${d.nome} em ${hoje}. Ajustes pedidos: ${d.instrucoes.trim()}`;
 }
+
+/** Classifica a recusa da plataforma para o portal dizer ao usuário o que aconteceu (sem expor o texto técnico). */
+export function motivoDaRecusa(texto: string | null | undefined): { tipo: "limite" | "outro"; mensagem: string } {
+  if (/monthly execution limit|execution limit reached|quota|limit reached/i.test(texto || "")) {
+    return { tipo: "limite", mensagem: "A plataforma de agentes atingiu o limite mensal de execuções do plano. Nada foi enviado nem retomado. Avise o administrador: o limite precisa ser ampliado ou renovado antes de tentar de novo." };
+  }
+  return { tipo: "outro", mensagem: "A plataforma recusou o envio. O detalhe técnico ficou registrado; avise o administrador." };
+}
