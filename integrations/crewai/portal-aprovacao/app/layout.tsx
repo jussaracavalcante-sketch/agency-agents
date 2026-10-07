@@ -11,7 +11,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   const u = await usuarioAtual();
   return (
     <html lang="pt-BR">
-      <body>{u ? <Shell nome={u.nome} papel={u.papel}>{children}</Shell> : <div className="auth"><header className="auth-top"><MarcaAuth /></header><main>{children}</main><footer className="rodape-priv"><Link href="/privacidade">Aviso de privacidade</Link></footer></div>}</body>
+      <body>{u ? <Shell nome={u.nome} papel={u.papel}>{children}</Shell> : <div className="auth"><header className="auth-top"><MarcaAuth /></header><main>{children}</main><footer className="rodape-priv"><Link href="/privacidade">Aviso de privacidade</Link> · <Link href="/termo">Termo de conduta</Link></footer></div>}</body>
     </html>
   );
 }

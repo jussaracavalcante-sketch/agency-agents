@@ -87,3 +87,11 @@ No Supabase, em Authentication, habilitar o provedor de e-mail com link mágico 
 - No disparo, se o cliente tem edição ou documento acrescentado, o portal envia o texto efetivo em `contexto_cliente` (limite de 10.000 caracteres,
   cortando o excedente); sem edição, o crew carrega o guia do próprio repositório, como antes. O disparo registra só o hash e o tamanho do texto.
 - Tabelas: `portal_conhecimento` e `portal_conhecimento_versoes` (RLS ligada, acesso só pelo servidor).
+
+
+## Aceite do aviso de privacidade e do termo de conduta
+- Textos: `marketing-operations/docs/lgpd/` (fonte única). `python3 scripts/gerar_documentos.py` gera `lib/documentos.ts`; rode de novo quando um texto mudar.
+- Páginas públicas: `/privacidade` e `/termo`. A faixa "Minuta em validação" aparece enquanto houver campos `[PREENCHER]` ou `[CONFIRMAR]`.
+- No primeiro acesso a pessoa lê e confirma em `/aceite`. O registro vai para `portal_aceites` (pessoa, documento, versão, hash do texto, sessão, data e hora, imutável) e para a auditoria (`aceite.registrar`).
+- Mudou o texto, mudou o hash: todos aceitam de novo. Para não forçar novo aceite por ajuste de redação, mude os textos em lote e só depois gere o arquivo.
+- Enforcement: as rotas de API e as telas só reconhecem quem aceitou (`usuarioAtual` consulta o banco). O cookie `aceite_ok` e o `middleware.ts` só evitam ir ao banco a cada página e levam a pessoa a `/aceite`.

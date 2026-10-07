@@ -25,7 +25,18 @@ export function admin() {
 export type Papel = "leitor" | "revisor" | "aprovador" | "admin";
 export type Usuario = { id: string; nome: string; papel: Papel; portoes: string[] | null };
 
-export async function usuarioAtual(): Promise<Usuario | null> {
+/**
+ * Usuário logado com perfil. Por padrão só devolve quem já aceitou o aviso de privacidade e o termo de conduta em vigor
+ * (assim as rotas de API e as telas ficam fechadas até o aceite). `semAceite` serve às telas do próprio aceite.
+ */
+export async function usuarioAtual(opcoes: { semAceite?: boolean } = {}): Promise<Usuario | null> {
+  const u = await usuarioSemAceite();
+  if (!u || opcoes.semAceite) return u;
+  const { pendentesDe } = await import("./aceite");
+  return (await pendentesDe(u.id)).length ? null : u;
+}
+
+async function usuarioSemAceite(): Promise<Usuario | null> {
   const { data } = await sessao().auth.getUser();
   const u = data.user;
   if (!u || !u.email) return null;

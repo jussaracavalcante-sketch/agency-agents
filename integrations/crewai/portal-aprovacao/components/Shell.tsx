@@ -15,7 +15,7 @@ const ITENS = [
   { href: "/auditoria", rot: "Auditoria", ic: "☰", so: ["aprovador", "admin"] },
   { href: "/admin", rot: "Administração", ic: "⚙", so: ["admin"] },
 ];
-const MIGALHA: Record<string, string> = { privacidade: "Aviso de privacidade", agentes: "Agentes", aprovacoes: "Aprovações", execucao: "Aprovações", atividade: "Atividade", conhecimento: "Conhecimento", disparar: "Disparar campanha", roi: "ROI e custos", auditoria: "Auditoria", admin: "Administração" };
+const MIGALHA: Record<string, string> = { privacidade: "Aviso de privacidade", termo: "Termo de conduta", agentes: "Agentes", aprovacoes: "Aprovações", execucao: "Aprovações", atividade: "Atividade", conhecimento: "Conhecimento", disparar: "Disparar campanha", roi: "ROI e custos", auditoria: "Auditoria", admin: "Administração" };
 
 export default function Shell({ nome, papel, children }: { nome: string; papel: string; children: React.ReactNode }) {
   const p = usePathname() || "/";
@@ -33,7 +33,7 @@ export default function Shell({ nome, papel, children }: { nome: string; papel: 
         <div className="sp" />
         <div className="eu">
           <span className="av">{nome.split(/\s+/).slice(0, 2).map((x) => x[0]).join("").toUpperCase()}</span>
-          <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 500 }}>{nome}</div><div className="mut">{papel} · <Link href="/definir-senha">senha</Link> · <Link href="/privacidade">privacidade</Link></div></div>
+          <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 500 }}>{nome}</div><div className="mut">{papel} · <Link href="/definir-senha">senha</Link> · <Link href="/privacidade">privacidade</Link> · <Link href="/termo">conduta</Link></div></div>
           <form action="/auth/sair" method="post"><button type="submit" className="n sair" title="Sair da conta" aria-label="Sair da conta">⏻</button></form>
         </div>
         <GuardaSessao />

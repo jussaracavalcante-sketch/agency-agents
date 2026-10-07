@@ -5,7 +5,7 @@ import FormLogin from "./FormLogin";
 export const dynamic = "force-dynamic";
 
 export default async function Login({ searchParams }: { searchParams: { outra?: string } }) {
-  const u = await usuarioAtual();
+  const u = await usuarioAtual({ semAceite: true });
   if (u && !searchParams.outra) redirect("/");
   // Sessão válida, mas e-mail sem convite: explica em vez de ficar voltando para o login.
   const { data } = await sessao().auth.getUser();
