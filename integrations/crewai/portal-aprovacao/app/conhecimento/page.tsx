@@ -9,10 +9,12 @@ export default async function Conhecimento({ searchParams: sp }: { searchParams:
   const searchParams = await sp;
   const u = await usuarioAtual();
   if (!u) redirect("/login");
-  const [{ data }, { data: edits }] = await Promise.all([
+  const [{ data }, { data: edits }, { data: vjobs }] = await Promise.all([
     admin().from("portal_clientes").select("slug,nome,guia_completo,guia_caracteres,atualizado_em").order("nome"),
     admin().from("portal_conhecimento").select("cliente_slug,origem,atualizado_em"),
+    admin().from("portal_vjob_setup").select("cliente_slug,status,sincronizado_em"),
   ]);
+  const vjob = new Map((vjobs || []).map((v) => [v.cliente_slug as string, v as { status: string; sincronizado_em: string }]));
   const todos = data || [];
   const porCliente = new Map<string, { editado: boolean; extras: number; ultimo: string }>();
   for (const e of edits || []) {
@@ -36,7 +38,7 @@ export default async function Conhecimento({ searchParams: sp }: { searchParams:
         <Link href="/conhecimento?f=alterados" className={alt ? "on" : ""}>Alterados no portal {porCliente.size}</Link>
       </div>
       <div className="card">
-        <table className="tb"><thead><tr><th>Cliente</th><th>Guia</th><th>Portal</th><th>Tamanho</th><th></th></tr></thead><tbody>
+        <table className="tb"><thead><tr><th>Cliente</th><th>Guia</th><th>Portal</th><th>VJOB (Nekt)</th><th>Tamanho</th><th></th></tr></thead><tbody>
           {lista.map((c) => {
             const p = porCliente.get(c.slug);
             return (
@@ -44,6 +46,7 @@ export default async function Conhecimento({ searchParams: sp }: { searchParams:
                 <td><Link href={`/conhecimento/${c.slug}`}>{c.nome}</Link></td>
                 <td>{c.guia_completo ? <span className="st ok">Completo</span> : <span className="st warn">Incompleto</span>}</td>
                 <td className="mut">{p ? <>{p.editado ? "guia editado" : "guia original"}{p.extras ? ` · +${p.extras} doc(s)` : ""}<br />{fmt(p.ultimo)}</> : "original do repositório"}</td>
+                <td className="mut">{vjob.get(c.slug) ? (vjob.get(c.slug)!.status === "ok" ? <><span className="st ok">Sincronizado</span><br />{fmt(vjob.get(c.slug)!.sincronizado_em)}</> : <span className="st warn">Setup vazio no VJOB</span>) : "sem setup no VJOB"}</td>
                 <td className="mut">{c.guia_caracteres.toLocaleString("pt-BR")} caracteres</td>
                 <td><Link className="btn" href={`/conhecimento/${c.slug}`}>{podeEditar ? "Editar" : "Ver"}</Link></td>
               </tr>

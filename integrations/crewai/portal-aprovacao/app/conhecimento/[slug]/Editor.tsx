@@ -5,7 +5,7 @@ import type { Doc } from "@/lib/conhecimento";
 
 type Versao = { id: number; doc_chave: string; versao: number; acao: string; autor_nome: string; criado_em: string };
 type Msg = { t: string; ok: boolean } | null;
-const ROTULO = { repo: "Original do repositório", base_editada: "Editado no portal", adicionado: "Documento acrescentado" } as const;
+const ROTULO = { repo: "Original do repositório", base_editada: "Editado no portal", adicionado: "Documento acrescentado", vjob: "Sincronizado do VJOB (somente leitura)" } as const;
 const fmt = (s: string) => new Date(s).toLocaleString("pt-BR", { timeZone: "America/Manaus" });
 
 async function chamar(corpo: Record<string, unknown>) {
@@ -21,6 +21,8 @@ function DocCard({ slug, doc, versoes, podeEditar, limiteDoc }: { slug: string; 
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<Msg>(null);
   const base = doc.chave === "guia_identidade_visual.md";
+  const doVjob = doc.origem === "vjob";
+  podeEditar = podeEditar && !doVjob; // o setup do VJOB vem da Nekt: edita-se no VJOB
   const mudou = texto !== doc.conteudo || titulo !== doc.titulo;
 
   async function agir(corpo: Record<string, unknown>, confirmar?: string) {
@@ -36,12 +38,12 @@ function DocCard({ slug, doc, versoes, podeEditar, limiteDoc }: { slug: string; 
       <div className="row">
         <h2 style={{ margin: 0 }}>{doc.titulo}</h2>
         <span>
-          <span className={`st ${doc.origem === "repo" ? "" : doc.origem === "base_editada" ? "ac" : "warn"}`}>{ROTULO[doc.origem]}</span>{" "}
+          <span className={`st ${doc.origem === "repo" ? "" : doc.origem === "base_editada" ? "ac" : doc.origem === "vjob" ? "ok" : "warn"}`}>{ROTULO[doc.origem]}</span>{" "}
           {doc.corte === "parcial" && <span className="st err">cortado no limite</span>}
           {doc.corte === "fora" && <span className="st err">fora do limite</span>}
         </span>
       </div>
-      <p className="mut">{doc.chave}{doc.atualizado_nome ? ` · versão ${doc.versao} · ${doc.atualizado_nome}, ${fmt(doc.atualizado_em!)}` : ""}</p>
+      <p className="mut">{doc.chave}{doVjob ? ` · ${doc.atualizado_nome} · sincronizado em ${fmt(doc.atualizado_em!)} · edite no VJOB; uma nova sincronização atualiza este texto` : doc.atualizado_nome ? ` · versão ${doc.versao} · ${doc.atualizado_nome}, ${fmt(doc.atualizado_em!)}` : ""}</p>
       {!base && podeEditar && <label>Título<input value={titulo} onChange={(e) => setTitulo(e.target.value)} maxLength={120} /></label>}
       <textarea className="mono" rows={base ? 18 : 12} value={texto} readOnly={!podeEditar} onChange={(e) => setTexto(e.target.value)} aria-label={`Conteúdo de ${doc.titulo}`} />
       <p className="mut">{texto.length.toLocaleString("pt-BR")} de {limiteDoc.toLocaleString("pt-BR")} caracteres</p>

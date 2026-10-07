@@ -149,5 +149,6 @@ O piloto pode seguir para os analistas em formato **interno, restrito e assistid
 | V11 | Expurgo de eventos de 180 dias não criado | Média | Bloco 4 de `seguranca_lgpd.sql` | Pendente (administradora) |
 | V12 | Provedor do modelo de linguagem, região da CrewAI AMP e da Vercel, contratos e transferência internacional | Alta | Confirmação com fornecedores e jurídico | Pendente |
 | V13 | Papel `app_head` com todos os privilégios nas tabelas | A confirmar | Confirmar a quem pertence | Pendente |
+| V14 | Setup de IA do VJOB (L3 confidencial na Nekt) passa a seguir para os agentes | Média | Cópia só no Supabase (sem acesso do navegador), nunca no repositório público; checagem de dado pessoal antes de sincronizar; listas negativas fora do texto permitido. Depende da validação dos fornecedores do modelo | Tratado; ver `nekt-vjob-setup.md` |
 
 **Verificado e sem achado:** sem segredo no repositório nem no histórico do código da crew; arquivos `.env` fora do controle de versão; nenhuma chamada de execução de comando, desserialização insegura ou leitura de caminho controlado pelo usuário na crew; a ferramenta de publicação nasce desligada; a ferramenta de guia de marca usa nome normalizado e só lê pastas listadas.
