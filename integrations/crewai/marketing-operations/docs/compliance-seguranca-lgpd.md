@@ -131,3 +131,23 @@ O piloto pode seguir para os analistas em formato **interno, restrito e assistid
 - Alertas de qualidade por execução.
 - Pedidos de titular recebidos e prazo de resposta.
 - Custo por campanha.
+
+## 12. Varredura completa de 07/10/2026
+
+| # | Achado | Gravidade | Tratamento | Situação |
+|---|---|---|---|---|
+| V1 | Next.js 14.2.15 com vulnerabilidades críticas conhecidas (execução remota de código no otimizador de imagens, desvio de autorização no middleware, SSRF, negação de serviço) e postcss vulnerável | Crítica | Atualização para Next.js 15.5.27 e postcss 8.5.29 por sobreposição; `npm audit` de produção com 0 vulnerabilidades | Corrigido |
+| V2 | Webhook sem comparação de segredo em tempo constante, sem teto de corpo e com erro de banco devolvido ao chamador | Média | Função `crewai-webhook` v4: comparação em tempo constante, teto de 2 MB, erros genéricos. O segredo na URL fica, porque a CrewAI AMP não envia cabeçalho nos webhooks de tarefa | Corrigido; caminho autenticado a confirmar no próximo piloto |
+| V3 | Sem teto de tamanho nos textos enviados aos agentes e sem limite diário de disparos | Média | Tetos por campo (1.500 e 3.000), feedback de 4.000 e limite de 10 disparos por pessoa em 24 horas, ajustável em Administração | Corrigido |
+| V4 | Chamadas que alteram estado sem checagem de origem | Média | Rejeição de `Origin` diferente do portal nas rotas de API | Corrigido |
+| V5 | Dado pessoal podia entrar pela base de conhecimento | Média | Bloqueio de CPF válido, nome de paciente e prontuário ao salvar (contatos institucionais continuam permitidos) | Corrigido |
+| V6 | API devolvia texto técnico da plataforma ao usuário em caso de recusa | Baixa | Mensagem genérica; o detalhe fica gravado no banco | Corrigido |
+| V7 | Revisão final do G2 sem parecer da direção de arte; rubrica e auditoria de mídia apareciam como se fossem da versão final; alerta falso de "faltam linhas RESUMO" por nota escalada (90/90) | Média | Trava de cobertura das cinco entregas, nota de versão inicial acrescentada por código e nota com denominador escalado aceita | Corrigido na crew; exige redeploy na AMP |
+| V8 | Falta de guia de uso para os analistas | Média | Guia em `docs/guia-do-analista.md` e página `/guia` no portal | Corrigido; campos a preencher |
+| V9 | Estado compartilhado em memória na crew (contexto do cliente e feedback por portão) | Média | O portal só permite uma campanha por vez. **Não disparar campanha pelo painel da AMP enquanto outra roda**, para não misturar clientes | Mitigado por procedimento |
+| V10 | Proteção contra senha vazada, segundo fator e segundo administrador | Alta | Configuração no painel do Supabase | Pendente (administradora) |
+| V11 | Expurgo de eventos de 180 dias não criado | Média | Bloco 4 de `seguranca_lgpd.sql` | Pendente (administradora) |
+| V12 | Provedor do modelo de linguagem, região da CrewAI AMP e da Vercel, contratos e transferência internacional | Alta | Confirmação com fornecedores e jurídico | Pendente |
+| V13 | Papel `app_head` com todos os privilégios nas tabelas | A confirmar | Confirmar a quem pertence | Pendente |
+
+**Verificado e sem achado:** sem segredo no repositório nem no histórico do código da crew; arquivos `.env` fora do controle de versão; nenhuma chamada de execução de comando, desserialização insegura ou leitura de caminho controlado pelo usuário na crew; a ferramenta de publicação nasce desligada; a ferramenta de guia de marca usa nome normalizado e só lê pastas listadas.
