@@ -7,6 +7,12 @@ import { clientePorExecucao, entregasRecentes, haQuanto, hora } from "@/lib/dado
 
 const TOKENS_POR_CAMPANHA = 360_000; // estimativa medida nos pilotos
 
+/** Cartão de indicador. Com `href` o cartão inteiro é um link (teclado e leitor de tela incluídos); sem `href`, é só informação. */
+function Kpi({ href, rotulo, children }: { href?: string; rotulo: string; children: React.ReactNode }) {
+  if (!href) return <div className="card">{children}</div>;
+  return <Link href={href} className="card kpi-link" aria-label={`${rotulo}: abrir`}>{children}<span className="kpi-seta" aria-hidden="true">→</span></Link>;
+}
+
 export default async function VisaoGeral() {
   const u = await usuarioAtual();
   if (!u) redirect("/login");
@@ -23,6 +29,7 @@ export default async function VisaoGeral() {
   const emAndamento = execs.filter((e) => !e.concluida && !e.pendente).length;
   const nome = (k: string) => clientes.get(k) || `Execução ${k.slice(0, 8)}`;
   const campanhas = disp.count ?? 0;
+  const veCustos = u.papel === "aprovador" || u.papel === "admin"; // a tela de ROI é só deles: para os demais o cartão não vira link
 
   return (
     <>
@@ -32,10 +39,10 @@ export default async function VisaoGeral() {
       </div>
 
       <div className="kpis">
-        <div className="card"><span className="kic" style={{ background: "var(--ac-bg)", color: "var(--ac)" }}>👥</span><div><div className="kl">Agentes na equipe</div><div className="kn">{AGENTES.length}</div><div className="kl">{Object.keys(TAREFAS).length} tarefas por campanha</div></div></div>
-        <div className="card"><span className="kic" style={{ background: "var(--ok-bg)", color: "var(--ok)" }}>✔</span><div><div className="kl">Tarefas concluídas</div><div className="kn">{concl.length.toLocaleString("pt-BR")}</div><div className="kl">Últimos 30 dias</div></div></div>
-        <div className="card"><span className="kic" style={{ background: "var(--warn-bg)", color: "var(--warn)" }}>⏳</span><div><div className="kl">Portões aguardando</div><div className="kn">{pend.length}</div><div className="kl">{emAndamento} em andamento</div></div></div>
-        <div className="card"><span className="kic" style={{ background: "var(--vio-bg)", color: "var(--vio)" }}>◔</span><div><div className="kl">Consumo estimado</div><div className="kn">{(campanhas * TOKENS_POR_CAMPANHA / 1000).toLocaleString("pt-BR")} mil</div><div className="kl">tokens, {campanhas} campanha(s) pelo portal em 30 dias (estimativa de ~360 mil por campanha)</div></div></div>
+        <Kpi href="/agentes" rotulo="Agentes na equipe"><span className="kic" style={{ background: "var(--ac-bg)", color: "var(--ac)" }}>👥</span><div><div className="kl">Agentes na equipe</div><div className="kn">{AGENTES.length}</div><div className="kl">{Object.keys(TAREFAS).length} tarefas por campanha</div></div></Kpi>
+        <Kpi href="/atividade" rotulo="Tarefas concluídas"><span className="kic" style={{ background: "var(--ok-bg)", color: "var(--ok)" }}>✔</span><div><div className="kl">Tarefas concluídas</div><div className="kn">{concl.length.toLocaleString("pt-BR")}</div><div className="kl">Últimos 30 dias</div></div></Kpi>
+        <Kpi href="/aprovacoes" rotulo="Portões aguardando"><span className="kic" style={{ background: "var(--warn-bg)", color: "var(--warn)" }}>⏳</span><div><div className="kl">Portões aguardando</div><div className="kn">{pend.length}</div><div className="kl">{emAndamento} em andamento</div></div></Kpi>
+        <Kpi href={veCustos ? "/roi" : undefined} rotulo="Consumo estimado"><span className="kic" style={{ background: "var(--vio-bg)", color: "var(--vio)" }}>◔</span><div><div className="kl">Consumo estimado</div><div className="kn">{(campanhas * TOKENS_POR_CAMPANHA / 1000).toLocaleString("pt-BR")} mil</div><div className="kl">tokens, {campanhas} campanha(s) pelo portal em 30 dias (estimativa de ~360 mil por campanha)</div></div></Kpi>
       </div>
 
       <div className="two">
