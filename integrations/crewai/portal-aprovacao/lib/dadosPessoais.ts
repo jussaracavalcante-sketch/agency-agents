@@ -30,7 +30,11 @@ export function dadosPessoais(texto: string, opcoes: { contatos?: boolean } = {}
     const so = m[0].replace(/\D/g, "");
     if (so.length >= 10 && so.length <= 13) achados.push({ tipo: "telefone", trecho: mascara(m[0]) });
   }
-  for (const m of texto.matchAll(/\b(?:paciente|pacientes)\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+/g)) achados.push({ tipo: "nome de paciente", trecho: mascara(m[0]) });
+  // Nome de paciente: "paciente Maria Souza" (singular, dois nomes próprios). "pacientes Hospital Santa Júlia" é plural e institucional, e não conta.
+  const INSTITUCIONAL = /^(?:Hospital|Cl[íi]nica|Centro|Instituto|Santa|Santo|S[ãa]o|Policl[íi]nica|Maternidade|Laborat[óo]rio|Unidade|Rede|Grupo)$/;
+  for (const m of texto.matchAll(/\bpaciente:?\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+)\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+)/g)) {
+    if (!INSTITUCIONAL.test(m[1]) && !INSTITUCIONAL.test(m[2])) achados.push({ tipo: "nome de paciente", trecho: mascara(m[0]) });
+  }
   for (const m of texto.matchAll(/\bprontu[áa]rio\s*(?:n[º°o.]?\s*)?\d+/gi)) achados.push({ tipo: "prontuário", trecho: mascara(m[0]) });
   return achados;
 }
