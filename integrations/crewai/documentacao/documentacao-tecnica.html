@@ -1,0 +1,243 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>Documentação técnica</title><style>
+@page{size:A4;margin:18mm 16mm 18mm}@page:first{margin:0}
+:root{--r:#C50C13;--k:#050000;--m:#6b5f5f}
+*{box-sizing:border-box}body{font:10.5pt/1.5 Inter,Helvetica,Arial,sans-serif;color:#1b1414;margin:0}
+h1{font-size:20pt;color:var(--k);border-bottom:3px solid var(--r);padding-bottom:6px;margin:0 0 12px;break-before:page}
+h2{font-size:13pt;color:var(--r);margin:18px 0 6px}h3{font-size:11pt;margin:12px 0 4px}
+table{border-collapse:collapse;width:100%;font-size:9pt;margin:8px 0;break-inside:auto}
+th{background:var(--k);color:#fff;text-align:left;padding:5px 7px}td{border-bottom:1px solid #e4dcdc;padding:5px 7px;vertical-align:top}
+tr{break-inside:avoid}
+.capa{height:262mm;background:linear-gradient(135deg,#D10F18,#3E0102 35%,#050000 60%,#3E0102 80%,#C50C13);color:#fff;padding:26mm 20mm;margin:0;height:296mm;width:210mm;break-after:page}
+.capa img{height:46px}.capa h1{color:#fff;border:0;font-size:32pt;margin:70mm 0 8px;break-before:avoid;line-height:1.15}
+.capa p{font-size:13pt;opacity:.9;max-width:140mm}.capa small{position:absolute;bottom:22mm;font-size:10pt;opacity:.8}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}.kpi{border:1px solid #e4dcdc;border-top:3px solid var(--r);padding:8px;border-radius:6px}
+.kpi b{display:block;font-size:20pt;color:var(--r)}.kpi span{font-size:8.5pt;color:var(--m)}
+.box{background:#fdeeee;border-left:4px solid var(--r);padding:8px 12px;margin:8px 0;border-radius:4px}
+.fig{margin:8px 0;break-inside:avoid}.fig svg{width:100%;height:auto}
+ul{margin:4px 0 4px 18px;padding:0}li{margin:2px 0}.sm{font-size:9pt;color:var(--m)}
+
+code{font-size:8.5pt;background:#f3eded;padding:0 3px;border-radius:3px}</style><body><div class="capa"><h1>Equipe de Operação de Marketing com IA</h1><p>Documentação técnica: arquitetura, crew, travas de qualidade, portal, dados, segurança, operação e histórico de execuções até a última execução pela crew</p><small>Vanguarda Martech · Versão 2.0 · 08/10/2026 · Documento interno e confidencial · Posição: execução bd9adb74 (07/10/2026)</small></div>
+
+<h1 style="break-before:avoid">1. Resumo executivo</h1>
+<p>O projeto entrega uma equipe de <b>14 agentes de IA</b> que executa a operação de marketing de um cliente em <b>36 tarefas</b> e 3 fases (estratégia, produção, medição e publicação), com <b>3 portões de decisão humana</b> (G1, G2, G3). Um portal web permite disparar campanhas, acompanhar a execução, decidir os portões e editar a base de conhecimento do cliente. <b>A publicação real está desligada</b>: nada vai ao ar pelo sistema.</p>
+<div class="kpis"><div class="kpi"><b>14</b><span>agentes</span></div><div class="kpi"><b>36</b><span>tarefas na esteira</span></div><div class="kpi"><b>3</b><span>portões humanos</span></div><div class="kpi"><b>97</b><span>testes automatizados</span></div>
+<div class="kpi"><b>24</b><span>disparos registrados (21 aceitos pela plataforma)</span></div><div class="kpi"><b>72</b><span>decisões humanas</span></div><div class="kpi"><b>783</b><span>eventos de execução</span></div><div class="kpi"><b>20</b><span>pull requests integrados (#22 a #41)</span></div></div>
+<h2>Onde o projeto está</h2>
+<ul><li><b>Funciona de ponta a ponta:</b> as 36 tarefas rodam, pausam nos três portões, retomam após a decisão e produzem pacote de publicação, plano de medição e sumário. Validado em execuções reais na CrewAI AMP entre 02 e 07/10/2026.</li>
+<li><b>Qualidade é garantida por camadas, não por um revisor:</b> cerca de 30 funções de trava, saneador e geração em código (Python) cobrem o que o modelo de linguagem erra de forma recorrente. Ainda assim, a última execução completa (03d3065a) terminou com <b>G3 reprovado</b> e 14 das 32 tarefas com ALERTA DE QUALIDADE.</li>
+<li><b>Prontidão para analistas:</b> o portal tem controle de acesso por papel, aceite de privacidade e conduta, auditoria imutável e bloqueio de dados pessoais. Faltam itens de configuração e jurídicos (seção 11).</li>
+<li><b>Bloqueio atual:</b> a CrewAI AMP recusou novas execuções por limite mensal (07/10, 18:18 UTC). Foi construído um <b>runner próprio</b> (Render + OpenAI) para remover essa dependência; o código está integrado, mas <b>ainda não foi validado em execução real</b>.</li></ul>
+<div class="box"><b>Última execução pela crew (posição desta documentação):</b> bd9adb74, Hospital Santa Júlia, disparada em 07/10/2026 às 18:15 UTC. Chegou ao G1 em cerca de 2 minutos sem alerta de qualidade. A devolução do G1 (decisão nº 72) <b>não foi retomada</b> porque a plataforma recusou por limite mensal. A última execução que percorreu os três portões foi a 03d3065a (G3 reprovado).</div>
+
+<h1>2. Arquitetura</h1>
+<p>Quatro camadas independentes se comunicam por HTTP e por um banco único. O portal nunca executa agentes; a crew nunca lê o portal.</p>
+<div class="fig"><svg viewBox="0 0 900 330" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif" font-size="12">
+<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#6b5f5f"/></marker></defs>
+<rect x="10" y="20" width="230" height="110" rx="8" fill="#fdeeee" stroke="#C50C13"/><text x="125" y="42" text-anchor="middle" font-weight="bold">Portal de Aprovação</text><text x="125" y="62" text-anchor="middle">Next.js 15 (Vercel)</text><text x="125" y="80" text-anchor="middle">login, papéis, aceite LGPD</text><text x="125" y="98" text-anchor="middle">disparo, decisão, base de</text><text x="125" y="114" text-anchor="middle">conhecimento, auditoria, ROI</text>
+<rect x="335" y="20" width="230" height="110" rx="8" fill="#f3f3f3" stroke="#050000"/><text x="450" y="42" text-anchor="middle" font-weight="bold">Supabase (sa-east-1)</text><text x="450" y="62" text-anchor="middle">Postgres + Auth + Realtime</text><text x="450" y="80" text-anchor="middle">eventos, decisões, disparos,</text><text x="450" y="98" text-anchor="middle">auditoria imutável, aceites,</text><text x="450" y="114" text-anchor="middle">conhecimento, VJOB setup</text>
+<rect x="335" y="200" width="230" height="64" rx="8" fill="#f3f3f3" stroke="#050000"/><text x="450" y="226" text-anchor="middle" font-weight="bold">Edge Function crewai-webhook</text><text x="450" y="246" text-anchor="middle">autentica e grava os eventos</text>
+<rect x="660" y="20" width="230" height="110" rx="8" fill="#fdeeee" stroke="#C50C13"/><text x="775" y="42" text-anchor="middle" font-weight="bold">Executor da crew</text><text x="775" y="62" text-anchor="middle">A) CrewAI AMP (padrão)</text><text x="775" y="80" text-anchor="middle">B) Runner no Render (novo)</text><text x="775" y="98" text-anchor="middle">14 agentes, 36 tarefas, travas</text><text x="775" y="114" text-anchor="middle">em código, portões humanos</text>
+<rect x="660" y="200" width="230" height="64" rx="8" fill="#fff" stroke="#6b5f5f"/><text x="775" y="226" text-anchor="middle" font-weight="bold">Modelo de linguagem</text><text x="775" y="246" text-anchor="middle">Anthropic (AMP) / OpenAI (runner)</text>
+<rect x="10" y="200" width="230" height="64" rx="8" fill="#fff" stroke="#6b5f5f"/><text x="125" y="226" text-anchor="middle" font-weight="bold">Nekt (BigQuery)</text><text x="125" y="246" text-anchor="middle">setup VJOB e dados de mídia</text>
+<line x1="240" y1="60" x2="335" y2="60" stroke="#6b5f5f" marker-end="url(#a)"/><text x="288" y="52" text-anchor="middle" font-size="10">lê/grava</text>
+<line x1="240" y1="100" x2="660" y2="100" stroke="#6b5f5f" stroke-dasharray="5,4" marker-end="url(#a)"/><text x="450" y="160" text-anchor="middle" font-size="10">kickoff / resume / cancel (portal chama o executor)</text>
+<line x1="775" y1="130" x2="565" y2="215" stroke="#6b5f5f" marker-end="url(#a)"/><text x="690" y="185" text-anchor="middle" font-size="10">eventos de tarefa e de portão</text>
+<line x1="450" y1="200" x2="450" y2="130" stroke="#6b5f5f" marker-end="url(#a)"/>
+<line x1="775" y1="130" x2="775" y2="200" stroke="#6b5f5f" marker-end="url(#a)"/>
+<line x1="125" y1="200" x2="125" y2="130" stroke="#6b5f5f" stroke-dasharray="3,3" marker-end="url(#a)"/><text x="170" y="170" font-size="10">cópia manual (runbook)</text>
+</svg></div>
+<h2>2.1 Componentes e versões</h2>
+<table><tr><th>Componente</th><th>Tecnologia</th><th>Onde roda</th><th>Observação</th></tr>
+<tr><td>Crew</td><td>CrewAI 1.15.23, Python 3.11, <code>uv.lock</code></td><td>CrewAI AMP; runner no Render</td><td>Deploy da AMP: branch <code>crewai-marketing-ops</code> (subtree da pasta <code>marketing-operations</code>, publicada por força)</td></tr>
+<tr><td>Portal</td><td>Next.js 15.5.27, React 18.3.1, TypeScript</td><td>Vercel (projeto próprio)</td><td>URL de produção: marketing-operationsagents.vercel.app</td></tr>
+<tr><td>Banco e autenticação</td><td>Supabase Postgres, Auth, Realtime</td><td>sa-east-1 (São Paulo)</td><td>Projeto compartilhado com tabelas de outros produtos; RLS ligada</td></tr>
+<tr><td>Receptor de eventos</td><td>Edge Function <code>crewai-webhook</code> v4 (Deno)</td><td>Supabase</td><td>Comparação de segredo em tempo constante, teto de 2 MB, erros genéricos</td></tr>
+<tr><td>Runner</td><td>Python, <code>http.server</code>, Docker</td><td>Render (plano gratuito no blueprint)</td><td>Código integrado; falta validação em execução real</td></tr>
+<tr><td>Dados do cliente</td><td>Nekt / BigQuery (<code>trs_vjob__ia_cliente_config</code>)</td><td>Nekt</td><td>Cópia por runbook para <code>portal_vjob_setup</code>; sincronização automática não implementada</td></tr></table>
+
+<h1>3. A crew</h1>
+<h2>3.1 Agentes (14)</h2>
+<table><tr><th>Agente</th><th>Papel</th><th>Tarefas</th></tr>
+<tr><td>gerente_operacoes</td><td>Gerente de Operações de Marketing: consolida os portões, o registro do G2 e a aplicação de feedback</td><td>6</td></tr>
+<tr><td>guardiao_marca_compliance</td><td>Guardião de Marca, Qualidade e Compliance: pareceres por dimensão (G1, G2, G3)</td><td>5</td></tr>
+<tr><td>estrategista_campanhas</td><td>Brief estratégico, correção e aplicação do G1</td><td>3</td></tr>
+<tr><td>redator_conteudo</td><td>Conteúdo longo: produção, correção, aplicação</td><td>3</td></tr>
+<tr><td>estrategista_social</td><td>Calendário social: produção, correção, aplicação</td><td>3</td></tr>
+<tr><td>especialista_email_crm</td><td>Fluxos de e-mail: produção, correção, aplicação</td><td>3</td></tr>
+<tr><td>gestor_midia_paga</td><td>Plano de mídia paga: produção, correção, aplicação</td><td>3</td></tr>
+<tr><td>diretor_arte</td><td>Direção de arte: produção, correção, aplicação</td><td>3</td></tr>
+<tr><td>analista_dados</td><td>Plano de medição e relatório de performance</td><td>2</td></tr>
+<tr><td>coordenador_publicacao</td><td>Pacote de publicação e execução de publicação (desligada)</td><td>2</td></tr>
+<tr><td>pesquisador_mercado, especialista_seo, supervisor_midia_paga, revisor_qualidade</td><td>Pesquisa de mercado; mapa de SEO; auditoria técnica de mídia; rubrica de qualidade das peças</td><td>1 cada</td></tr></table>
+<h2>3.2 Esteira de tarefas (36)</h2>
+<table><tr><th>Fase</th><th>Tarefas (em ordem)</th></tr>
+<tr><td>1. Estratégia (8)</td><td>pesquisa_mercado, mapa_seo, brief_estrategico, revisao_g1, correcao_brief, revisao_g1_final, <b>portao_g1</b>, aplicacao_g1</td></tr>
+<tr><td>2. Produção (21)</td><td>producao_conteudo, calendario_social, fluxos_email, plano_midia_paga, auditoria_midia, direcao_arte, rubrica_qa, revisao_g2, correcao_* (conteúdo, calendário, e-mail, mídia, arte), revisao_g2_final, <b>portao_g2</b>, aplicacao_g2_* (as mesmas cinco peças), registro_g2</td></tr>
+<tr><td>3. Medição e publicação (7)</td><td>plano_medicao, pacote_publicacao, revisao_g3, <b>portao_g3</b>, aplicacao_g3, execucao_publicacao (publicação desligada), sumario_executivo</td></tr></table>
+<h2>3.3 Decisões de desenho relevantes</h2>
+<ul><li><b>Correção automática antes do portão.</b> O humano vê a versão já corrigida e o parecer final; <b>aprovar não reescreve nada</b>. Devolver reescreve só as peças citadas.</li>
+<li><b>Aplicação pós-portão sem tarefa condicional.</b> A <code>ConditionalTask</code> falha ao retomar na AMP (<code>AttributeError 'reloaded'</code>). Todas as 36 tarefas são <code>Task</code> comuns; sem feedback humano a saída é a versão corrigida <b>copiada por código</b> (<code>_com_copia_sem_feedback</code>).</li>
+<li><b>Versão vigente.</b> Cada peça tem uma versão vigente (reemissão pós-feedback, se rodou; senão a corrigida). Peça cuja reemissão veio incompleta fica <b>BLOQUEADA</b> e não entra no pacote.</li>
+<li><b>Um agente e uma campanha por vez.</b> As travas guardam estado de módulo (briefing, base permitida, feedback por portão); por isso o runner e o portal impedem execuções simultâneas.</li></ul>
+
+<h1>4. Mecanismo de qualidade</h1>
+<p>Em CrewAI, o <i>guardrail</i> de uma tarefa recebe a saída e devolve <code>(aprovado, texto)</code>. Com <code>guardrail_max_retries=2</code>, uma saída reprovada volta ao agente com o motivo. Uma terceira reprovação não derruba a execução: <code>_com_limite_de_rejeicoes</code> aceita a saída com uma linha <b>ALERTA DE QUALIDADE</b> no topo e roda o <b>saneador</b> da peça (remove ou marca o trecho problemático).</p>
+<h2>4.1 Famílias de trava</h2>
+<table><tr><th>Família</th><th>O que verifica</th><th>Principais funções</th></tr>
+<tr><td>Documento</td><td>Tamanho mínimo, idioma, nota final do agente, autoavaliação, marcador malformado</td><td><code>_guardrail_documento</code>, <code>_nota_final</code>, <code>_limpar_final</code></td></tr>
+<tr><td>Veracidade e claims</td><td>Superlativos, garantias, depoimentos, placeholders, canal fora do brief, valor em R$ não informado</td><td><code>_guardrail_producao</code>, <code>_claims_proibidos</code>, <code>_valores_rs_inventados</code></td></tr>
+<tr><td>Brief e calendário</td><td>Objetivo literal, cobertura de semanas, datas futuras, tabela com coluna Data, histórias de pacientes</td><td><code>_guardrail_brief</code>, <code>_guardrail_calendario</code></td></tr>
+<tr><td>Mídia</td><td>Orçamento, canais, rotina da Vanguarda, rubrica e auditoria técnica</td><td><code>_guardrail_midia_factory</code>, <code>_guardrail_auditoria_factory</code>, <code>_guardrail_rubrica_factory</code></td></tr>
+<tr><td>Pareceres do Guardião</td><td>Citação existente na peça, resultado coerente com as dimensões, reprovação com trecho</td><td><code>_guardrail_parecer_factory</code>, <code>_citacoes_inexistentes</code></td></tr>
+<tr><td>Portão</td><td>Parecer copiado integralmente, quadro da rubrica, auditoria, histórico de feedback</td><td><code>_guardrail_portao_factory</code></td></tr>
+<tr><td>Reemissão</td><td>Não pode ser esqueleto, nem encolher abaixo de 60%, nem <b>crescer além de 130%</b> da versão anterior; autocertificação removida</td><td><code>_guardrail_reemissao_factory</code>, <code>_saneador_reemissao_factory</code>, <code>_sem_autocertificacao</code></td></tr>
+<tr><td>Pacote e G3</td><td>Cronograma a partir do calendário vigente, datas ISO, peças bloqueadas fora do pacote</td><td><code>_guardrail_pacote_factory</code>, <code>_saneador_pacote_factory</code></td></tr>
+<tr><td>Registro do G2 (por código)</td><td>Versões vigentes, bloqueadas e <b>ajustes aplicados</b> são gerados por código, não pelo modelo</td><td><code>_bloco_versoes_g2</code>, <code>_bloco_ajustes_g2</code></td></tr></table>
+<h2>4.2 Limitações conhecidas do desenho</h2>
+<ul><li>Em CrewAI o pedido de decisão humana roda <b>antes</b> do guardrail da própria tarefa. O texto que o aprovador lê no portão é a saída bruta do modelo; substituições e notas feitas em código só aparecem na saída posterior. Mitigação: o prompt do portão G2 exige a cópia integral do parecer e a nota de versão inicial (a trava em código é a segunda barreira).</li>
+<li>Rubrica e auditoria de mídia do G2 avaliam a <b>versão inicial</b>, antes da correção; vale o parecer final do Guardião.</li>
+<li>As travas foram calibradas com modelos Claude. Uma troca de modelo (OpenAI no runner) exige novo piloto.</li></ul>
+
+<h1>5. Portões humanos e contrato de decisão</h1>
+<table><tr><th>Ação</th><th>Texto enviado ao executor</th><th>Efeito</th></tr>
+<tr><td>Aprovar</td><td><code>Aprovado.</code></td><td>Libera o portão; nenhuma reescrita</td></tr>
+<tr><td>Devolver com ajustes</td><td><code>DECISÃO Gn: DEVOLVIDO COM FEEDBACK por &lt;nome&gt; em &lt;data&gt;. Ajustes pedidos: &lt;texto&gt;</code></td><td>Reexecuta o portão com o feedback; abre novo pedido com o mesmo task id</td></tr>
+<tr><td>Reprovar</td><td>Nada é enviado à AMP; no runner, <code>/cancel</code></td><td>O portal fecha a execução; nada é publicado</td></tr></table>
+<ul><li>O servidor decide o portão pendente (o navegador não escolhe o <code>taskId</code>) e confere se a pessoa é aprovadora daquele portão.</li>
+<li>Texto escrito junto de Aprovar ou Reprovar é bloqueado (causa de decisões divergentes do pretendido) salvo confirmação explícita.</li>
+<li>Cada pedido aceita uma decisão. Uma decisão <b>recusada pela plataforma</b> fica registrada como não enviada e <b>não trava</b> nova tentativa.</li></ul>
+<h2>5.1 Dois executores</h2>
+<table><tr><th></th><th>CrewAI AMP</th><th>Runner (Render)</th></tr>
+<tr><td>Retomada</td><td><code>/resume</code> (cada retomada conta uma execução no plano)</td><td>A thread espera a decisão em memória; <code>/resume</code> a libera</td></tr>
+<tr><td>Limite</td><td>Execuções do plano (atingido em 07/10)</td><td>Sem limite de execuções; custo de tokens na OpenAI</td></tr>
+<tr><td>Estado entre portões</td><td>Persistido pela AMP</td><td><b>Só em memória</b>: reinício perde a campanha parada num portão</td></tr>
+<tr><td>Seleção</td><td><code>EXECUTOR=amp</code> (padrão)</td><td><code>EXECUTOR=runner</code>, <code>RUNNER_URL</code>, <code>RUNNER_TOKEN</code></td></tr>
+<tr><td>Estado de validação</td><td>Validado em dezenas de execuções</td><td>5 testes unitários e 1 teste de ponta a ponta com executor real e modelo simulado; <b>nunca rodou com a OpenAI nem no Render</b></td></tr></table>
+
+<h1>6. Portal de aprovação</h1>
+<h2>6.1 Páginas e API</h2>
+<table><tr><th>Área</th><th>Rotas</th><th>Acesso</th></tr>
+<tr><td>Visão geral, agentes, atividade, aprovações</td><td><code>/</code>, <code>/agentes</code>, <code>/atividade</code>, <code>/aprovacoes</code>, <code>/execucao/[id]</code></td><td>Todos os perfis autenticados que aceitaram o aviso e o termo</td></tr>
+<tr><td>Disparo</td><td><code>/disparar</code> + <code>POST /api/disparo</code></td><td>Aprovador e administrador</td></tr>
+<tr><td>Decisão</td><td><code>POST /api/decisao</code></td><td>Aprovador do portão</td></tr>
+<tr><td>Base de conhecimento</td><td><code>/conhecimento</code>, <code>/conhecimento/[slug]</code>, <code>POST /api/conhecimento</code></td><td>Revisor e acima; setup VJOB somente leitura</td></tr>
+<tr><td>Custos e ROI</td><td><code>/roi</code></td><td>Aprovador e administrador</td></tr>
+<tr><td>Auditoria, administração</td><td><code>/auditoria</code>, <code>/admin</code>, <code>/api/admin</code>, <code>/api/auditoria</code></td><td>Administração responde 404 para quem não é administrador</td></tr>
+<tr><td>Conformidade</td><td><code>/aceite</code>, <code>/privacidade</code>, <code>/termo</code>, <code>/guia</code></td><td>Públicas após login; aceite obrigatório no primeiro acesso</td></tr>
+<tr><td>Autenticação</td><td><code>/login</code>, <code>/recuperar</code>, <code>/definir-senha</code>, <code>/auth/*</code></td><td>Convite por e-mail</td></tr></table>
+<h2>6.2 Papéis</h2>
+<table><tr><th>Papel</th><th>Pode</th></tr><tr><td>leitor</td><td>Ver campanhas e aprovações</td></tr><tr><td>revisor</td><td>Ver tudo e editar a base de conhecimento</td></tr><tr><td>aprovador</td><td>Decidir o portão designado, disparar campanhas, ver custos</td></tr><tr><td>admin</td><td>Acessos, configuração, ajustes de agentes, encerrar execução parada</td></tr></table>
+<h2>6.3 Controles do portal</h2>
+<ul><li><b>Middleware:</b> redireciona ao aceite até haver aceite válido; verifica o <code>Origin</code> em POST de <code>/api</code>; cabeçalhos de segurança (CSP em modo relatório).</li>
+<li><b>Limites:</b> tamanho por campo do briefing e do feedback (4.000 caracteres), limite diário de disparos por pessoa (<code>limite_disparos_dia</code> = 10), uma campanha por vez (<code>execucaoAtiva</code>).</li>
+<li><b>Dados pessoais:</b> <code>lib/dadosPessoais.ts</code> bloqueia CPF, telefone, e-mail, prontuário e nome de paciente no briefing, no feedback e na base de conhecimento; teste de regressão em <code>scripts/testar_dados_pessoais.mjs</code>.</li>
+<li><b>Falha da plataforma:</b> a recusa é classificada (limite mensal, executor inacessível, outro) e a mensagem orienta o usuário sem expor o detalhe técnico.</li></ul>
+
+<h1>7. Dados</h1>
+<table><tr><th>Tabela</th><th>Conteúdo</th><th>Observação</th></tr>
+<tr><td>crewai_webhook_events</td><td>Cada tarefa concluída, pedido de portão e fim de execução</td><td>783 linhas; retenção proposta de 180 dias</td></tr>
+<tr><td>portal_decisoes</td><td>Decisões humanas, texto enviado, resposta da plataforma</td><td>72 linhas</td></tr>
+<tr><td>portal_disparos</td><td>Briefing e resultado de cada disparo</td><td>24 linhas</td></tr>
+<tr><td>portal_auditoria</td><td>Quem fez o quê, sessão, data e hora</td><td>Imutável por gatilho; 5 anos (proposta)</td></tr>
+<tr><td>portal_aceites</td><td>Aceite do aviso e do termo, com hash do texto</td><td>Imutável por gatilho</td></tr>
+<tr><td>portal_perfis, portal_convites</td><td>Perfis, papéis, portões designados, convites</td><td></td></tr>
+<tr><td>portal_clientes, portal_conhecimento, portal_conhecimento_versoes</td><td>Clientes liberados e base de conhecimento versionada</td><td></td></tr>
+<tr><td>portal_vjob_setup</td><td>Cópia do setup de IA do VJOB por cliente</td><td>Move Rental Cars (8.976 caracteres); Prestex vazio</td></tr>
+<tr><td>portal_agentes_ajustes, portal_config, crewai_config</td><td>Ajustes por agente, parâmetros, chave do webhook</td><td></td></tr></table>
+<p><b>Segurança em banco:</b> RLS ligada nas tabelas do portal; privilégios de <code>anon</code> e <code>authenticated</code> revogados (somente leitura mínima onde o tempo real exige); a chave de serviço existe só no servidor. Scripts: <code>portal.sql</code>, <code>portal_admin.sql</code>, <code>portal_aceites.sql</code>, <code>seguranca_lgpd.sql</code>.</p>
+
+<h1>8. Segurança e LGPD</h1>
+<table><tr><th>Controle</th><th>Estado</th></tr>
+<tr><td>Acesso por convite, papéis e portões designados</td><td>Implementado</td></tr>
+<tr><td>Aceite do aviso de privacidade e do termo de conduta (hash do texto)</td><td>Implementado; minutas v0.1 com 23 campos [PREENCHER]/[CONFIRMAR] pendentes</td></tr>
+<tr><td>Trilha de auditoria imutável</td><td>Implementado</td></tr>
+<tr><td>Bloqueio de dados pessoais no portal</td><td>Implementado (regras conhecidas; não é garantia absoluta)</td></tr>
+<tr><td>Dependências</td><td>Next.js 15 (corrigiu vulnerabilidades críticas da versão anterior), override de postcss</td></tr>
+<tr><td>Webhook</td><td>v4 com comparação em tempo constante; a chave ainda é aceita por <code>?k=</code> porque a AMP não envia cabeçalho nos webhooks de tarefa</td></tr>
+<tr><td>Runner</td><td><code>RUNNER_TOKEN</code> em tempo constante; sem persistência em disco do conteúdo das campanhas</td></tr>
+<tr><td>2FA, proteção de senha vazada, segundo administrador</td><td><b>Pendente</b> (configuração Supabase)</td></tr>
+<tr><td>Expurgo de 180 dias (bloco 4 de <code>seguranca_lgpd.sql</code>)</td><td><b>Pendente</b> (execução manual no SQL Editor)</td></tr>
+<tr><td>Subprocessadores</td><td>Supabase (Brasil), Vercel, CrewAI AMP, provedor do modelo (Anthropic ou OpenAI), Render: regiões e mecanismo de transferência <b>a confirmar</b> e a refletir no aviso</td></tr></table>
+<p>Compliance de conteúdo em saúde (CFM, CDC, CONAR, ANVISA): marcadores [VALIDAR] e [VALIDAR MÉDICO] são pendências para validação humana; a aprovação no portal atesta qualidade e adequação ao briefing, <b>não</b> conformidade regulatória. Detalhes em <code>docs/compliance-seguranca-lgpd.md</code>.</p>
+
+<h1>9. Operação e entrega</h1>
+<table><tr><th>Item</th><th>Procedimento</th></tr>
+<tr><td>Fluxo de código</td><td>Branch de trabalho, PR, merge squash em <code>main</code>; branch de trabalho realinhada a <code>origin/main</code></td></tr>
+<tr><td>Deploy da crew (AMP)</td><td><code>git subtree split --prefix=integrations/crewai/marketing-operations</code> e push forçado para <code>crewai-marketing-ops</code>; <b>redeploy manual</b> pela pessoa responsável, que informa o commit</td></tr>
+<tr><td>Deploy do portal</td><td>Automático na Vercel a partir de <code>main</code></td></tr>
+<tr><td>Deploy do runner</td><td>Render, a partir da branch <code>crewai-marketing-ops</code> (<code>render.yaml</code> e <code>Dockerfile</code> na raiz); <code>autoDeploy</code> desligado; <b>não fazer deploy com campanha parada num portão</b></td></tr>
+<tr><td>Variáveis do runner</td><td><code>OPENAI_API_KEY</code>, <code>MODEL</code>, <code>MODEL_LIGHT</code>, <code>RUNNER_TOKEN</code>, <code>WEBHOOK_BASE</code>, <code>WEBHOOK_KEY</code>, <code>WEBHOOK_AUTOMACAO</code>, <code>CREW_HUMAN_GATES=true</code> (valores secretos só nos painéis)</td></tr>
+<tr><td>Reversão do executor</td><td><code>EXECUTOR=amp</code> no portal e redeploy; não alternar com campanha aberta</td></tr></table>
+<p>Estado do deploy do runner em 07/10: o build concluiu e o serviço encerrou com <code>RUNNER_TOKEN não definido</code> (variáveis secretas ainda não preenchidas). O serviço no Render foi criado com o nome <code>agency-agents</code>.</p>
+
+<h1>10. Histórico de execuções</h1>
+<p>Entre 02 e 07/10/2026 foram registrados 24 disparos (21 aceitos pela plataforma) e 72 decisões. A tabela resume as decisões por portão.</p>
+<table><tr><th>Portão</th><th>Aprovar</th><th>Devolver (enviada)</th><th>Devolver (não enviada)</th><th>Reprovar</th></tr>
+<tr><td>G1</td><td>20</td><td>9</td><td>1</td><td>1</td></tr><tr><td>G2</td><td>17</td><td>8</td><td>0</td><td>2</td></tr><tr><td>G3</td><td>5</td><td>0</td><td>0</td><td>9</td></tr></table>
+<p class="sm">G3 foi reprovado 9 vezes e aprovado 5: o pacote final é o ponto mais frágil da esteira. Das 783 linhas de evento, 128 contêm ALERTA DE QUALIDADE.</p>
+<h2>10.1 Evolução das travas</h2>
+<table><tr><th>Marco</th><th>O que mudou</th></tr>
+<tr><td>Rodadas 1 a 14</td><td>Travas incrementais: idioma, claims, placeholders, datas, objetivo literal, rubrica, auditoria de mídia, citações do Guardião, saneador do pacote (registro completo em <code>registro-piloto-santa-julia.md</code>)</td></tr>
+<tr><td>15ª (af286084)</td><td>Esqueleto de reemissão barrado; calendário vigente; PMax/YouTube fora do brief; run-rate não é orçamento</td></tr>
+<tr><td>Pós-15ª (PRs #30, #31)</td><td>Correção automática antes do portão; aprovar não reescreve; fim da <code>ConditionalTask</code> (falha de retomada na AMP)</td></tr>
+<tr><td>Prontidão (PRs #32 a #39)</td><td>Compliance, LGPD, aceite, auditoria, administração restrita, varredura pré-piloto, painel clicável, base de conhecimento ligada ao VJOB</td></tr>
+<tr><td>16ª (03d3065a)</td><td>Pilotada com G1 devolvido e aprovado, G2 devolvido e aprovado, <b>G3 reprovado</b> (ver 10.2)</td></tr>
+<tr><td>Pós-16ª (PR #40)</td><td>Reemissão inchada, valores em R$ no calendário, "Ajustes aplicados" por código, prompt do portão G2</td></tr>
+<tr><td>17ª (bd9adb74)</td><td>G1 chegou sem alerta; devolução recusada pelo limite mensal da plataforma (PR #41: runner e aviso de limite)</td></tr></table>
+<h2>10.2 Última execução completa: 03d3065a (07/10, Hospital Santa Júlia)</h2>
+<ul><li><b>Janela:</b> 15:50 a 17:49 UTC, cerca de 2 horas; cadeia de 6 execuções encadeadas (uma por retomada); 32 eventos de tarefa, 6 pedidos de decisão, 14 tarefas com alerta.</li>
+<li><b>Decisões:</b> nº 66 G1 devolver; nº 67 G1 aprovar; nº 68 e 69 G2 devolver (o segundo clique abriu execução paralela); nº 70 G2 aprovar; nº 71 G3 reprovar.</li>
+<li><b>Funcionou:</b> webhook autenticado, retomada nos três portões, quatro de cinco reemissões do G2 boas, Guardião do G3 reprovou com evidência.</li>
+<li><b>Falhou:</b> reemissão do calendário (5.610 para 9.556 caracteres, valores em R$ inventados, autocertificação, "Excelência médica"); seção "Ajustes aplicados" fabricada; cronograma do G3 com datas fora do calendário e total de R$ 15.000 no resumo.</li>
+<li><b>Custo e tokens:</b> indisponíveis (a plataforma não envia esses eventos ao webhook).</li></ul>
+<h2>10.3 Última execução: bd9adb74 (07/10, 18:15 UTC)</h2>
+<ul><li>G1 em cerca de 2 minutos, sem alerta de qualidade, histórico "Nenhum feedback humano recebido" correto, parecer do Guardião copiado integralmente (Reprovado por itens [VALIDAR] em aberto).</li>
+<li>Defeitos de conteúdo do brief: run-rate de R$ 11.654 apresentado como orçamento do Google Ads, "Hipóteses" só com [VALIDAR], escopo de canais indefinido, "Excelência médica" e "premium" na matriz de mensagens.</li>
+<li>Decisão nº 72 (devolver) gravada e <b>não enviada</b>: <code>Monthly execution limit reached</code>. A execução permanece parada no G1. A campanha foi com o cliente Santa Júlia; a base VJOB (Move) e a regra de lista negativa seguem <b>sem teste em execução real</b>.</li></ul>
+<p><b>Consumo observado:</b> uma campanha com devolução em cada portão consome 6 execuções da plataforma (uma por retomada). Dimensione o plano ou o runner por campanha.</p>
+
+<h1>11. Testes e verificação</h1>
+<table><tr><th>Suíte</th><th>Escopo</th><th>Resultado em 08/10</th></tr>
+<tr><td><code>tests/test_guardrails.py</code></td><td>Travas, saneadores, vigência, registro do G2</td><td>92 passando</td></tr>
+<tr><td><code>tests/test_runner.py</code></td><td>Portão (aprovar, devolver, cancelar), execução inexistente, uma campanha por vez</td><td>5 passando</td></tr>
+<tr><td>Teste de ponta a ponta do portão</td><td>Executor real do CrewAI com modelo simulado: pedido, devolução com reescrita, novo pedido, aprovação</td><td>Passou (não é teste de qualidade do texto)</td></tr>
+<tr><td>Carga da crew</td><td>36 tarefas, interpolação do briefing, sem placeholder faltando; pico de cerca de 250 MB ao montar</td><td>Sem erro</td></tr>
+<tr><td><code>tsc --noEmit</code> (portal)</td><td>Tipos do portal</td><td>Sem erro</td></tr>
+<tr><td><code>scripts/testar_dados_pessoais.mjs</code></td><td>Regressão do detector de dados pessoais</td><td>Passa</td></tr></table>
+<p class="sm">Não há teste automatizado do portal além do detector e da checagem de tipos, nem teste do runner com o modelo real.</p>
+
+<h1>12. Riscos e backlog</h1>
+<table><tr><th>Risco</th><th>Impacto</th><th>Tratamento / ação</th></tr>
+<tr><td>Limite mensal da AMP bloqueia o piloto</td><td>Alto</td><td>Ampliar o plano ou validar o runner; hoje não há execução possível pela AMP</td></tr>
+<tr><td>Runner perde campanha parada num portão se reiniciar</td><td>Alto</td><td>Plano pago sempre ligado, sem autodeploy; evolução: checkpoints em disco persistente</td></tr>
+<tr><td>Troca de modelo (Anthropic para OpenAI) altera a qualidade</td><td>Médio/Alto</td><td>Piloto limpo antes de liberar aos analistas</td></tr>
+<tr><td>Qualidade do pacote do G3 (9 reprovações de 14 decisões)</td><td>Alto</td><td>Backlog abaixo; análise humana obrigatória</td></tr>
+<tr><td>Processamento de dados em subprocessadores fora do Brasil</td><td>Médio (LGPD)</td><td>Completar aviso com região e mecanismo; validação jurídica</td></tr>
+<tr><td>Projeto Supabase compartilhado com outros produtos</td><td>Médio</td><td>Separar em projeto dedicado antes de escalar</td></tr>
+<tr><td>Guias de clientes e conteúdo no repositório</td><td>Médio</td><td>Repositório privado ou mover guias para o banco</td></tr>
+<tr><td>Chave do webhook aceita na URL</td><td>Baixo/Médio</td><td>Trocar para cabeçalho quando a plataforma permitir; rotacionar a chave se vazar</td></tr></table>
+<h2>12.1 Backlog técnico</h2>
+<ol><li>Validar o runner no Render com a OpenAI (piloto limpo com a Move: exercita também o setup VJOB e a regra de lista negativa).</li>
+<li>Persistência e retomada de execução no runner após reinício.</li>
+<li>Decisão da Head: palavra-chave "Excelência médica" do Guia de Marca ([VALIDAR MÉDICO]); "acolhimento premium" no brief.</li>
+<li>Medir custo e tokens por execução (sem dados hoje).</li>
+<li>Sincronização automática Nekt para <code>portal_vjob_setup</code> (depende de credencial e decisão).</li>
+<li>Testes automatizados do portal e do fluxo de decisão.</li></ol>
+<h2>12.2 Pendências de lançamento (não técnicas)</h2>
+<ul><li>2FA, proteção de senha vazada e segundo administrador no Supabase; expurgo de 180 dias (bloco 4 do SQL).</li>
+<li>Preencher os 23 campos do aviso e do termo; validação do jurídico e do RH; definir encarregado (DPO).</li>
+<li>Confirmar o cliente "Move" como Move Rental Cars. Therezinha Ruiz <b>não está cadastrada</b> (pré-candidata; compliance eleitoral): recomenda-se mantê-la fora do piloto.</li>
+<li>Limite de gasto e alertas na conta OpenAI; definir o plano de hospedagem do runner (gratuito serve para teste, não para a garantia de operação).</li></ul>
+
+<h1>13. Referências no repositório</h1>
+<table><tr><th>Assunto</th><th>Arquivo</th></tr>
+<tr><td>Registro de todas as rodadas</td><td><code>marketing-operations/docs/registro-piloto-santa-julia.md</code></td></tr>
+<tr><td>Compliance, segurança e LGPD</td><td><code>docs/compliance-seguranca-lgpd.md</code>, <code>docs/lgpd/*</code></td></tr>
+<tr><td>Fluxos e handoffs, governança</td><td><code>docs/fluxos-e-handoffs.md</code>, <code>docs/governanca-qualidade.md</code></td></tr>
+<tr><td>Runner (Render)</td><td><code>docs/runner-render.md</code></td></tr>
+<tr><td>Setup do VJOB (Nekt)</td><td><code>docs/nekt-vjob-setup.md</code></td></tr>
+<tr><td>Guia do analista</td><td><code>docs/guia-do-analista.md</code></td></tr>
+<tr><td>Código da crew, agentes e tarefas</td><td><code>src/marketing_ops/crew.py</code>, <code>config/agents.yaml</code>, <code>config/tasks.yaml</code></td></tr>
+<tr><td>Portal</td><td><code>integrations/crewai/portal-aprovacao</code></td></tr></table>
+<p class="sm">Fonte dos números: consultas ao banco do portal em 08/10/2026 e inspeção do código no commit <code>ecb6343</code> (main) e branch <code>cdf0d41</code>. Quando um valor não pôde ser verificado, o texto o declara como pendente ou desconhecido.</p>
+</body></html>
